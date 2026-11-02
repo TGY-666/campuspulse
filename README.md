@@ -14,8 +14,9 @@ python -m venv .venv
 .venv/Scripts/pip install -r requirements.txt
 
 # 2) 配置 DeepSeek Key（不配置也能跑，会自动降级为规则路由）
-#    在项目根目录新建 .env，写一行：
-#    DEEPSEEK_API_KEY=sk-xxxxxxxx
+#    复制模板后填入自己的 Key（.env 已被 .gitignore 排除，不会提交）
+cp .env.example .env
+#    然后编辑 .env，把 DEEPSEEK_API_KEY 填上
 
 # 3) 启动
 .venv/Scripts/python.exe run.py
@@ -35,6 +36,8 @@ python -m venv .venv
 - [`docs/口径说明.md`](docs/口径说明.md)：25,699 / 1,823 / 99.6% 的核对结论、维度词典与归因修订记录
 - [`docs/技术说明.md`](docs/技术说明.md)：架构、AI 工具调用链、三层真实性保障、接口与安全
 - [`docs/演示脚本.md`](docs/演示脚本.md)：8 分钟 / 5 分钟演示流程、实测问题与口径、评委 Q&A
+- [`docs/git提交记录.md`](docs/git提交记录.md)：24 次提交分别改了什么、为什么这样切分、给评审的核查命令
+- [`docs/传智杯参赛需求清单.md`](docs/传智杯参赛需求清单.md)：按赛项评分细则逐点对账、拿奖概率推算与 16 天排期
 - [`docs/省赛评分对标与优化建议.md`](docs/省赛评分对标与优化建议.md)：按评分细则逐条自评（≈60/100）与优化清单
 - [`docs/优化进度-2026-10-28.md`](docs/优化进度-2026-10-28.md)：已完成项实测数据、未完成清单与下一步排期
 - [`docs/架构一页纸.png`](docs/架构一页纸.png)：答辩 PPT 用的架构图（两条轨道：数字走后端，文字走模型）
