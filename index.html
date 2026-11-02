@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>广东东软学院多平台社交舆情分析系统</title>
+    <!-- 前端依赖已本地化到 static/vendor，断网也能正常显示；网络可用时自动回退 CDN -->
+    <script src="static/vendor/tailwind.js"></script>
+    <script src="static/vendor/echarts.min.js"></script>
+    <script src="static/vendor/echarts-wordcloud.min.js"></script>
+    <script>
+        // 本地文件缺失时回退到 CDN，保证任何环境都能打开大屏
+        (function () {
+            if (typeof window.tailwind === 'undefined') {
+                document.write('<script src="https://cdn.tailwindcss.com"><\/script>');
+            }
+            if (typeof window.echarts === 'undefined') {
+                document.write('<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"><\/script>');
+                document.write('<script src="https://cdn.jsdelivr.net/npm/echarts-wordcloud@2.1.0/dist/echarts-wordcloud.min.js"><\/script>');
+            }
+        })();
+    </script>
+    <script>
+        window.tailwind = window.tailwind || {};
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        success: '#52C41A',
+                        warning: '#FAAD14',
+                        danger: '#F5222D',
+                        purple: '#722ED1',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .card-shadow {
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+        }
+        .card-shadow:hover {
+            box-shadow: 0 4px 20px rgba(22, 93, 255, 0.12);
+            transform: translateY(-2px);
+        }
+        html { scroll-behavior: smooth; }
+
+        .ai-insight {
+            margin-top: 10px;
+            padding: 8px 12px;
+            background-color: #f0f7ff;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #165DFF;
+            border-left: 3px solid #165DFF;
+        }
+        .file-input-wrapper { position: relative; overflow: hidden; display: inline-block; }
+        .file-input-wrapper input[type=file] {
+            position: absolute; left: 0; top: 0; opacity: 0;
+            width: 100%; height: 100%; cursor: pointer;
+        }
+        .status-badge {
+            display: inline-block; padding: 2px 12px; border-radius: 12px;
+            font-size: 12px; font-weight: 500;
+        }
+        .status-badge.loading { background: #e6f7ff; color: #1890ff; }
+        .status-badge.success { background: #f6ffed; color: #52c41a; }
+        .status-badge.error { background: #fff2f0; color: #ff4d4f; }
+        .status-badge.waiting { background: #fafafa; color: #999; }
+        .btn {
+            padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 500;
+            border: none; cursor: pointer; transition: all 0.2s;
+            display: inline-flex; align-items: center; gap: 4px;
+        }
+        .btn-primary { background: #165DFF; color: #fff; }
+        .btn-primary:hover { background: #0e4fd4; transform: translateY(-1px); }
+        .btn-success { background: #52C41A; color: #fff; }
+        .btn-success:hover { background: #44a816; transform: translateY(-1px); }
+        .btn-warning { background: #FAAD14; color: #fff; }
+        .btn-warning:hover { background: #d99a10; transform: translateY(-1px); }
+        .btn-outline { background: transparent; color: #165DFF; border: 1px solid #165DFF; }
+        .btn-outline:hover { background: #165DFF; color: #fff; }
+        .risk-level { transition: all 0.3s; }
+        .risk-level.active { transform: scale(1.03); box-shadow: 0 4px 16px rgba(0,0,0,0.15); border: 2px solid currentColor; }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-gray-700">
+    <!-- 顶部导航 -->
+    <nav class="bg-white sticky top-0 z-50 card-shadow">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="text-lg font-bold text-primary flex items-center gap-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2zm0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+                广东东软学院社交舆情分析系统
+            </div>
+            <div class="hidden md:flex gap-6 text-sm">
+                <a href="#overview" class="hover:text-primary transition-colors">数据总览</a>
+                <a href="#time" class="hover:text-primary transition-colors">时间规律</a>
+                <a href="#dimension" class="hover:text-primary transition-colors">维度舆情</a>
+                <a href="#sentiment" class="hover:text-primary transition-colors">情感深挖</a>
+                <a href="#content" class="hover:text-primary transition-colors">内容主题</a>
+                <a href="#user" class="hover:text-primary transition-colors">用户互动</a>
+                <a href="#platform" class="hover:text-primary transition-colors">平台对比</a>
+                <a href="#conclusion" class="hover:text-primary transition-colors">研究结论</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <!-- 数据管理面板 -->
+        <div class="bg-white rounded-lg p-5 card-shadow mb-8">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-lg font-bold text-dark flex items-center gap-2">
+                        <span>📁</span> 数据管理面板
+                    </h2>
+                    <div class="mt-1 text-sm text-gray-500">
+                        状态：<span id="statusEl" class="font-medium status-badge waiting">等待操作</span>
+                    </div>
+                    <div id="aiEngineTip" class="mt-1 text-xs text-gray-400"></div>
+                </div>
+                <div class="flex flex-wrap gap-3 items-center">
+                    <div class="file-input-wrapper">
+                        <button class="btn btn-outline text-sm">📤 选择爬虫JSON</button>
+                        <input type="file" id="fileInput" accept=".json">
+                    </div>
+                    <button onclick="uploadRawFile()" class="btn btn-primary text-sm">⬆️ 上传</button>
+                    <label class="flex items-center gap-1 text-xs text-gray-500 cursor-pointer" title="勾选后，本次上传会与上一批数据合并分析">
+                        <input type="checkbox" id="appendMode" class="cursor-pointer">
+                        合并上次数据
+                    </label>
+                    <button onclick="refreshAnalysisTask()" class="btn btn-success text-sm">🔄 刷新分析</button>
+                    <button onclick="resetExampleData()" class="btn btn-warning text-sm">🔙 恢复示例</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 核心指标卡片 -->
+        <div id="overview" class="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
+            <div class="bg-white rounded-lg p-4 card-shadow text-center">
+                <div id="cardTotal" class="text-2xl font-bold text-primary mb-1">--</div>
+                <div class="text-gray-500 text-xs">有效评论总数</div>
+            </div>
+            <div class="bg-white rounded-lg p-4 card-shadow text-center">
+                <div id="cardPosRate" class="text-2xl font-bold text-success mb-1">--</div>
+                <div class="text-gray-500 text-xs">正面评价占比</div>
+            </div>
+            <div class="bg-white rounded-lg p-4 card-shadow text-center">
+                <div id="cardNegRate" class="text-2xl font-bold text-danger mb-1">--</div>
+                <div class="text-gray-500 text-xs">负面评价占比</div>
+            </div>
+            <div class="bg-white rounded-lg p-4 card-shadow text-center">
+                <div id="cardDim" class="text-2xl font-bold text-warning mb-1">--</div>
+                <div class="text-gray-500 text-xs">核心分析维度</div>
+            </div>
+            <div class="bg-white rounded-lg p-4 card-shadow text-center">
+                <div id="cardPlatform" class="text-2xl font-bold text-purple mb-1">--</div>
+                <div class="text-gray-500 text-xs">覆盖社交平台</div>
+            </div>
+            <div class="bg-white rounded-lg p-4 card-shadow text-center">
+                <div id="cardLikeTotal" class="text-2xl font-bold text-primary mb-1">--</div>
+                <div class="text-gray-500 text-xs">累计互动点赞</div>
+            </div>
+        </div>
+
+        <!-- 模块一：基础数据总览 -->
+        <section class="mb-10">
+            <h2 class="text-xl font-bold text-dark mb-6 pl-4 border-l-4 border-primary">一、基础数据总览 · 描述性分析</h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-lg p-5 card-shadow">
+                    <h3 class="font-semibold mb-4 pb-2 border-b border-gray-100">平台数据分布</h3>
+                    <div id="platformPie" style="height: 240px;"></div>
+                    <div class="ai-insight">💡 AI辅助分析：<span id="insightPlatform">--</span></div>
+                </div>
+                <div class="bg-white rounded-lg p-5 card-shadow">
+                    <h3 class="font-semibold mb-4 pb-2 border-b border-gray-100">评论内容长度分布</h3>
+                    <div id="lenHist" style="height: 240px;"></div>
+                    <div class="ai-insight">💡 AI辅助分析：<span id="insightLength">--</span></div>
+                </div>
+                <div class="bg-white rounded-lg p-5 card-shadow">
+                    <h3 class="font-semibold mb-4 pb-2 border-b border-gray-100">评论点赞数分布特征</h3>
+                    <div id="likeBox" style="height: 240px;"></div>
+                    <div class="ai-insight">💡 AI辅助分析：<span id="insightLike">--</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 模块二：时间维度深度分析 -->
+        <section id="time" class="mb-10">
+            <h2 class="text-xl font-bold text-dark mb-6 pl-4 border-l-4 border-primary">二、时间维度深度分析 · 周期规律与峰值溯源</h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-lg p-5 card-shadow md:col-span-2">
+                    <h3 class="font-semibold mb-4 pb-2 border-b border-gray-100">月度评论热度变化趋势</h3>
+                    <div id="monthTrend" style="height: 280px;"></div>
+                    <div class="ai-insight">💡 AI辅助分析：<span id="insightMonth">--</span></div>
+                </div>
+                <div class="bg-white rounded-lg p-5 card-shadow">
+                    <h3 class="font-semibold mb-4 pb-2 border-b border-gray-100">舆情周期关键特征</h3>
+                    <div class="space-y-4 text-sm">
+                        <div class="p-3 bg-blue-50 rounded border-l-4 border-primary">
+                            <p class="font-semibold">📌 招生季峰值（6-8月）</p>
+                            <p class="text-gray-600 text-xs mt-1">高考志愿填报+新生入学季，评论量全年最高，以报考咨询、宿舍环境讨论为主。</p>
+                        </div>
+                        <div class="p-3 bg-orange-50 rounded border-l-4 border-warning">
+                            <p class="font-semibold">📌 开学季反弹（9月）</p>
+                            <p class="text-gray-600 text-xs mt-1">新生真实体验集中释放，食堂、军训相关负面舆情风险最高。</p>
+                        </div>
+                        <div class="p-3 bg-green-50 rounded border-l-4 border-success">
+                            <p class="font-semibold">📌 寒暑期低谷（1-2月）</p>
+                            <p class="text-gray-600 text-xs mt-1">学生离校后校园相关讨论量骤降，舆情风险最低，适合正向内容铺垫。</p>
+                        </div>
+                        <div class="p-3 bg-purple-50 rounded border-l-4 border-purple">
+                            <p class="font-semibold">📌 次高峰（3-4月）</p>
+                            <p class="text-gray-600 text-xs mt-1">春季招生咨询预热，专升本、春招相关讨论逐步升温。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg p-5 card-shadow mt-6">
+                <h3 class="font-bold text-dark mb-4">📊 时间趋势深度讨论</h3>
+                <div id="timeDiscussion" class="grid md:grid-cols-3 gap-6 text-sm"></div>
+            </div>
+            <div class="grid md:grid-cols-2 gap-6 mt-6">
+                <div class="bg-white rounded-lg p-5 card-shadow">
+                    <h3 class="font-semibold mb-4 pb-2 border-b border-gray-100">日内24小时用户活跃度</h3>
+                    <div id="hourTrend" style="height: 220px;"></div>
+                    <div class="ai-insight">💡 AI辅助分析：<span id="insightHour">--</span></div>
+                </div>
+                <div class="bg-white rounded-lg p-5 card-shadow">
+                    <h3 class="font-semibold mb-4 pb-2 border-b border-gray-100">周内评论量分布</h3>
+                    <div id="weekTrend" style="height: 220px;"></div>
+                    <div class="ai-insight">💡 AI辅助分析：<span id="insightWeek">--</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 模块三：舆情维度与情感分析 -->
+        <section id="dimension" class="mb-10">
+            <h2 class="text-xl font-bold text-dark mb-6 pl-4 border-l-4 border-primary">三、舆情维度与情感分析 · 内容语义层分析</h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-lg p-5 card-shadow">
+                    <h3 class="font-semibold mb-4 pb-2 border-b border-gray-100">七大维度讨论热度排行</h3>
+                    <div id="dimBar" style="height: 260px;"></div>
+                    <div class="ai-insight">💡 AI辅助分析：<span id="insightDimBar">--</span></div>
+                </div>
+                <div class="bg-white rounded-lg p-5 card-shadow">
+                    <h3 class="font-semibold mb-4 pb-2 border-b border-gray-100">各维度情感满意度雷达</h3>
+                    <div id="dimRadar" style="height: 260px;"></div>
+                    <div class="ai-insight">💡 AI辅助分析：<span id="insightDimRadar">--</span></div>
+                </div>
+                <div class="bg-white rounded-lg p-5 card-shadow">
+                    <h3 class="font-semibold mb-4 pb-2 border-b border-gray-100">整体情感倾向分布</h3>
+                    <div id="sentimentPie" style="height: 260px;"></div>
+                    <div class="ai-insight">💡 AI辅助分析：<span id="insightSentiment">--</span></div>
+                </div>
+            </div>
+            <div class="bg-blue-50 border border-blue-100 rounded-lg p-5 mt-6">
+                <h3 class="font-bold text-primary mb-3">📊 维度情感综合洞察</h3>
+                <div id="dimensionInsight" class="grid md:grid-cols-3 gap-6 text-sm"></div>
+            </div>
+        </section>
+
+        <!-- 模块四：情感深度挖掘 -->
+        <section id="sentiment" class="mb-10">
+            <h2 class="text-xl font-bold text-dark mb-6 pl-4 border-l-4 border-primary">四、情感深度挖掘 · 痛点定位与价值提炼</h2>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-white rounded-lg p-5 card-shadow">
+                    <h3 class="font-semibold mb-4 pb-2 border-b border-gray-100">负面评论原因帕累托分析</h3>
+                    <div id="negPareto" style="height: 300px;"></div>
+                    <div class="ai-insight">💡 AI辅助分析：<span id="insightPareto">--</span></div>
+                </div>
+                <div class="bg-white rounded-lg p-5 card-shadow">
+                    <h3 class="font-semibold mb-4 pb-2 border-b border-gray-100">正面评价核心卖点提及排行</h3>
+                    <div id="posBar" style="height: 300px;"></div>
+                    <div class="ai-insight">💡 AI辅助分析：<span id="insightPosBar">--</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 模块五：内容主题与词云 -->
+        <section id="content" class="mb-10">
+            <h2 class="text-xl font-bold text-dark mb-6 pl-4 border-l-4 border-primary">五、内容主题挖掘 · 词云与高频词分析</h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-lg p-5 card-shadow md:col-span-2">
+                    <h3 class="font-semibold mb-4 pb-2 border-b border-gray-100">全量评论高频关键词云</h3>
+                    <div id="wordCloud" style="height: 320px;"></div>
+                    <div class="ai-insight">💡 AI辅助分析：<span id="insightWordCloud">--</span></div>
+                </div>
+                <div class="bg-white rounded-lg p-5 card-shadow">
+                    <h3 class="font-semibold mb-4 pb-2 border-b border-gray-100">核心讨论主题占比</h3>
+                    <div id="topicPie" style="height: 320px;"></div>
+                </div>
+            </div>
+            <div class="bg-purple-50 border border-purple-100 rounded-lg p-5 mt-6">
+                <h3 class="font-bold text-purple-700 mb-3">🔍 高频词解读</h3>
+                <div id="keywordInterpretation" class="grid md:grid-cols-4 gap-4 text-sm"></div>
+            </div>
+        </section>
+
+        <!-- 模块六：用户与互动分析 -->
+        <section id="user" class="mb-10">
+            <h2 class="text-xl font-bold text-dark mb-6 pl-4 border-l-4 border-primary">六、用户与互动分析 · 关联层深度分析</h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-lg p-5 card-shadow">
+                    <h3 class="font-semibold mb-4 pb-2 border-b border-gray-100">不同情感评论平均点赞数</h3>
+                    <div id="sentLike" style="height: 260px;"></div>
+                    <div class="ai-insight">💡 AI辅助分析：<span id="insightSentLike">--</span></div>
+                </div>
+                <div class="bg-white rounded-lg p-5 card-shadow">
+                    <h3 class="font-semibold mb-4 pb-2 border-b border-gray-100">Top10 最高赞评论排行</h3>
+                    <div id="topLike" style="height: 260px;"></div>
+                </div>
+                <div class="bg-white rounded-lg p-5 card-shadow">
+                    <h3 class="font-semibold mb-4 pb-2 border-b border-gray-100">评论最活跃用户 Top10</h3>
+                    <div id="activeUser" style="height: 260px;"></div>
+                </div>
+            </div>
+
+            <!-- 高赞评论与活跃用户内容明细 -->
+            <div class="mt-6">
+                <div class="grid md:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-blue-50 border border-blue-100 rounded-lg p-5">
+                        <h4 class="font-bold text-primary mb-2">🔥 高赞评论主要在讲什么</h4>
+                        <p id="topLikeSummary" class="text-gray-700 text-sm leading-relaxed">--</p>
+                    </div>
+                    <div class="bg-green-50 border border-green-100 rounded-lg p-5">
+                        <h4 class="font-bold text-success mb-2">👤 最活跃用户大概在讲什么</h4>
+                        <p id="activeUserSummary" class="text-gray-700 text-sm leading-relaxed">--</p>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg p-5 card-shadow mb-6">
+                    <h3 class="font-semibold mb-4 pb-2 border-b border-gray-100">👍 点赞量最大的评论 Top10（原文）</h3>
+                    <div id="topLikeComments" class="space-y-3"></div>
+                </div>
+
+                <div class="bg-white rounded-lg p-5 card-shadow">
+                    <h3 class="font-semibold mb-4 pb-2 border-b border-gray-100">💬 评论最活跃用户 Top8（讲了些什么）</h3>
+                    <div id="activeUsers" class="grid md:grid-cols-2 gap-4"></div>
+                </div>
+            </div>
+
+            <div class="bg-yellow-50 border border-yellow-100 rounded-lg p-5 mt-6">
+                <h3 class="font-bold text-yellow-700 mb-3">👥 用户互动分析核心结论</h3>
+                <div id="userInsight" class="grid md:grid-cols-3 gap-6 text-sm"></div>
+            </div>
+        </section>
+
+        <!-- 模块七：双平台深度对比 -->
+        <section id="platform" class="mb-10">
+            <h2 id="sec-platform" class="text-xl font-bold text-dark mb-6 pl-4 border-l-4 border-primary">七、平台深度对比 · 差异化特征与运营策略</h2>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-white rounded-lg p-5 card-shadow">
+                    <h3 class="font-semibold mb-4 pb-2 border-b border-gray-100">平台维度指标对比雷达</h3>
+                    <div id="platRadar" style="height: 320px;"></div>
+                    <div class="ai-insight">💡 AI辅助分析：<span id="insightPlatCompare">--</span></div>
+                </div>
+                <div class="bg-white rounded-lg p-5 card-shadow">
+                    <h3 class="font-semibold mb-4 pb-2 border-b border-gray-100">平台特征总结与运营策略建议</h3>
+                    <div id="platformStrategy" class="space-y-4 text-sm"></div>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg p-5 card-shadow mt-6">
+                <h3 class="font-semibold mb-4 pb-2 border-b border-gray-100">各平台维度讨论量对比</h3>
+                <div id="platDimBar" style="height: 300px;"></div>
+            </div>
+        </section>
+
+        <!-- 模块八：总结与决策建议 -->
+        <section id="conclusion" class="mb-10">
+            <h2 class="text-xl font-bold text-dark mb-6 pl-4 border-l-4 border-primary">八、研究总结与决策建议 · 应用落地层</h2>
+            <div class="bg-white rounded-lg p-6 card-shadow">
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="font-bold text-dark text-lg mb-4">📌 核心研究结论</h3>
+                        <ol id="conclusions" class="space-y-3 text-sm text-gray-700 list-decimal pl-5"></ol>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-dark text-lg mb-4">💡 优化决策建议</h3>
+                        <div id="suggestions" class="space-y-3 text-sm text-gray-700"></div>
+                    </div>
+                </div>
+                <!-- 舆情风险预警分级 -->
+                <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+                    <h3 class="font-bold text-dark mb-1">⚠️ 舆情风险预警分级模型</h3>
+                    <div class="text-xs text-gray-500 mb-3">
+                        当前风险等级：
+                        <span id="riskBadge" class="font-bold text-primary">--</span>
+                        <span id="riskDetail" class="ml-1"></span>
+                    </div>
+                    <div class="grid md:grid-cols-3 gap-4 text-xs">
+                        <div id="riskL1" class="risk-level p-3 bg-green-100 rounded text-center text-green-700">
+                            <p class="font-bold">一级 · 低风险</p>
+                            <p class="text-gray-600 mt-1">单日负面评论＜5条，无百赞以上负面内容<br>响应：常规监控，无需干预</p>
+                        </div>
+                        <div id="riskL2" class="risk-level p-3 bg-yellow-100 rounded text-center text-yellow-700">
+                            <p class="font-bold">二级 · 中风险</p>
+                            <p class="text-gray-600 mt-1">单日负面5-20条，出现百赞级负面内容<br>响应：关注动态，准备回应口径，跟进源头</p>
+                        </div>
+                        <div id="riskL3" class="risk-level p-3 bg-red-100 rounded text-center text-red-700">
+                            <p class="font-bold">三级 · 高风险</p>
+                            <p class="text-gray-600 mt-1">单日负面＞20条，出现千赞以上负面爆款<br>响应：启动应急预案，官方介入回应，联动平台处理</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 text-xs text-gray-400">
+                    说明：页面图表数据由后端统计引擎实时计算；AI辅助分析与综合研判报告由 DeepSeek 大模型生成，仅作参考，完整舆情研判需结合全部图表人工复核。
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-gray-800 text-gray-400 py-6 text-center text-xs">
+        <p>广东东软学院社交舆情分析系统 | <span id="footerAiEngine">数据分析由 DeepSeek 大模型辅助</span></p>
+    </footer>
+
+    <script>
+        // ============================================================
+        // 1. 全局变量 & 图表实例管理
+        // ============================================================
+        const charts = [];
+        // 接口地址：先跟随当前页面地址（端口顺延也能用）；双击 index.html 打开时为空，
+        // 由 resolveBackend() 在 8000-8010 之间自动探测后端实际端口
+        let BASE_URL = (location.protocol === 'file:') ? "" : window.location.origin;
+        const statusEl = document.getElementById("statusEl");
+
+        const platformPie = echarts.init(document.getElementById('platformPie'));
+        const lenHist = echarts.init(document.getElementById('lenHist'));
+        const likeBox = echarts.init(document.getElementById('likeBox'));
+        const monthTrend = echarts.init(document.getElementById('monthTrend'));
+        const hourTrend = echarts.init(document.getElementById('hourTrend'));
+        const weekTrend = echarts.init(document.getElementById('weekTrend'));
+        const dimBar = echarts.init(document.getElementById('dimBar'));
+        const dimRadar = echarts.init(document.getElementById('dimRadar'));
+        const sentimentPie = echarts.init(document.getElementById('sentimentPie'));
+        const negPareto = echarts.init(document.getElementById('negPareto'));
+        const posBar = echarts.init(document.getElementById('posBar'));
+        const wordCloud = echarts.init(document.getElementById('wordCloud'));
+        const topicPie = echarts.init(document.getElementById('topicPie'));
+        const sentLike = echarts.init(document.getElementById('sentLike'));
+        const topLike = echarts.init(document.getElementById('topLike'));
+        const activeUser = echarts.init(document.getElementById('activeUser'));
+        const platRadar = echarts.init(document.getElementById('platRadar'));
+        const platDimBar = echarts.init(document.getElementById('platDimBar'));
+
+        charts.push(platformPie, lenHist, likeBox, monthTrend, hourTrend, weekTrend,
+            dimBar, dimRadar, sentimentPie, negPareto, posBar, wordCloud,
+            topicPie, sentLike, topLike, activeUser, platRadar, platDimBar);
+        window.addEventListener('resize', () => charts.forEach(c => c.resize()));
+
+        // ============================================================
+        // 2. 兜底内容（当后端未返回 AI 报告时使用）
+        // ============================================================
+        const DEFAULT_REPORT = {
+            timeDiscussion: [
+                { title: "周期规律成因", content: "舆情热度与高校招生、校历周期高度相关，志愿填报与开学季是流量高峰，考生、家长及在校生是核心参与群体；舆情波动本质是报考决策需求与在校真实体验的交替主导。" },
+                { title: "时段传播策略", content: "午间与晚间是用户活跃双高峰，符合学生作息规律；建议宣传内容优先在活跃高峰投放，答疑类内容在午间发布，可获得更高曝光与互动。" },
+                { title: "风险窗口期", content: "开学季前后是负面舆情高风险期，新生入学后的校园服务问题易集中爆发；需提前做好预案，在高峰时段增加监测频次并主动回应共性诉求。" }
+            ],
+            dimensionInsight: [
+                { title: "✅ 口碑长板", content: "校园硬件条件与生活服务是核心正向卖点，考生关注度高，适合作为招生宣传的核心抓手。" },
+                { title: "⚠️ 舆情短板", content: "餐饮相关负面占比相对最高，是需优先优化的痛点；物价、口味、选择少是集中吐槽点。" },
+                { title: "📈 提升空间", content: "招生报考与教学学业评价偏中性，正向感知不强，可通过强化就业优势与产教融合特色提升口碑。" }
+            ],
+            keywordInterpretation: [
+                { title: "🏠 生活类", content: "宿舍、上床下桌、空调、食堂等词高频出现，说明校园生活条件是考生与学生最关心的话题。" },
+                { title: "📚 报考类", content: "专业、学费、录取、分数线、新生等词高频出现，志愿填报期用户最关注报考信息。" },
+                { title: "📍 区位类", content: "校区、位置等词有一定提及，地理位置是择校参考因素之一，但整体讨论占比不高。" },
+                { title: "🎓 学业类", content: "老师、军训、专业等词体现新生对大学生活的期待与对比，学业压力相关讨论较少。" }
+            ],
+            userInsight: [
+                { title: "传播规律", content: "客观中立的讨论与经验分享更容易获得高赞，用户更认可实用信息；极端情绪化内容传播力反而有限。" },
+                { title: "意见领袖", content: "少数活跃用户贡献了较高比例的评论量，对舆情走向有明显引导作用，可重点维护正向活跃用户。" },
+                { title: "风险提示", content: "高赞评论传播量级可观，一旦出现高赞负面内容扩散速度极快，需建立常态化舆情监测响应机制。" }
+            ],
+            platformStrategy: {
+                douyin: { feature: "传播速度快、覆盖人群广、家长用户占比高", advantage: "招生政策科普、学校宣传触达范围广，爆款效应强", risk: "负面内容扩散速度快，容易形成刻板印象，舆情响应要求高", strategy: "重点投放招生类短视频，建立负面舆情快速响应机制" },
+                xiaohongshu: { feature: "种草属性强、用户以考生为主、信任度高、长尾效应明显", advantage: "就读体验、宿舍环境、校园生活类内容转化率高，口碑沉淀久", risk: "负面体验帖持续存在，长期影响报考决策，需定期维护", strategy: "引导在校生产出真实体验内容，打造校园生活种草矩阵" }
+            },
+            conclusions: [
+                "整体舆情健康平稳，负面占比处于低位，未出现大规模负面舆情事件，校园硬件条件是核心口碑优势。",
+                "舆情季节性明显，招生与开学季是热度最高峰，也是负面舆情高发期，需重点防控。",
+                "餐饮与网络相关问题是主要负面痛点，优先解决可有效降低负面舆情。",
+                "各平台用户特征存在差异，需针对不同平台做差异化运营。",
+                "用户互动呈现头部效应，少数高赞评论和活跃用户主导舆情走向，意见领袖作用明显。"
+            ],
+            suggestions: [
+                { category: "招生宣传", content: "强化核心硬件卖点，在招生季集中投放；抖音做政策科普、小红书做生活种草。" },
+                { category: "运营优化", content: "重点提升餐饮性价比并丰富选择，优化校园网络覆盖与速度，从根源降低负面舆情。" },
+                { category: "舆情管理", content: "建立招生季专项舆情监测机制，重点监控高赞内容，对高频负面问题主动回应。" },
+                { category: "用户运营", content: "培育正向校园KOC，引导在校生产出优质体验内容，对活跃吐槽用户跟进诉求。" }
+            ]
+        };
+
+        function esc(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
+        // ============================================================
+        // 3. 状态更新
+        // ============================================================
+        function setStatus(text, type) {
+            statusEl.textContent = text;
+            statusEl.className = 'font-medium status-badge ' + (type || 'waiting');
+        }
+
+        // ============================================================
+        // 3.5 后端地址探测
+        // 常见故障：①直接双击 index.html 打开，页面来自 file://，不知道该连哪个端口
+        //          ②8000 被占用，后端顺延到 8001/8002，但页面还写着 8000
+        // 这里改为逐个端口探测，找到真正在跑的后端
+        // ============================================================
+        function pingBackend(base, timeout = 1500) {
+            return new Promise((resolve) => {
+                const ctrl = new AbortController();
+                const timer = setTimeout(() => ctrl.abort(), timeout);
+                fetch(`${base}/api/data-source`, { signal: ctrl.signal })
+                    .then(r => { clearTimeout(timer); resolve(r.ok); })
+                    .catch(() => { clearTimeout(timer); resolve(false); });
+            });
+        }
+
+        async function resolveBackend() {
+            // 1) 页面本身由后端提供时，优先用同源地址
+            if (location.protocol !== 'file:' && await pingBackend(location.origin)) {
+                return location.origin;
+            }
+            // 2) 否则在 8000-8010 之间扫描
+            for (let p = 8000; p <= 8010; p++) {
+                const base = `http://127.0.0.1:${p}`;
+                if (await pingBackend(base, 900)) return base;
+            }
+            return null;
+        }
+
+        // ============================================================
+        // 4. 数据管理功能（上传 / 刷新 / 重置）
+        // ============================================================
+        async function uploadRawFile() {
+            const fileInput = document.getElementById('fileInput');
+            if (!fileInput.files[0]) { setStatus('⚠️ 请先选择JSON文件', 'error'); return; }
+            setStatus('⏳ 正在上传文件...', 'loading');
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            const appendEl = document.getElementById('appendMode');
+            if (appendEl && appendEl.checked) formData.append('append', '1');
+            try {
+                const res = await fetch(`${BASE_URL}/api/upload-raw`, { method: 'POST', body: formData });
+                const ret = await res.json();
+                if (ret.ok) {
+                    // 上传后不自动分析：由用户点击「刷新分析」自行触发
+                    fileInput.value = '';
+                    const ds = (ret.detail || [])
+                        .map(d => `${d.platform} ${d.count ?? '?'} 条`)
+                        .join(' + ') || `${ret.platform} ${ret.count} 条`;
+                    setStatus(`✅ 已上传「${ret.platform}」${ret.count} 条。本次数据集：${ds}，点击「🔄 刷新分析」开始分析`, 'success');
+                    await updateDataSourceBadge();
+                } else setStatus('❌ ' + ret.msg, 'error');
+            } catch (err) {
+                setStatus(`❌ 上传请求失败（地址：${BASE_URL}）。请确认「start.bat」窗口仍在运行`, 'error');
+                console.error(err);
+            }
+        }
+
+        async function refreshAnalysisTask() {
+            // 先确认数据来源：未上传新数据时不允许分析，避免"凭空刷出新图表"
+            let info = null;
+            try {
+                const r = await fetch(`${BASE_URL}/api/data-source`);
+                info = await r.json();
+            } catch (e) { info = null; }
+            if (!info) {
+                // 连不上后端：直接说清楚连的是哪个地址、该怎么恢复，避免笼统的"请检查后端"
+                setStatus(`❌ 无法连接后端服务（当前地址：${BASE_URL || '未确定'}）。`
+                    + '请双击项目根目录的「start.bat」启动后端，再刷新本页后重试', 'error');
+                return;
+            }
+            if (info && info.source === 'example') {
+                setStatus('⚠️ 当前展示的是原始示例数据集，请先上传 douyin_comments.json 或 xhs_comments.json，系统才会基于新数据生成图表与 AI 辅助分析', 'error');
+                return;
+            }
+
+            setStatus('🔄 正在执行舆情分析，请稍候...', 'loading');
+            try {
+                const resp = await fetch(`${BASE_URL}/api/refresh-analysis`, { method: 'POST' });
+                const ret = await resp.json();
+                if (ret.ok) {
+                    // 明确展示本次分析基于的数据量，避免"到底用没用上新数据"的困惑
+                    let tip = '✅ 分析完成';
+                    const st = ret.stats;
+                    if (st) {
+                        const p = st.platforms || {};
+                        const parts = Object.entries(p).map(([k, v]) => `${k} ${v} 条`).join('、') || '无有效数据';
+                        tip = `✅ 已基于上传数据完成分析：${parts}，有效评论 ${st.totalValid} 条`;
+                    }
+                    setStatus(tip + '，正在渲染全部图表与AI辅助分析', 'success');
+                    await loadRemoteData();
+                } else setStatus('⚠️ ' + ret.msg, 'error');
+            } catch (err) {
+                // 带上实际请求地址和原因，便于判断是"后端没起"还是"分析过程被中断"
+                setStatus(`❌ 分析请求失败（地址：${BASE_URL}）。可能原因：后端已退出、分析耗时过长被中断或端口变动。`
+                    + '请确认「start.bat」窗口仍在运行，刷新本页后重试', 'error');
+                console.error(err);
+            }
+        }
+
+        async function resetExampleData() {
+            setStatus('⏳ 正在切换回原始示例数据...', 'loading');
+            try {
+                const res = await fetch(`${BASE_URL}/api/reset-example`, { method: 'POST' });
+                const ret = await res.json();
+                if (ret.ok) {
+                    setStatus('✅ 已恢复原始示例数据，图表已刷新', 'success');
+                    await loadRemoteData();
+                }
+            } catch (err) {
+                setStatus('❌ 重置接口调用失败', 'error');
+                console.error(err);
+            }
+        }
+
+        // ============================================================
+        // 5. 数据加载
+        // ============================================================
+        async function loadRemoteData() {
+            try {
+                const res = await fetch(`${BASE_URL}/api/sentiment-data`);
+                if (!res.ok) { setStatus('⚠️ 暂无分析数据，请上传原始文件并刷新分析', 'error'); return; }
+                const data = await res.json();
+                renderDashboard(data);
+                await updateDataSourceBadge();
+            } catch (err) {
+                setStatus(`❌ 后端接口连接异常（地址：${BASE_URL}）。请确认「start.bat」窗口仍在运行，然后刷新本页`, 'error');
+                console.error(err);
+            }
+        }
+
+        // 展示当前页面用的到底是「原始示例数据」还是「已上传数据分析结果」
+        async function updateDataSourceBadge() {
+            try {
+                const res = await fetch(`${BASE_URL}/api/data-source`);
+                const info = await res.json();
+                if (info.source === 'uploaded') {
+                    const ds = (info.detail || []).map(d => `${d.platform} ${d.count ?? '?'} 条`).join(' + ');
+                    const ps = ds || (info.platforms || []).join('、') || '未知平台';
+                    setStatus(`✅ 当前展示：本次上传数据的分析结果（${ps}，分析于 ${info.analyzedAt || info.uploadedAt}）`, 'success');
+                } else if (info.source === 'pending') {
+                    const ds = (info.detail || []).map(d => `${d.platform} ${d.count ?? '?'} 条`).join(' + ');
+                    const ps = ds || (info.platforms || []).join('、') || '未知平台';
+                    setStatus(`⚠️ 已上传数据：${ps}（尚未分析），请点击「🔄 刷新分析」`, 'error');
+                } else {
+                    setStatus('📌 当前展示：原始示例数据集（尚未上传新数据，分析功能待启用）', 'waiting');
+                }
+            } catch (err) {
+                // 状态获取失败不影响主流程
+            }
+        }
+
+        // ============================================================
+        // 6. 核心渲染函数
+        // ============================================================
+        function renderDashboard(data) {
+            const defaultInsight = {
+                platform: '暂无分析', length: '暂无分析', like: '暂无分析', month: '暂无分析',
+                hour: '暂无分析', week: '暂无分析', dimensionBar: '暂无分析', dimensionRadar: '暂无分析',
+                sentimentPie: '暂无分析', pareto: '暂无分析', posBar: '暂无分析', wordCloud: '暂无分析',
+                sentLike: '暂无分析', platformCompare: '暂无分析'
+            };
+            const ins = Object.assign({}, defaultInsight, data.insights || {});
+            const ov = data.overview || {};
+            const ch = data.charts || {};
+
+            // 说明本次 AI 分析用的是在线大模型还是本地统计引擎
+            const aiTipEl = document.getElementById('aiEngineTip');
+            const isDeepSeek = data.aiEngine === 'deepseek';
+            if (aiTipEl) {
+                aiTipEl.textContent = isDeepSeek
+                    ? '🤖 AI 分析来源：DeepSeek 在线大模型 · 结论基于本次数据实时生成'
+                    : '🤖 AI 分析来源：本地统计引擎（未配置 DEEPSEEK_API_KEY）· 结论由本次数据实时计算生成';
+            }
+            const fNote = document.getElementById('footerAiNote');
+            if (fNote) {
+                fNote.textContent = isDeepSeek
+                    ? 'AI辅助分析与综合研判报告由 DeepSeek 大模型生成'
+                    : 'AI辅助分析与综合研判报告由本地统计引擎基于本次数据生成';
+            }
+            const fEngine = document.getElementById('footerAiEngine');
+            if (fEngine) {
+                fEngine.textContent = isDeepSeek
+                    ? '数据分析由 DeepSeek 大模型辅助'
+                    : '数据分析由本地统计引擎辅助';
+            }
+
+            // 顶部卡片
+            document.getElementById('cardTotal').innerText = ov.totalComment ?? '--';
+            document.getElementById('cardPosRate').innerText = ov.positiveRate ?? '--';
+            document.getElementById('cardNegRate').innerText = ov.negativeRate ?? '--';
+            document.getElementById('cardDim').innerText = ov.dimensions ?? '--';
+            const platCount = ov.platforms ? Object.keys(ov.platforms).length : '--';
+            document.getElementById('cardPlatform').innerText = platCount;
+            document.getElementById('cardLikeTotal').innerText = ov.totalLikes ?? '--';
+
+            // AI 洞察
+            document.getElementById('insightPlatform').innerText = ins.platform;
+            document.getElementById('insightLength').innerText = ins.length;
+            document.getElementById('insightLike').innerText = ins.like;
+            document.getElementById('insightMonth').innerText = ins.month;
+            document.getElementById('insightHour').innerText = ins.hour;
+            document.getElementById('insightWeek').innerText = ins.week;
+            document.getElementById('insightDimBar').innerText = ins.dimensionBar;
+            document.getElementById('insightDimRadar').innerText = ins.dimensionRadar;
+            document.getElementById('insightSentiment').innerText = ins.sentimentPie;
+            document.getElementById('insightPareto').innerText = ins.pareto;
+            document.getElementById('insightPosBar').innerText = ins.posBar;
+            document.getElementById('insightWordCloud').innerText = ins.wordCloud;
+            document.getElementById('insightSentLike').innerText = ins.sentLike;
+            document.getElementById('insightPlatCompare').innerText = ins.platformCompare;
+
+            // 所有图表
+            renderPlatformPie(ch.platformPie);
+            renderLenHist(ch.lenHist, ch.lenHistX);
+            renderLikeBox(ch.likeBox, ch.likeBoxX);
+            renderMonthTrend(ch.monthX, ch.monthTotal, ch.monthPositive, ch.monthNegative);
+            renderHourTrend(ch.hourX, ch.hourTrend);
+            renderWeekTrend(ch.weekX, ch.weekTrend);
+            renderDimBar(ch.dimX, ch.dimBar);
+            renderDimRadar(ch.platDimBarX, ch.dimRadarPositive, ch.dimRadarNegative);
+            renderSentimentPie(ch.sentimentPie);
+            renderNegPareto(ch.negParetoX, ch.negParetoBar, ch.negParetoLine);
+            renderPosBar(ch.posBarY, ch.posBar);
+            renderWordCloud(ch.wordCloud);
+            renderTopicPie(ch.topicPie);
+            renderSentLike(ch.sentLikeX, ch.sentLike);
+            renderTopLike(ch.topLikeY, ch.topLike);
+            renderActiveUser(ch.activeUserY, ch.activeUser);
+            renderPlatRadar(ch.platRadarIndicator, ch.platRadarDy, ch.platRadarXhs, ch.platCompareNames);
+            renderPlatDimBar(ch.platDimBarX, ch.platDimBarDy, ch.platDimBarXhs, ch.platCompareNames);
+
+            // 综合报告 + 风险预警
+            renderReport(data.report || DEFAULT_REPORT, Object.keys(ov.platforms || {}));
+            renderRisk(data.risk);
+            renderHotContent(data.hotContent);
+        }
+
+        // ============================================================
+        // 7. 综合报告渲染
+        // ============================================================
+        function renderReport(r, platforms) {
+            const report = Object.assign({}, DEFAULT_REPORT, r || {});
+            renderCardGroup('timeDiscussion', report.timeDiscussion, 'text-primary');
+            renderCardGroup('dimensionInsight', report.dimensionInsight, 'text-dark');
+            renderKeywordCards(report.keywordInterpretation);
+            renderCardGroup('userInsight', report.userInsight, 'text-dark');
+
+            // 平台策略（只展示本次数据里真实存在的平台）
+            const ps = report.platformStrategy || {};
+            const platMeta = {
+                douyin: { name: '抖音', icon: '📱', bg: 'bg-blue-50', color: 'text-primary' },
+                xiaohongshu: { name: '小红书', icon: '📕', bg: 'bg-red-50', color: 'text-danger' }
+            };
+            const nameToKey = { '抖音': 'douyin', '小红书': 'xiaohongshu' };
+            let allowKeys = null;
+            if (Array.isArray(platforms) && platforms.length) {
+                allowKeys = platforms.map(p => nameToKey[p]).filter(Boolean);
+            }
+            const blocks = Object.entries(ps)
+                .filter(([k, v]) => v && (v.feature || v.strategy))
+                .filter(([k]) => allowKeys === null || allowKeys.includes(k))
+                .map(([k, v]) => {
+                    const meta = platMeta[k] || { name: k, icon: '📊', bg: 'bg-gray-50', color: 'text-dark' };
+                    return `<div class="p-3 ${meta.bg} rounded-lg">
+                        <p class="font-bold ${meta.color} mb-2">${meta.icon} ${meta.name}平台</p>
+                        <ul class="text-gray-700 text-xs space-y-1">
+                            <li>• <b>特征：</b>${esc(v.feature)}</li>
+                            <li>• <b>优势：</b>${esc(v.advantage)}</li>
+                            <li>• <b>风险：</b>${esc(v.risk)}</li>
+                            <li>• <b>策略：</b>${esc(v.strategy)}</li>
+                        </ul>
+                    </div>`;
+                }).join('');
+            document.getElementById('platformStrategy').innerHTML =
+                blocks || '<p class="text-gray-500 text-xs">暂无平台策略（需先上传抖音或小红书的爬虫数据并分析）</p>';
+
+            // 核心结论
+            const conclusions = report.conclusions || [];
+            document.getElementById('conclusions').innerHTML = conclusions
+                .map(c => `<li>${esc(c)}</li>`).join('');
+
+            // 决策建议
+            const suggColor = { '招生宣传': 'text-success', '运营优化': 'text-warning', '舆情管理': 'text-danger', '用户运营': 'text-primary' };
+            const suggestions = report.suggestions || [];
+            document.getElementById('suggestions').innerHTML = suggestions
+                .map(s => `<div class="flex gap-2">
+                    <span class="font-bold flex-shrink-0 ${suggColor[s.category] || 'text-primary'}">${esc(s.category)}</span>
+                    <p>${esc(s.content)}</p>
+                </div>`).join('');
+        }
+
+        function renderCardGroup(elemId, items, titleColor) {
+            const el = document.getElementById(elemId);
+            if (!el) return;
+            if (!Array.isArray(items) || items.length === 0) { el.innerHTML = '<p class="text-gray-500">暂无分析</p>'; return; }
+            el.innerHTML = items.map(it => `
+                <div>
+                    <p class="font-semibold ${titleColor} mb-2">${esc(it.title)}</p>
+                    <p class="text-gray-600 leading-relaxed">${esc(it.content)}</p>
+                </div>`).join('');
+        }
+
+        function renderKeywordCards(items) {
+            const el = document.getElementById('keywordInterpretation');
+            if (!el) return;
+            if (!Array.isArray(items) || items.length === 0) { el.innerHTML = '<p class="text-gray-500">暂无分析</p>'; return; }
+            el.innerHTML = items.map(it => `
+                <div class="bg-white rounded p-3">
+                    <p class="font-semibold text-dark">${esc(it.title)}</p>
+                    <p class="text-gray-600 text-xs mt-1">${esc(it.content)}</p>
+                </div>`).join('');
+        }
+
+        function renderRisk(risk) {
+            if (!risk) { document.getElementById('riskBadge').innerText = '--'; return; }
+            const name = risk.levelName || '--';
+            const badge = document.getElementById('riskBadge');
+            badge.innerText = name;
+            badge.className = 'font-bold ' + (risk.level === 3 ? 'text-danger' : risk.level === 2 ? 'text-warning' : 'text-success');
+            document.getElementById('riskDetail').innerText =
+                `单日最多负面 ${risk.maxDailyNegative ?? 0} 条，负面最高赞 ${risk.maxNegativeLike ?? 0}，负面总计 ${risk.negativeTotal ?? 0} 条`;
+            // 高亮当前等级
+            ['riskL1', 'riskL2', 'riskL3'].forEach((id, i) => {
+                document.getElementById(id).classList.toggle('active', (i + 1) === risk.level);
+            });
+        }
+
+        function renderHotContent(hc) {
+            hc = hc || {};
+            const sentCls = s => s === '正面' ? 'bg-green-100 text-success' : s === '负面' ? 'bg-red-100 text-danger' : 'bg-gray-100 text-gray-600';
+            const platCls = p => p === '抖音' ? 'bg-blue-100 text-primary' : 'bg-red-50 text-danger';
+
+            // AI 总结
+            document.getElementById('topLikeSummary').innerText = hc.topLikeSummary || '暂无分析';
+            document.getElementById('activeUserSummary').innerText = hc.activeUserSummary || '暂无分析';
+
+            // 高赞评论列表
+            const likeEl = document.getElementById('topLikeComments');
+            const likes = hc.topLikeComments || [];
+            if (likes.length === 0) {
+                likeEl.innerHTML = '<p class="text-gray-500">暂无高赞评论数据</p>';
+            } else {
+                likeEl.innerHTML = likes.map((c, i) => `
+                    <div class="flex items-start gap-3 p-3 rounded-lg bg-gray-50">
+                        <span class="flex-shrink-0 w-7 h-7 rounded-full bg-primary text-white text-xs flex items-center justify-center font-bold">${i + 1}</span>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm text-gray-800 leading-relaxed">${esc(c.content)}</p>
+                            <div class="flex flex-wrap gap-2 mt-2">
+                                <span class="text-xs px-2 py-0.5 rounded ${sentCls(c.sentiment)}">${esc(c.sentiment)}</span>
+                                <span class="text-xs px-2 py-0.5 rounded ${platCls(c.platform)}">${esc(c.platform)}</span>
+                                <span class="text-xs px-2 py-0.5 rounded bg-orange-100 text-warning font-semibold">👍 ${c.like}</span>
+                                ${c.nickname ? `<span class="text-xs text-gray-400 self-center">@${esc(c.nickname)}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>`).join('');
+            }
+
+            // 活跃用户列表
+            const userEl = document.getElementById('activeUsers');
+            const users = hc.activeUsers || [];
+            if (users.length === 0) {
+                userEl.innerHTML = '<p class="text-gray-500">暂无活跃用户数据</p>';
+            } else {
+                userEl.innerHTML = users.map(u => {
+                    const comments = (u.comments || []).map(c => `<p class="text-xs text-gray-600 leading-relaxed pl-2 border-l-2 border-gray-200">${esc(c)}</p>`).join('');
+                    return `<div class="p-3 rounded-lg bg-gray-50">
+                        <div class="flex items-center justify-between mb-2">
+                            <p class="font-semibold text-gray-800 truncate">${esc(u.nickname)}</p>
+                            <span class="flex-shrink-0 text-xs px-2 py-0.5 rounded bg-primary text-white font-semibold">${u.count} 条评论</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mb-2">
+                            <span class="text-xs px-2 py-0.5 rounded ${sentCls(u.sentiment)}">${esc(u.sentiment)}</span>
+                            ${u.platform ? `<span class="text-xs text-gray-400 self-center">${esc(u.platform)}</span>` : ''}
+                        </div>
+                        <div class="space-y-1">${comments}</div>
+                    </div>`;
+                }).join('');
+            }
+        }
+
+        // ============================================================
+        // 8. 各图表渲染函数
+        // ============================================================
+        function renderPlatformPie(data) {
+            platformPie.setOption({
+                tooltip: { trigger: 'item', formatter: '{b}: {c}条 ({d}%)' },
+                legend: { bottom: 0, itemWidth: 10, itemHeight: 10 },
+                color: ['#165DFF', '#F5222D'],
+                series: [{
+                    name: '评论量', type: 'pie', radius: ['50%', '75%'], center: ['50%', '45%'],
+                    itemStyle: { borderRadius: 4, borderColor: '#fff', borderWidth: 2 },
+                    label: { show: false },
+                    emphasis: { label: { show: true, fontSize: 14, fontWeight: 'bold' } },
+                    data: data || []
+                }]
+            });
+        }
+
+        function renderLenHist(data, xLabels) {
+            lenHist.setOption({
+                tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+                grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+                xAxis: { type: 'category', data: xLabels || ['1-10字', '11-30字', '31-50字', '51-100字', '100字以上'], axisLabel: { fontSize: 10 } },
+                yAxis: { type: 'value', splitLine: { show: true, lineStyle: { color: "#e8ebf0" } } },
+                series: [{
+                    type: 'bar', barWidth: '60%',
+                    itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: '#36CFC9' }, { offset: 1, color: '#165DFF' }]), borderRadius: [4, 4, 0, 0] },
+                    data: data || []
+                }]
+            });
+        }
+
+        function renderLikeBox(data, xLabels) {
+            likeBox.setOption({
+                tooltip: { trigger: 'item', formatter: '{b}<br/>最小值: {c[0]}<br/>下四分位: {c[1]}<br/>中位数: {c[2]}<br/>上四分位: {c[3]}<br/>最大值: {c[4]}' },
+                grid: { left: '12%', right: '10%', bottom: '10%', top: '5%' },
+                xAxis: { type: 'category', data: xLabels || ['抖音', '小红书'], axisLabel: { fontSize: 11 } },
+                yAxis: { type: 'log', name: '点赞数（对数轴）', nameTextStyle: { fontSize: 10 }, min: 1, axisLabel: { fontSize: 10 }, splitLine: { show: true, lineStyle: { color: "#e8ebf0" } } },
+                series: [{
+                    name: '点赞分布', type: 'boxplot',
+                    itemStyle: { color: '#165DFF', borderColor: '#165DFF' },
+                    data: data || [[1, 2, 8, 45, 64372], [1, 1, 3, 12, 2890]],
+                    markPoint: { data: [{ type: 'max', name: '最高值' }], itemStyle: { color: '#F5222D' } }
+                }]
+            });
+        }
+
+        function renderMonthTrend(xLabels, total, positive, negative) {
+            monthTrend.setOption({
+                tooltip: { trigger: 'axis' },
+                legend: { top: 0, itemWidth: 10, itemHeight: 10 },
+                grid: { left: '3%', right: '4%', bottom: '12%', containLabel: true },
+                xAxis: { type: 'category', boundaryGap: false, data: xLabels || [], axisLabel: { fontSize: 11 } },
+                yAxis: { type: 'value', name: '评论数量', splitLine: { show: true, lineStyle: { color: "#e8ebf0" } } },
+                series: [{
+                    name: '全部评论', type: 'line', smooth: true, symbol: 'circle', symbolSize: 6,
+                    lineStyle: { width: 2, color: '#165DFF' }, itemStyle: { color: '#165DFF' },
+                    areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(22,93,255,0.3)' }, { offset: 1, color: 'rgba(22,93,255,0.05)' }]) },
+                    data: total || []
+                }, {
+                    name: '正面评论', type: 'line', smooth: true, symbol: 'circle', symbolSize: 5,
+                    lineStyle: { width: 1.5, color: '#52C41A' }, itemStyle: { color: '#52C41A' },
+                    data: positive || []
+                }, {
+                    name: '负面评论', type: 'line', smooth: true, symbol: 'circle', symbolSize: 5,
+                    lineStyle: { width: 1.5, color: '#F5222D' }, itemStyle: { color: '#F5222D' },
+                    data: negative || []
+                }]
+            });
+        }
+
+        function renderHourTrend(xLabels, data) {
+            hourTrend.setOption({
+                tooltip: { trigger: 'axis' },
+                grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+                xAxis: { type: 'category', data: xLabels || [], axisLabel: { fontSize: 10 } },
+                yAxis: { type: 'value', splitLine: { show: true, lineStyle: { color: "#e8ebf0" } } },
+                series: [{
+                    type: 'line', smooth: true,
+                    areaStyle: { color: 'rgba(54, 207, 201, 0.2)' },
+                    lineStyle: { color: '#36CFC9', width: 2 }, itemStyle: { color: '#36CFC9' },
+                    data: data || []
+                }]
+            });
+        }
+
+        function renderWeekTrend(xLabels, data) {
+            weekTrend.setOption({
+                tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+                grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+                xAxis: { type: 'category', data: xLabels || ['周一', '周二', '周三', '周四', '周五', '周六', '周日'], axisLabel: { fontSize: 11 } },
+                yAxis: { type: 'value', splitLine: { show: true, lineStyle: { color: "#e8ebf0" } } },
+                series: [{
+                    type: 'bar', barWidth: '50%',
+                    itemStyle: {
+                        color: function (params) { const h = [0, 3, 4]; return h.includes(params.dataIndex) ? '#165DFF' : '#94a3b8'; },
+                        borderRadius: [4, 4, 0, 0]
+                    },
+                    data: data || []
+                }]
+            });
+        }
+
+        function renderDimBar(xLabels, data) {
+            dimBar.setOption({
+                tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+                grid: { left: '3%', right: '4%', bottom: '15%', containLabel: true },
+                xAxis: { type: 'category', data: xLabels || [], axisLabel: { interval: 0, fontSize: 10, rotate: 20 } },
+                yAxis: { type: 'value', splitLine: { show: true, lineStyle: { color: "#e8ebf0" } } },
+                series: [{
+                    name: '评论数', type: 'bar', barWidth: '55%',
+                    itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: '#165DFF' }, { offset: 1, color: '#36CFC9' }]), borderRadius: [4, 4, 0, 0] },
+                    data: data || []
+                }]
+            });
+        }
+
+        function renderDimRadar(dimNames, posData, negData) {
+            const indicators = (dimNames || []).map(name => ({ name, max: 50 }));
+            dimRadar.setOption({
+                tooltip: {},
+                legend: { bottom: 0, itemWidth: 10, itemHeight: 10 },
+                radar: { indicator: indicators, radius: '65%', axisName: { fontSize: 10 } },
+                series: [{
+                    type: 'radar',
+                    data: [
+                        { value: posData || [], name: '正面占比(%)', itemStyle: { color: '#52C41A' }, areaStyle: { color: 'rgba(82,196,26,0.2)' } },
+                        { value: negData || [], name: '负面占比(%)', itemStyle: { color: '#F5222D' }, areaStyle: { color: 'rgba(245,34,45,0.2)' } }
+                    ]
+                }]
+            });
+        }
+
+        function renderSentimentPie(data) {
+            sentimentPie.setOption({
+                tooltip: { trigger: 'item', formatter: '{b}: {c}条 ({d}%)' },
+                legend: { bottom: 0 },
+                color: ['#52C41A', '#FAAD14', '#F5222D'],
+                series: [{
+                    name: '情感分布', type: 'pie', radius: '65%', center: ['50%', '45%'],
+                    itemStyle: { borderRadius: 4, borderColor: '#fff', borderWidth: 2 },
+                    label: { formatter: '{b}\n{d}%', fontSize: 11 },
+                    data: data || []
+                }]
+            });
+        }
+
+        function renderNegPareto(xLabels, barData, lineData) {
+            negPareto.setOption({
+                tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+                legend: { top: 0 },
+                grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+                xAxis: { type: 'category', data: xLabels || [], axisLabel: { interval: 0, fontSize: 9, rotate: 15 } },
+                yAxis: [
+                    { type: 'value', name: '评论数量', splitLine: { show: true, lineStyle: { color: "#e8ebf0" } } },
+                    { type: 'value', name: '累计占比(%)', max: 100, axisLabel: { formatter: '{value}%' } }
+                ],
+                series: [
+                    { name: '负面评论数', type: 'bar', barWidth: '40%', itemStyle: { color: '#F5222D', borderRadius: [4, 4, 0, 0] }, data: barData || [] },
+                    { name: '累计占比', type: 'line', yAxisIndex: 1, smooth: true, itemStyle: { color: '#165DFF' }, lineStyle: { width: 2 }, data: lineData || [] }
+                ]
+            });
+        }
+
+        function renderPosBar(yLabels, data) {
+            posBar.setOption({
+                tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: '{b}: {c}次' },
+                grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+                xAxis: { type: 'value', splitLine: { show: true, lineStyle: { color: "#e8ebf0" } } },
+                yAxis: { type: 'category', data: yLabels || [], axisLabel: { fontSize: 10 } },
+                series: [{
+                    type: 'bar', barWidth: '55%',
+                    itemStyle: { color: new echarts.graphic.LinearGradient(1, 0, 0, 0, [{ offset: 0, color: '#36CFC9' }, { offset: 1, color: '#52C41A' }]), borderRadius: [0, 4, 4, 0] },
+                    label: { show: true, position: 'right', fontSize: 10, formatter: '{c}次' },
+                    data: data || []
+                }]
+            });
+        }
+
+        function renderWordCloud(data) {
+            wordCloud.setOption({
+                tooltip: { formatter: '{b}: {c}' },
+                series: [{
+                    type: 'wordCloud', shape: 'circle', gridSize: 8, sizeRange: [12, 60],
+                    rotationRange: [-30, 30], drawOutOfBound: false,
+                    textStyle: {
+                        fontWeight: 'bold',
+                        color: function () { const c = ['#165DFF', '#36CFC9', '#722ED1', '#F5222D', '#FAAD14', '#52C41A']; return c[Math.floor(Math.random() * c.length)]; }
+                    },
+                    emphasis: { textStyle: { shadowBlur: 10, shadowColor: 'rgba(0,0,0,0.3)' } },
+                    data: data || []
+                }]
+            });
+        }
+
+        function renderTopicPie(data) {
+            topicPie.setOption({
+                tooltip: { trigger: 'item', formatter: '{b}: {d}%' },
+                legend: { bottom: 0 },
+                color: ['#165DFF', '#52C41A', '#FAAD14', '#722ED1'],
+                series: [{
+                    name: '主题占比', type: 'pie', radius: ['40%', '70%'], center: ['50%', '45%'],
+                    itemStyle: { borderRadius: 4, borderColor: '#fff', borderWidth: 2 },
+                    label: { formatter: '{b}\n{d}%', fontSize: 10 },
+                    data: data || []
+                }]
+            });
+        }
+
+        function renderSentLike(xLabels, data) {
+            sentLike.setOption({
+                tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: '{b}: {c}' },
+                grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+                xAxis: { type: 'category', data: xLabels || ['正面', '中性', '负面'], axisLabel: { fontSize: 11 } },
+                yAxis: { type: 'value', name: '平均点赞', splitLine: { show: true, lineStyle: { color: "#e8ebf0" } } },
+                series: [{
+                    type: 'bar', barWidth: '45%',
+                    itemStyle: { color: function (params) { return ['#52C41A', '#FAAD14', '#F5222D'][params.dataIndex]; }, borderRadius: [4, 4, 0, 0] },
+                    label: { show: true, position: 'top', fontSize: 10 },
+                    data: data || []
+                }]
+            });
+        }
+
+        function renderTopLike(yLabels, data) {
+            topLike.setOption({
+                tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+                grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+                xAxis: { type: 'value', splitLine: { show: true, lineStyle: { color: "#e8ebf0" } } },
+                yAxis: { type: 'category', data: yLabels || [], axisLabel: { show: false } },
+                series: [{
+                    type: 'bar', barWidth: '60%',
+                    itemStyle: { color: new echarts.graphic.LinearGradient(1, 0, 0, 0, [{ offset: 0, color: '#722ED1' }, { offset: 1, color: '#165DFF' }]), borderRadius: [0, 4, 4, 0] },
+                    data: data || []
+                }]
+            });
+        }
+
+        function renderActiveUser(yLabels, data) {
+            activeUser.setOption({
+                tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+                grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+                xAxis: { type: 'value', name: '评论数量', splitLine: { show: true, lineStyle: { color: "#e8ebf0" } } },
+                yAxis: { type: 'category', data: yLabels || [], axisLabel: { show: false } },
+                series: [{
+                    type: 'bar', barWidth: '55%',
+                    itemStyle: { color: new echarts.graphic.LinearGradient(1, 0, 0, 0, [{ offset: 0, color: '#36CFC9' }, { offset: 1, color: '#165DFF' }]), borderRadius: [0, 4, 4, 0] },
+                    data: data || []
+                }]
+            });
+        }
+
+        function renderPlatRadar(indicator, dyData, xhsData, names) {
+            // 系列跟随本次实际上传的平台：只有抖音就只画抖音，不补一个假的第二平台
+            const list = (Array.isArray(names) && names.length) ? names : ['抖音', '小红书'];
+            const colors = ['#165DFF', '#F5222D', '#00B42A', '#FF7D00'];
+            const areas = ['rgba(22,93,255,0.2)', 'rgba(245,34,45,0.2)', 'rgba(0,180,42,0.2)', 'rgba(255,125,0,0.2)'];
+            const data = list.map((n, i) => ({
+                value: i === 0 ? (dyData || []) : (xhsData || []),
+                name: n,
+                itemStyle: { color: colors[i % 4] },
+                areaStyle: { color: areas[i % 4] }
+            }));
+            platRadar.clear();
+            platRadar.setOption({
+                tooltip: {},
+                legend: { bottom: 0 },
+                radar: { indicator: indicator || [], radius: '65%', axisName: { fontSize: 10 } },
+                series: [{ type: 'radar', data: data }]
+            }, true);
+        }
+
+        function renderPlatDimBar(xLabels, dyData, xhsData, names) {
+            const list = (Array.isArray(names) && names.length) ? names : ['抖音', '小红书'];
+            const colors = ['#165DFF', '#F5222D', '#00B42A', '#FF7D00'];
+            const series = list.map((n, i) => ({
+                name: n,
+                type: 'bar',
+                barWidth: list.length > 1 ? '30%' : '16%',
+                itemStyle: { color: colors[i % 4], borderRadius: [3, 3, 0, 0] },
+                data: i === 0 ? (dyData || []) : (xhsData || [])
+            }));
+            platDimBar.clear();
+            platDimBar.setOption({
+                tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+                legend: { top: 0 },
+                grid: { left: '3%', right: '4%', bottom: '15%', containLabel: true },
+                xAxis: { type: 'category', data: xLabels || [], axisLabel: { interval: 0, fontSize: 10, rotate: 20 } },
+                yAxis: { type: 'value', splitLine: { show: true, lineStyle: { color: "#e8ebf0" } } },
+                series: series
+            }, true);
+        }
+
+        // ============================================================
+        // 9. 页面初始化
+        // ============================================================
+        window.onload = async function () {
+            setStatus('⏳ 正在连接后端服务...', 'loading');
+            const base = await resolveBackend();
+            if (!base) {
+                const viaFile = location.protocol === 'file:';
+                setStatus(
+                    (viaFile ? '❌ 未检测到后端服务：当前是直接打开的文件（file://）。' : '❌ 未检测到后端服务（已自动尝试 8000-8010 端口）。')
+                    + '请双击项目根目录的「start.bat」启动后端，再刷新本页', 'error');
+                return;
+            }
+            BASE_URL = base;
+            await loadRemoteData();
+        };
+    </script>
+</body>
+</html>
