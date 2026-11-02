@@ -1,9 +1,45 @@
 # 推送到 GitHub 的完整步骤
 
-> 本文档对应仓库当前状态：分支 `main`、**27 次提交**、107 个跟踪文件、工作区干净、尚未配置远程仓库。
-> 按顺序做完前四步即可上线；第五节是出错时的对照表，第六节是公开前的安全清单。
+> 本文档对应仓库当前状态：分支 `main`、工作区干净、
+> 远程已配置为 `git@github.com:TGY-666/campuspulse.git`（SSH，非 HTTPS）。
+> 提交数以 `git log --oneline` 为准（主体为按数据流向组织的 27 次提交，其后为文档维护提交）。
+>
+> 第五节是出错时的对照表，第六节是公开前的安全清单。**本机请直接看附录 A。**
 
 ---
+
+## ⚠️ 本机实测结论（先读这段，别照着网页版教程走）
+
+在**这台机器上实测**，GitHub 官方推荐的 HTTPS 方式走不通，原因不是网络不通，而是：
+
+| 环节 | 实测结果 | 结论 |
+|---|---|---|
+| TCP 到 github.com:443 | 通 | 网络没问题 |
+| HTTPS 握手（schannel） | `CRYPT_E_NO_REVOCATION_CHECK` | 系统无法访问证书吊销服务器 |
+| HTTPS 握手（openssl，自带 CA） | `unable to get local issuer certificate` | 存在 **SSL 拦截**（校园网/安全软件的证书代理） |
+| HTTPS + 下载最新 CA 包 | 仍然 `unable to get local issuer certificate` | 拦截证书不在公共 CA 列表里，换 CA 包无效 |
+| github.com:22 | `Connection refused` | SSH 默认端口被封 |
+| **ssh.github.com:443** | **通，握手成功** | ✅ 可用 |
+
+所以本机采用 **SSH over 443**：GitHub 官方为此类网络提供的备用通道，
+既绕开了证书拦截，又不像 `http.sslVerify=false` 那样放弃证书校验。
+
+> 如果你换到能正常访问 GitHub 的网络（如手机热点），HTTPS 方式也能用，
+> 见第三节。两种方式不冲突。
+
+### 本机已经配置好的东西
+
+| 项目 | 状态 |
+|---|---|
+| SSH 密钥 | `C:\Users\24841\.ssh\id_ed25519`（ed25519，无口令） |
+| SSH 配置 | `C:\Users\24841\.ssh\config` 已把 `github.com` 指向 `ssh.github.com:443` |
+| 远程地址 | `origin` → `git@github.com:TGY-666/campuspulse.git` |
+| 一键推送脚本 | 项目根目录 `推送GitHub.bat`（双击即可，已加入 `.gitignore`） |
+
+**唯一还需要人做的一步：把公钥登记到 GitHub。** 见附录 A。
+
+---
+
 
 ## 零、推送前先确认当前状态
 
@@ -51,7 +87,10 @@ https://github.com/<你的GitHub用户名>/campuspulse.git
 
 ---
 
-## 二、关联远程仓库并推送
+## 二、关联远程仓库并推送（HTTPS 方式）
+
+> **本机不要用这一节**，改用附录 A 的 SSH 方式。这一节保留给「能正常访问 GitHub、
+> 证书无拦截」的环境（例如手机热点、家里的宽带）。
 
 ```bash
 cd /e/舆情分析YM
@@ -298,3 +337,106 @@ git push -u gitee main
 
 GitHub 仓库 → Settings → 最下方 **Danger Zone → Delete this repository**。
 本地不用动，重新建空仓库后再次 `git remote set-url origin <新地址>` 即可，提交历史都在本地。
+
+---
+
+# 附录 A：SSH over 443（本机实际采用的方案）
+
+## A.1 把公钥登记到 GitHub（唯一需要人工操作的一步）
+
+公钥已经生成好，内容如下（整行复制，包括开头的 `ssh-ed25519` 和结尾的注释）：
+
+```
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINK4iKD8p/tFNIlkft5eLmwWJQzYlSD8H3qhb4+oY87R TGY-666-campuspulse
+```
+
+操作步骤：
+
+1. 浏览器打开 **https://github.com/settings/ssh/new**
+2. **Title** 填 `campuspulse`（随便起，只为日后识别）
+3. **Key type** 保持 `Authentication Key`
+4. **Key** 框里粘贴上面那一整行
+   - 必须以 `ssh-ed25519` 开头
+   - 中间不能有换行，末尾不要多敲空格
+5. 点 **Add SSH key**，可能会要求输入 GitHub 密码确认
+
+## A.2 验证是否生效
+
+```bash
+ssh -T git@github.com
+```
+
+成功的输出是：
+
+```
+Hi TGY-666! You've successfully authenticated, but GitHub does not provide shell access.
+```
+
+> 看到 `does not provide shell access` 是正常的，GitHub 不提供交互式 shell，这句话恰恰说明认证通过了。
+>
+> 如果仍是 `Permission denied (publickey)`，说明公钥没粘对或没保存成功，回 A.1 重来。
+
+## A.3 推送
+
+两个办法，选一个：
+
+**办法一：双击脚本（推荐，不用敲命令）**
+
+在文件资源管理器里打开 `E:\舆情分析YM`，双击 **`推送GitHub.bat`**。
+它会自动配好 Git 环境、显示远程地址、执行推送，最后停住让你看结果。
+
+**办法二：命令行**
+
+```bash
+cd /e/舆情分析YM
+git push -u origin main
+```
+
+成功标志：
+
+```
+* [new branch]      main -> main
+branch 'main' set up to track 'origin/main'.
+```
+
+## A.4 为什么本机要这么折腾
+
+| 方案 | 结果 | 评价 |
+|---|---|---|
+| HTTPS + 系统证书（schannel） | `CRYPT_E_NO_REVOCATION_CHECK` | 吊销检查被网络阻断 |
+| HTTPS + 自带 CA 包 | `unable to get local issuer certificate` | 存在 SSL 拦截 |
+| HTTPS + 下载最新公共 CA 包 | 同上 | 拦截证书不在公共列表，换包无效 |
+| HTTPS + `http.sslVerify=false` | ✅ 可用 | **但等于不验证服务器身份**，不采用 |
+| SSH 默认端口 22 | `Connection refused` | 端口被封 |
+| **SSH over 443** | ✅ 可用 | **采用**，安全性不打折 |
+
+`http.sslVerify=false` 虽然能让 HTTPS 通，但它关掉的是"确认对面真的是 GitHub"这一步。
+在存在 SSL 拦截的网络里，这恰恰是最不该关的开关。SSH 用的是密钥对和主机指纹，
+不依赖 CA 体系，所以既绕开了问题，也没有降低安全性。
+
+## A.5 换电脑或重装系统后怎么恢复
+
+私钥在 `C:\Users\24841\.ssh\id_ed25519`，公钥是 `.pub`。
+**这个私钥不要提交、不要外发**（`.gitignore` 里没有它，因为它在项目目录之外，本来就进不了仓库）。
+
+换机器时重新生成一对，把新公钥重复 A.1 即可：
+
+```bash
+ssh-keygen -t ed25519 -C "TGY-666-campuspulse" -f "C:/Users/24841/.ssh/id_ed25519" -N ""
+```
+
+然后确认 `C:\Users\24841\.ssh\config` 里有这段：
+
+```
+Host github.com
+    HostName ssh.github.com
+    Port 443
+    User git
+    IdentityFile C:/Users/24841/.ssh/id_ed25519
+    IdentitiesOnly yes
+    StrictHostKeyChecking accept-new
+```
+
+> `HostName ssh.github.com` + `Port 443` 这两行是关键：让 `git@github.com` 打头的地址
+> 实际连到 443 端口，绕开被封的 22 端口。
+

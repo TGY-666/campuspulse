@@ -42,6 +42,9 @@ screenshots/
 # ---- 本地工具工作目录（记忆 / 缓存 / 备份，46MB）----
 .workbuddy/
 
+# ---- 本机专用脚本（含本机绝对路径，换机器需重建）----
+推送GitHub.bat
+
 # ---- 系统文件 ----
 .DS_Store
 Thumbs.db
