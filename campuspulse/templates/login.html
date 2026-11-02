@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#F7F9FC" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0B1220" media="(prefers-color-scheme: dark)">
+    <title>登录 · CampusPulse</title>
+    <script>
+        /* 与 base.html 同一段逻辑：主题必须在首帧前定下来，否则会闪白底 */
+        (function () {
+            try {
+                var t = localStorage.getItem('cp-theme');
+                if (t !== 'dark' && t !== 'light') {
+                    t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
+                        ? 'dark' : 'light';
+                }
+                document.documentElement.setAttribute('data-theme', t);
+            } catch (e) {
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+    </script>
+    <link rel="stylesheet" href="{{ static_url('cp/app.css') }}">
+    <link rel="stylesheet" href="{{ static_url('cp/login.css') }}">
+</head>
+<body class="login-body">
+<div class="login-wrap">
+
+    <section class="login-brand">
+        <div class="brand-mark">CP</div>
+        <h1>CampusPulse</h1>
+        <p class="sub">高校舆情智能洞察与分析平台</p>
+        <ul class="login-points">
+            <li>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                <span>25,699 条真实公开评论，口径可复算</span>
+            </li>
+            <li>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                <span>AI 给出的每个数字都能点回原文</span>
+            </li>
+            <li>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                <span>数据不出校，单文件可迁移</span>
+            </li>
+        </ul>
+    </section>
+
+    <section class="login-panel">
+        <h2>登录</h2>
+        <p class="hint">请使用管理员分配的账号登录</p>
+
+        <form id="loginForm" novalidate>
+            <div class="login-field">
+                <label for="username">账号</label>
+                <input type="text" id="username" name="username" autocomplete="username"
+                       placeholder="请输入账号" required autofocus>
+            </div>
+
+            <div class="login-field" style="margin-top:12px">
+                <label for="password">密码</label>
+                <input type="password" id="password" name="password"
+                       autocomplete="current-password" placeholder="请输入密码" required>
+            </div>
+
+            <div class="login-row" style="margin-top:16px">
+                <label class="login-check">
+                    <input type="checkbox" id="remember">
+                    <span>记住我（30 天）</span>
+                </label>
+                <button type="submit" class="login-btn" id="loginBtn">登录</button>
+            </div>
+
+            <p class="login-err" id="loginErr" hidden></p>
+        </form>
+
+        {% if dev %}
+        <p class="login-dev">
+            开发模式：初始管理员密码见 <code>data/initial_admin.txt</code>
+        </p>
+        {% endif %}
+
+        <p class="login-foot">
+            CampusPulse v{{ version }} · 数据仅用于教学与研究，不对外提供
+        </p>
+    </section>
+</div>
+
+<input type="hidden" id="nextPath" value="{{ next }}">
+<script src="{{ static_url('cp/auth.js') }}"></script>
+</body>
+</html>

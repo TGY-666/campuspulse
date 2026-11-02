@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}数据与报告中心{% endblock %}
+{% block page_title %}数据与报告中心{% endblock %}
+{% block page_sub %}数据集切换、导入清洗、质量核验与 AI 综合报告{% endblock %}
+
+{% block content %}
+<div class="grid g-2-1">
+    <div class="card">
+        <div class="card-head">
+            <div><div class="card-title">数据集</div>
+                <div class="card-sub">切换后所有页面与 AI 查询都会使用同一数据集</div></div>
+            <div class="card-tools">
+                <button class="btn btn-sm" id="btnRestore">恢复内置数据</button>
+            </div>
+        </div>
+        <div id="dsTable" class="table-scroll"><div class="skeleton" style="height:120px"></div></div>
+    </div>
+
+    <div class="card">
+        <div class="card-head">
+            <div><div class="card-title">导入爬虫数据</div>
+                <div class="card-sub">支持抖音 / 小红书 JSON，单文件 ≤ 20MB</div></div>
+        </div>
+        <div id="dropZone" style="border:1.5px dashed #D8E4FF;border-radius:12px;padding:22px 14px;text-align:center;background:#FBFDFF;cursor:pointer;transition:.15s;">
+            <div style="font-size:13px;color:#334155;font-weight:600;">点击选择或拖拽 JSON 文件到此处</div>
+            <div style="font-size:11.5px;color:#94A3B8;margin-top:4px;">支持一次上传多个平台文件，清洗后生成新数据集</div>
+            <input type="file" id="fileInput" accept=".json" multiple style="display:none;">
+        </div>
+        <div id="importStatus" style="margin-top:10px;"></div>
+    </div>
+</div>
+
+<div class="card" style="margin-top:14px;">
+    <div class="card-head">
+        <div><div class="card-title">数据质量与清洗链路</div>
+            <div class="card-sub" id="qualitySub">选择数据集后展示真实的分子分母</div></div>
+        <div class="card-tools"><span class="badge badge-brand" id="qualityRate">—</span></div>
+    </div>
+    <div id="qualityBody" class="table-scroll"><div class="skeleton" style="height:140px"></div></div>
+</div>
+
+<div class="card" style="margin-top:14px;" id="reportCard">
+    <div class="card-head">
+        <div><div class="card-title">AI 综合分析报告</div>
+            <div class="card-sub">基于当前数据集的真实聚合统计生成；含来源、时间范围与生成标识</div></div>
+        <div class="card-tools">
+            <button class="btn btn-sm" id="btnMarkdown" style="display:none;"
+                    title="导出为 .md：可粘进周报 / Word，数字与口径一起带走">导出 Markdown</button>
+            <button class="btn btn-sm" id="btnPrint" style="display:none;">导出 PDF / 打印</button>
+            <button class="btn btn-primary btn-sm" id="btnReport">生成报告</button>
+        </div>
+    </div>
+    <div id="reportBody">
+        <div class="state" style="min-height:100px;">
+            <div class="state-title">还没有生成报告</div>
+            <div>点击右上角「生成报告」，系统会调用统计接口并用 DeepSeek 撰写解读；AI 不可用时自动降级为统计规则版本并明确标注。</div>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-top:14px;">
+    <div class="card-head"><div><div class="card-title">历史报告</div>
+        <div class="card-sub">保存在本地数据库，可重新打开查看</div></div></div>
+    <div id="historyBody" class="table-scroll"><div class="state">暂无历史报告</div></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ static_url('cp/data.js') }}"></script>
+{% endblock %}

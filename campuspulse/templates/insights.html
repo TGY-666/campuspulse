@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}数据洞察中心{% endblock %}
+{% block page_title %}数据洞察中心{% endblock %}
+{% block page_sub %}看清结构而不只是总量：时间分布、维度情感结构、负面原因帕累托，全部图表跟随上方筛选联动{% endblock %}
+
+{% block content %}
+<div id="filterBar"></div>
+
+<div class="card" style="margin-bottom:14px;">
+    <div class="card-head">
+        <div>
+            <div class="card-title">图表 AI 解读</div>
+            <div class="card-sub">基于当前筛选范围的四张主图统计生成 · 每段解读都可回溯到图表</div>
+        </div>
+        <div class="card-tools"><span class="badge badge-brand" id="ciEngine">生成中</span></div>
+    </div>
+    <div class="grid g-2" id="chartInsights">
+        <div class="skeleton" style="height:56px"></div>
+        <div class="skeleton" style="height:56px"></div>
+        <div class="skeleton" style="height:56px"></div>
+        <div class="skeleton" style="height:56px"></div>
+    </div>
+    <div id="ciNotice" class="note note-muted" style="margin-top:10px;display:none;"></div>
+</div>
+
+<div class="grid g-3">
+    <div class="card">
+        <div class="card-head"><div><div class="card-title">平台评论量</div>
+            <div class="card-sub">分母：当前范围内有效评论</div></div></div>
+        <div class="chart" id="chartPlatformPie"></div>
+    </div>
+    <div class="card">
+        <div class="card-head"><div><div class="card-title">评论长度分布</div>
+            <div class="card-sub">清洗后正文字数</div></div></div>
+        <div class="chart" id="chartLength"></div>
+    </div>
+    <div class="card">
+        <div class="card-head"><div><div class="card-title">点赞概况</div>
+            <div class="card-sub">缺失点赞不计入均值</div></div></div>
+        <div id="likeStat" style="margin-bottom:6px;"></div>
+        <div class="chart chart-sm" id="chartLikeTop"></div>
+    </div>
+</div>
+
+<div class="grid g-2" style="margin-top:14px;">
+    <div class="card">
+        <div class="card-head"><div><div class="card-title">24 小时活跃度</div>
+            <div class="card-sub">按评论发布时间统计（本地时区）</div></div></div>
+        <div class="chart" id="chartHour"></div>
+    </div>
+    <div class="card">
+        <div class="card-head"><div><div class="card-title">周内分布</div>
+            <div class="card-sub">周一至周日评论量</div></div></div>
+        <div class="chart" id="chartWeek"></div>
+    </div>
+</div>
+
+<div class="grid g-2-1" style="margin-top:14px;">
+    <div class="card">
+        <div class="card-head"><div><div class="card-title">七维度评论量排行</div>
+            <div class="card-sub">多标签计数：一条评论可命中多个维度</div></div></div>
+        <div class="chart" id="chartDims"></div>
+    </div>
+    <div class="card">
+        <div class="card-head"><div><div class="card-title">维度情感结构</div>
+            <div class="card-sub">每个维度内部的正/中/负占比</div></div></div>
+        <div class="chart" id="chartDimSent"></div>
+    </div>
+</div>
+
+<div class="grid g-2" style="margin-top:14px;">
+    <div class="card">
+        <div class="card-head"><div><div class="card-title">负面原因帕累托</div>
+            <div class="card-sub">柱：提及次数；线：累计占比</div></div></div>
+        <div class="chart" id="chartPareto"></div>
+    </div>
+    <div class="card">
+        <div class="card-head"><div><div class="card-title">正面卖点排行</div>
+            <div class="card-sub">正面评论中最常被提到的点</div></div></div>
+        <div class="chart" id="chartPos"></div>
+    </div>
+</div>
+
+<div class="grid g-2-1" style="margin-top:14px;">
+    <div class="card">
+        <div class="card-head"><div><div class="card-title">双平台维度对比</div>
+            <div class="card-sub">同一维度下两个平台的评论量</div></div></div>
+        <div class="chart" id="chartPlatDim"></div>
+    </div>
+    <div class="card">
+        <div class="card-head"><div><div class="card-title">平台指标对照</div>
+            <div class="card-sub">同口径下的可直接比较项</div></div></div>
+        <div id="platTable" class="table-scroll"></div>
+    </div>
+</div>
+
+<div class="card" style="margin-top:14px;">
+    <div class="card-head">
+        <div><div class="card-title">高频关键词</div>
+            <div class="card-sub" id="wordSub">基于当前范围评论分词统计</div></div>
+        <div style="display:flex;gap:14px;align-items:center;font-size:12px;color:#64748B;flex-wrap:wrap;">
+            <span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#E5484D;margin-right:5px;"></i>负面占比 ≥ 基线 1.8 倍</span>
+            <span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#12A150;margin-right:5px;"></i>≤ 基线 60%</span>
+            <span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#165DFF;margin-right:5px;"></i>与基线接近</span>
+        </div>
+    </div>
+    <div class="grid g-2">
+        <div class="chart" id="chartWords" style="height:300px;"></div>
+        <div id="wordTable" class="table-scroll"></div>
+    </div>
+    <details style="margin-top:10px;border-top:1px solid #EEF2F7;padding-top:10px;">
+        <summary style="cursor:pointer;font-size:12px;color:#64748B;outline:none;">查看分词与停用词口径（可复算）</summary>
+        <div id="wordFilterTip" style="font-size:12px;line-height:1.95;color:#64748B;margin-top:8px;"></div>
+    </details>
+</div>
+{% endblock %}
+
+{% block vendor %}
+<script src="{{ static_url('vendor/echarts.min.js') }}"></script>
+<script>
+    // 只有真正画图的页面才加载 ECharts；本地 vendor 缺失时回退 CDN
+    if (typeof window.echarts === 'undefined') {
+        document.write('<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"><\/script>');
+    }
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ static_url('vendor/echarts-wordcloud.min.js') }}"></script>
+<script src="{{ static_url('cp/insights.js') }}"></script>
+{% endblock %}

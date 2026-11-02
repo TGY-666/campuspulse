@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}页面不存在{% endblock %}
+{% block page_title %}页面不存在{% endblock %}
+{% block page_sub %}请从左侧导航进入分析视图{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="state" style="min-height:240px;">
+        <div class="state-title" style="font-size:15px;">404 · 找不到这个页面</div>
+        <div>链接可能已失效，或者地址输入有误。</div>
+        <a class="btn btn-primary btn-sm" href="/" style="margin-top:6px;">返回智能驾驶舱</a>
+    </div>
+</div>
+{% endblock %}

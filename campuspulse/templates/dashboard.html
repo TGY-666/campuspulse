@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}智能驾驶舱{% endblock %}
+{% block page_title %}智能驾驶舱{% endblock %}
+{% block page_sub %}30 秒建立对当前数据集的整体认知 · 每个比例都可追溯到分母{% endblock %}
+
+{% block content %}
+<div id="filterBar"></div>
+
+{# 工单概览：只有开了工单功能、且角色有权查看时才由 dashboard.js 显示 #}
+<div class="card tk-strip" id="ticketStrip" style="display:none;"></div>
+
+<div class="grid g-6" id="kpiRow">
+    {% for i in range(6) %}
+    <div class="card kpi"><div class="skeleton" style="height:12px;width:60%"></div>
+        <div class="skeleton" style="height:28px;width:80%;margin-top:10px"></div>
+        <div class="skeleton" style="height:10px;width:50%;margin-top:9px"></div></div>
+    {% endfor %}
+</div>
+
+<div class="grid g-2-1" style="margin-top:14px;">
+    <div class="card">
+        <div class="card-head">
+            <div>
+                <div class="card-title">时间趋势</div>
+                <div class="card-sub" id="trendSub">评论量与负面评论随时间的分布</div>
+            </div>
+            <div class="card-tools">
+                <div class="chip-group" id="rangeTabs">
+                    <button class="chip" data-range="12">近 12 月</button>
+                    <button class="chip" data-range="24">近 24 月</button>
+                    <button class="chip on" data-range="all">全部</button>
+                </div>
+                <div class="chip-group" id="granTabs">
+                    <button class="chip on" data-gran="auto">自动</button>
+                    <button class="chip" data-gran="month">月</button>
+                    <button class="chip" data-gran="week">周</button>
+                    <button class="chip" data-gran="day">日</button>
+                </div>
+            </div>
+        </div>
+        <div class="chart chart-lg" id="chartTrend"></div>
+        <div class="note note-muted" style="margin-top:6px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>
+            <span>缺失时段以 0 表示，仅说明该时段没有采集记录，不代表全网无声量。</span>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-head">
+            <div>
+                <div class="card-title">情感分布</div>
+                <div class="card-sub" id="sentSub">点击扇区查看对应评论</div>
+            </div>
+        </div>
+        <div class="chart chart-lg" id="chartSentiment"></div>
+        <div id="sentLegend"></div>
+    </div>
+</div>
+
+<div class="grid g-2-1" style="margin-top:14px;">
+    <div class="card">
+        <div class="card-head">
+            <div>
+                <div class="card-title">七大维度热度</div>
+                <div class="card-sub">点击柱条进入证据中心，并带上该维度筛选</div>
+            </div>
+        </div>
+        <div class="chart chart-lg" id="chartDims"></div>
+    </div>
+
+    <div class="card">
+        <div class="card-head">
+            <div>
+                <div class="card-title">双平台概况</div>
+                <div class="card-sub" id="platSub">评论量与情感结构</div>
+            </div>
+        </div>
+        <div class="chart chart-sm" id="chartPlatform"></div>
+        <div id="platTable" class="table-scroll" style="margin-top:6px;"></div>
+    </div>
+</div>
+
+<div class="card" style="margin-top:14px;">
+    <div class="card-head">
+        <div>
+            <div class="card-title">AI 舆情简述</div>
+            <div class="card-sub">基于当前筛选范围的 KPI 与分布生成，用于快速把握重点</div>
+        </div>
+        <div class="card-tools">
+            <span class="badge badge-brand" id="insightEngine">生成中</span>
+            <button class="btn btn-sm" id="btnInsight">重新生成</button>
+        </div>
+    </div>
+    <div id="aiInsight" style="font-size:13.5px;line-height:1.85;color:#334155;min-height:52px;"></div>
+    <div id="aiInsightNote" class="note note-muted" style="margin-top:10px;display:none;"></div>
+</div>
+
+<div class="note" style="margin-top:14px;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 4.5v5c0 4.5-3.8 7.9-9 9-5.2-1.1-9-4.5-9-9v-5L12 3z"/></svg>
+    <span id="scopeNote">数据口径：情感与维度由关键词规则标注；维度为多标签计数，合计大于评论总数属正常；所有比例的分母随筛选条件变化并在图表下方标注。</span>
+</div>
+{% endblock %}
+
+{% block vendor %}
+<script src="{{ static_url('vendor/echarts.min.js') }}"></script>
+<script>
+    // 只有真正画图的页面才加载 ECharts；本地 vendor 缺失时回退 CDN
+    if (typeof window.echarts === 'undefined') {
+        document.write('<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"><\/script>');
+    }
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ static_url('cp/dashboard.js') }}"></script>
+{% endblock %}

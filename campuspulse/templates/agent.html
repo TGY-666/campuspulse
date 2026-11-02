@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}AI 智能分析工作台{% endblock %}
+{% block page_title %}AI 智能分析工作台{% endblock %}
+{% block page_sub %}用自然语言提问，Agent 会调用受控分析工具查库计算，再给出图表与评论证据{% endblock %}
+
+{% block content %}
+<div class="agent-shell">
+    <section class="card chat-panel">
+        <div class="chat-head">
+            <div>
+                <div class="card-title">对话</div>
+                <div class="card-sub" id="sessionInfo">会话未开始</div>
+            </div>
+            <div class="card-tools">
+                <button class="btn btn-sm btn-ghost" id="btnClear">清空</button>
+            </div>
+        </div>
+        <div class="chat-log" id="chatLog">
+            <div class="msg bot">
+                你好，我是 CampusPulse 分析助手。你可以直接问数据问题，例如“负面评论集中在哪个维度”，
+                我会调用统计与检索工具后回答，并把用到的评论证据列在右侧。
+            </div>
+            <div class="msg sys">当前数据集：<span id="chatDataset">加载中…</span></div>
+        </div>
+
+        <div class="rec">
+            <div class="rec-title">推荐问题（点击直接发送）</div>
+            <div id="recList"></div>
+        </div>
+
+        <div class="composer">
+            <textarea id="qInput" rows="2" placeholder="例如：食堂餐饮方面最常见的负面问题是什么？给出相关评论依据。"></textarea>
+            <div class="composer-foot">
+                <button class="btn btn-sm voice-btn" id="btnVoice" type="button"
+                        aria-pressed="false" title="语音输入">
+                    <span class="voice-dot" aria-hidden="true"></span><span class="voice-label">语音</span>
+                </button>
+                <span class="composer-hint" id="composerHint">Enter 发送 · Shift+Enter 换行 · 最多 200 字</span>
+                <button class="btn btn-primary btn-sm" id="btnSend" style="margin-left:auto;">分析</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="result-stack" id="resultStack">
+        <div class="card" id="resultEmpty">
+            <div class="card-head">
+                <div>
+                    <div class="card-title">这里会显示 Agent 的完整分析过程</div>
+                    <div class="card-sub">工具调用 → 真实统计 → 动态图表 → 评论证据 → 结论与局限</div>
+                </div>
+            </div>
+            <div class="grid g-3" id="toolCards" style="margin-bottom:12px;"></div>
+            <div class="note">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 4.5v5c0 4.5-3.8 7.9-9 9-5.2-1.1-9-4.5-9-9v-5L12 3z"/></svg>
+                <span>安全边界：模型只能调用下列 6 个白名单工具（5 个统计/证据工具 + 1 个原文档检索），
+                    不能执行任意 SQL 或系统命令；图表数值全部由后端计算，模型只负责撰写文字解释，
+                    回答里的每个引用编号都会被校验是否能回到原文。
+                    语音输入用浏览器内置识别，<strong>不录音、不上传评论数据</strong>，
+                    只有你口述的那句提问会被送去转写，识别结果先填进输入框、确认后才发送。</span>
+            </div>
+        </div>
+
+        <div id="resultBody" style="display:none;"></div>
+    </section>
+</div>
+{% endblock %}
+
+{% block vendor %}
+<script src="{{ static_url('vendor/echarts.min.js') }}"></script>
+<script>
+    // 只有真正画图的页面才加载 ECharts；本地 vendor 缺失时回退 CDN
+    if (typeof window.echarts === 'undefined') {
+        document.write('<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"><\/script>');
+    }
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ static_url('cp/voice.js') }}"></script>
+<script src="{{ static_url('cp/agent.js') }}"></script>
+{% endblock %}

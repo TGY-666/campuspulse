@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}处置工单{% endblock %}
+{% block page_title %}处置工单{% endblock %}
+{% block page_sub %}把「看到了」变成「有人管」：建单 → 确认 → 分派 → 处理 → 复核 → 归档，每一步都留痕{% endblock %}
+
+{% block content %}
+{# 免责声明：常驻、无关闭按钮。工单记录的是"议题有没有人回应"，不是"学生说了什么"。 #}
+<div class="tk-disclaimer">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 4.5v5c0 4.5-3.8 7.9-9 9-5.2-1.1-9-4.5-9-9v-5L12 3z"/></svg>
+    <span>本工单为校内处置记录，不代表对相关言论真实性的认定；系统不对学生个人做任何标记或评分。只处理议题，不处理人。</span>
+</div>
+
+<div class="card" id="suggCard" style="display:none;margin-bottom:14px;">
+    <div class="card-head">
+        <div>
+            <div class="card-title">规则建议 · 只建议，不自动建单</div>
+            <div class="card-sub" id="suggSub">按 4 条固定规则评估当前筛选范围，命中后由人决定是否建单</div>
+        </div>
+        <div class="card-tools"><span class="badge badge-brand" id="suggBadge">评估中</span></div>
+    </div>
+    <div id="suggList"></div>
+    <div class="note note-muted" id="suggNote" style="margin-top:10px;display:none;"></div>
+</div>
+
+<div class="grid g-4" id="tkKpi"></div>
+
+<div class="grid tk-layout" style="margin-top:14px;align-items:start;">
+    <div class="card">
+        <div class="card-head">
+            <div>
+                <div class="card-title">工单列表</div>
+                <div class="card-sub" id="tkListSub">按状态与优先级排序，超期单优先</div>
+            </div>
+            <div class="card-tools">
+                <span class="badge" id="tkTotal">—</span>
+                <button class="btn btn-primary btn-sm" id="tkNew" type="button" style="display:none;">新建工单</button>
+            </div>
+        </div>
+
+        <div class="tk-filters">
+            <div class="chip-group" id="tkStatusTabs">
+                <button class="chip on" data-group="open">进行中</button>
+                <button class="chip" data-group="overdue">已超期</button>
+                <button class="chip" data-group="mine">我的</button>
+                <button class="chip" data-group="all">全部</button>
+            </div>
+            <select class="select" id="tkPriority">
+                <option value="">全部优先级</option>
+                <option value="P0">P0 紧急</option>
+                <option value="P1">P1 高</option>
+                <option value="P2">P2 中</option>
+                <option value="P3">P3 低</option>
+            </select>
+            <input class="input" id="tkSearch" type="search" placeholder="搜索编号 / 标题" autocomplete="off">
+        </div>
+
+        <div id="tkList">
+            <div class="skeleton" style="height:56px;margin-bottom:8px"></div>
+            <div class="skeleton" style="height:56px;margin-bottom:8px"></div>
+            <div class="skeleton" style="height:56px"></div>
+        </div>
+        <div id="tkPager" class="tk-pager"></div>
+    </div>
+
+    <div class="card" id="tkDetail">
+        <div class="state">
+            <div class="state-title">从左侧选择一张工单</div>
+            <div>详情包含：建单口径 → 代表证据 → 处置时间线 → 可执行操作。</div>
+        </div>
+    </div>
+</div>
+
+<div class="note note-muted" style="margin-top:14px;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>
+    <span id="tkSlaNote">时限口径：只计工作时间（周一至周五 09:00–12:00、14:00–18:00），午休与周末不计时，节假日以配置为准。</span>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ static_url('cp/tickets.js') }}"></script>
+{% endblock %}

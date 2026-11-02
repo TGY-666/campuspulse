@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}热点与证据中心{% endblock %}
+{% block page_title %}热点与证据中心{% endblock %}
+{% block page_sub %}从维度排行下钻到具体评论，每条证据都可核对所属筛选条件与内部引用 ID{% endblock %}
+
+{% block content %}
+<div id="filterBar"></div>
+
+<div class="card" style="margin-bottom:14px;">
+    <div class="card-head">
+        <div>
+            <div class="card-title">异常提示 · 规则阈值</div>
+            <div class="card-sub" id="riskSub">按固定阈值标记近 7 天偏离常态的现象，只提示人工关注方向</div>
+        </div>
+        <div class="card-tools"><span class="badge" id="riskBadge">加载中</span></div>
+    </div>
+    <div id="riskList">
+        <div class="skeleton" style="height:26px;margin-bottom:8px"></div>
+        <div class="skeleton" style="height:26px"></div>
+    </div>
+    <div class="note note-muted" id="riskNote" style="margin-top:10px;display:none;"></div>
+</div>
+
+<div class="grid g-2-1">
+    <div class="card">
+        <div class="card-head">
+            <div>
+                <div class="card-title">主题热度排行</div>
+                <div class="card-sub">点击任一维度即按该维度筛选评论证据（多标签计数）</div>
+            </div>
+            <div class="card-tools"><span class="badge" id="rankTotal">—</span></div>
+        </div>
+        <div id="rankList">
+            <div class="skeleton" style="height:30px;margin-bottom:8px"></div>
+            <div class="skeleton" style="height:30px;margin-bottom:8px"></div>
+            <div class="skeleton" style="height:30px"></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-head">
+            <div><div class="card-title">当前检索口径</div>
+                <div class="card-sub">列表条数与总数使用同一查询条件</div></div>
+        </div>
+        <dl class="kv" id="scopeKv"><dt>加载中</dt><dd>—</dd></dl>
+        <div class="note note-muted" style="margin-top:12px;">
+            证据仅展示脱敏后的评论文本、平台、时间与内部引用 ID，不展示昵称、主页、IP 属地等可识别信息。
+        </div>
+        <div id="emptyHint"></div>
+    </div>
+</div>
+
+<div class="card" style="margin-top:14px;">
+    <div class="card-head">
+        <div>
+            <div class="card-title">评论证据</div>
+            <div class="card-sub" id="resultSub">按点赞量排序，点击任意一条查看详情</div>
+        </div>
+        <div class="card-tools">
+            <select class="select" id="orderSelect" style="height:30px;font-size:12px;">
+                <option value="likes">按点赞排序</option>
+                <option value="time_desc">按时间倒序</option>
+                <option value="time_asc">按时间正序</option>
+            </select>
+            <span class="badge" id="totalBadge">—</span>
+        </div>
+    </div>
+    <div id="resultList"></div>
+    <div id="pager" style="display:flex;align-items:center;gap:8px;justify-content:flex-end;margin-top:12px;"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ static_url('cp/evidence.js') }}"></script>
+{% endblock %}
