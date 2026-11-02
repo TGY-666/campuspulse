@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="lsGY4YDHiPFj8CqcJtpk90">
+<head data-page-node-id="5rmoitp7scHAeJEwnLRfF5">
+<meta charset="utf-8" data-page-node-id="I4XI9tpOTh7WakAfVpRJUT">
+<title>CampusPulse 一页纸架构</title>
+<style>
+  @page { size: 1600px 1080px; margin: 0; }
+  html, body { margin: 0; padding: 0; background: #EEF2F7; }
+  body { font-family: "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", sans-serif; }
+  .sheet {
+    width: 1600px; height: 1080px; background: #FFFFFF; position: relative;
+    overflow: hidden;
+  }
+  svg { display: block; }
+</style>
+</head>
+<body data-page-node-id="DPQfEtxuEAT21VzWR1b7DN">
+<div class="sheet" data-page-node-id="n0lZ0WDA2joBnoJhWdBvcd">
+<svg width="1600" height="1080" viewBox="0 0 1600 1080" xmlns="http://www.w3.org/2000/svg" data-page-node-id="MRv7Kauh0snOYuEjMRDAsA">
+  <defs data-page-node-id="ooxyGue2ik0M9iJPQXw99U">
+    <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" data-page-node-id="LOPQPK14xRK8N2LJaRUeK6">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748B" data-page-node-id="agkRxfVIB6n0wG0mxudpOv"/>
+    </marker>
+    <marker id="arwB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" data-page-node-id="u3tGyqTUADw0mmhsU9tDVt">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#1D4ED8" data-page-node-id="W9sYZ7Ko6wMtQORRwjBMZe"/>
+    </marker>
+    <marker id="arwV" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" data-page-node-id="Oiy0F7MA1OoO0tFqSJwyCd">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#6D28D9" data-page-node-id="tDMhKJuoETsNEyS5Z9tkHx"/>
+    </marker>
+    <linearGradient id="hd" x1="0" y1="0" x2="1" y2="0" data-page-node-id="0bHnyy5Y887gZGSUQKDWAk">
+      <stop offset="0" stop-color="#0F172A" data-page-node-id="Gc1lfpKjqhquDY8MDqhDAB"/><stop offset="1" stop-color="#1D4ED8" data-page-node-id="0mGJdsmaGsqY4XxMvvMqox"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ===== 标题 ===== -->
+  <text x="56" y="62" font-size="34" font-weight="700" fill="#0F172A" data-page-node-id="XvG8p1s0AFECwNPFV7iuY7">CampusPulse · 一页纸架构</text>
+  <text x="56" y="96" font-size="16" fill="#475569" data-page-node-id="2inNFCCdcfBdq2X1EXfWxK">
+    高校舆情分析系统 ｜ 真实采集 25,699 条 → 清洗 1,803 条（有效率 7.09%）｜ Flask + SQLite + ECharts + DeepSeek
+  </text>
+  <rect x="56" y="112" width="1488" height="3" fill="url(#hd)" rx="1.5" data-page-node-id="zVEANOuohw5AnEwklU5Ko9"/>
+
+  <!-- ===== 顶部一句话主张 ===== -->
+  <rect x="56" y="132" width="1488" height="46" rx="8" fill="#F1F5F9" data-page-node-id="zWD09hLnFaEL64w8XB6mbs"/>
+  <text x="76" y="161" font-size="15.5" fill="#0F172A" data-page-node-id="ewKSsmKJ2SzuzNhwqlxEKf">
+    <tspan font-weight="700" data-page-node-id="FTxDJ95Z7MkbpetWlKNMmX">一条主张：</tspan>
+    <tspan data-page-node-id="dwgUzG3csffqTcGxeK6KCN">大模型只写文字，</tspan><tspan font-weight="700" fill="#B45309" data-page-node-id="aouB7HnRBiCcsg1v3d3FrE">不生产任何图表数值</tspan>
+    <tspan data-page-node-id="reZT9SHTOsAvOqi450wstG">；每个出现在回答里的数字，都能回到某一次工具调用的返回值。数字走下面这条蓝线，文字走紫线，两条轨道不在图表上相交。</tspan>
+  </text>
+
+  <!-- ===== 轨道 A：数字（蓝） ===== -->
+  <text x="56" y="212" font-size="13.5" font-weight="700" fill="#1D4ED8" data-page-node-id="Nld6l1AdKZCh6Ls54PZJQY">轨道 A · 数字（后端算出，前端只画）</text>
+
+  <!-- 采集 -->
+  <rect x="56" y="226" width="250" height="104" rx="10" fill="#EFF6FF" stroke="#BFDBFE" data-page-node-id="fO4E9za9bAJs3kMFPeevNn"/>
+  <text x="76" y="254" font-size="15" font-weight="700" fill="#1E3A8A" data-page-node-id="B7O8n3Sl0zQDIo9HVyhbpo">① 采集</text>
+  <text x="76" y="278" font-size="12.5" fill="#334155" data-page-node-id="569v5sTLr7scVLiI54E4Le">MediaCrawler · 抖音 / 小红书</text>
+  <text x="76" y="300" font-size="12.5" fill="#334155" data-page-node-id="Z7dKMn60LN8TNxVhZclYZK">公开评论，不含昵称/IP</text>
+  <text x="76" y="320" font-size="11.5" fill="#64748B" data-page-node-id="REpV3bu7m3uxoTLlEz015K">原始 25,699 条</text>
+
+  <!-- 清洗 -->
+  <rect x="336" y="226" width="250" height="104" rx="10" fill="#EFF6FF" stroke="#BFDBFE" data-page-node-id="BdbnrHA3AJ8qMgFY4ARwMM"/>
+  <text x="356" y="254" font-size="15" font-weight="700" fill="#1E3A8A" data-page-node-id="Y4ngmGIIBptnEh5HWm0wSV">② 清洗与去标识</text>
+  <text x="356" y="278" font-size="12.5" fill="#334155" data-page-node-id="ZXJ8eqSHsgPJrSpDAUqXwX">去重 · 去广告 · 维度打标</text>
+  <text x="356" y="300" font-size="12.5" fill="#334155" data-page-node-id="MgLyCIFVzdBxvw96PwT171">联系方式脱敏 → content_masked</text>
+  <text x="356" y="320" font-size="11.5" fill="#64748B" data-page-node-id="OQiUrA5ur5KfWPjqvGVy4K">1,803 条有效（7.09%）</text>
+
+  <!-- 存储 -->
+  <rect x="616" y="226" width="250" height="104" rx="10" fill="#EFF6FF" stroke="#BFDBFE" data-page-node-id="QCZvYtVlHVWFz9enMQoDBp"/>
+  <text x="636" y="254" font-size="15" font-weight="700" fill="#1E3A8A" data-page-node-id="I2HTx3CK9gcSJ4ZMHPsa7i">③ 唯一口径</text>
+  <text x="636" y="278" font-size="12.5" fill="#334155" data-page-node-id="9nwwpDlBXW4eqj4gFgIGHp">SQLite 单文件，数据不出校</text>
+  <text x="636" y="300" font-size="12.5" fill="#334155" data-page-node-id="jALbSpDKexk3LPogvmXk9G">分母、多标签口径显式声明</text>
+  <text x="636" y="320" font-size="11.5" fill="#64748B" data-page-node-id="677coUWyeFRm7rIzaFvnm6">接口与 Agent 共用同一份 SQL</text>
+
+  <!-- 统计层 -->
+  <rect x="896" y="226" width="300" height="104" rx="10" fill="#F0FDF4" stroke="#BBF7D0" data-page-node-id="YCnODYn3hYZqbpCiqIF5jM"/>
+  <text x="916" y="254" font-size="15" font-weight="700" fill="#15803D" data-page-node-id="zPxw6Ho0awvJBztFLks6JM">④ 统计层（6 个受控工具）</text>
+  <text x="916" y="278" font-size="12.5" fill="#334155" data-page-node-id="nAjvUr4TQhZ4nkkhIrrlTj">情感 · 维度 · 平台 · 趋势 · 证据 · 检索</text>
+  <text x="916" y="300" font-size="12.5" fill="#334155" data-page-node-id="68THazPqkX8VEKFgYhxZGB">JSON Schema 强制类型，非整数/越限即拒</text>
+  <text x="916" y="320" font-size="11.5" fill="#64748B" data-page-node-id="chztcz4CPDzCXO7pcVuB01">同一套工具亦可作为 MCP Server 被外部调用</text>
+
+  <!-- 图表 -->
+  <rect x="1226" y="226" width="318" height="104" rx="10" fill="#EFF6FF" stroke="#BFDBFE" data-page-node-id="fM028gh3o5eMwWW6hZ4RDd"/>
+  <text x="1246" y="254" font-size="15" font-weight="700" fill="#1E3A8A" data-page-node-id="z7DVxI5TNmF0PfbA3StHch">⑤ 图表规格（charts.py）</text>
+  <text x="1246" y="278" font-size="12.5" fill="#334155" data-page-node-id="m85EZ9mcA33vJk9EDQEqJd">后端生成 ECharts option，前端只负责渲染</text>
+  <text x="1246" y="300" font-size="12.5" fill="#334155" data-page-node-id="vxZBypoLPDl2AOjPLDqFG3">模型全程不接触任何一个数值</text>
+  <text x="1246" y="320" font-size="11.5" fill="#B45309" data-page-node-id="hS5CtyMqLl19ks3I6V8ov2">← 这里是"杜绝图表幻觉"的落点</text>
+
+  <line x1="306" y1="278" x2="330" y2="278" stroke="#1D4ED8" stroke-width="2" marker-end="url(#arwB)" data-page-node-id="umvG2VLP8zgBUIJyqno9Xr"/>
+  <line x1="586" y1="278" x2="610" y2="278" stroke="#1D4ED8" stroke-width="2" marker-end="url(#arwB)" data-page-node-id="yIBCjNy2VKEotPzppWAR0g"/>
+  <line x1="866" y1="278" x2="890" y2="278" stroke="#1D4ED8" stroke-width="2" marker-end="url(#arwB)" data-page-node-id="tIjo2qXoaj4eshdHHVaDb7"/>
+  <line x1="1196" y1="278" x2="1220" y2="278" stroke="#1D4ED8" stroke-width="2" marker-end="url(#arwB)" data-page-node-id="GsPNtFXZLm6Y9zTa8dADEl"/>
+
+  <!-- ===== 轨道 B：文字（紫） ===== -->
+  <text x="56" y="392" font-size="13.5" font-weight="700" fill="#6D28D9" data-page-node-id="CyuKTvkePoCIA4rpuRmhhh">轨道 B · 文字（模型只写结论，且必须带出处）</text>
+
+  <!-- 用户提问 -->
+  <rect x="56" y="406" width="250" height="112" rx="10" fill="#FAF5FF" stroke="#E9D5FF" data-page-node-id="TssDSU7mePM6ubTk6VzGNG"/>
+  <text x="76" y="434" font-size="15" font-weight="700" fill="#6D28D9" data-page-node-id="ALhl5vHU80gvsR6UkjmFrk">用户提问</text>
+  <text x="76" y="458" font-size="12.5" fill="#334155" data-page-node-id="4bu4PH4emdHSXTlUCVHaQZ">键盘 / 语音（Web Speech）</text>
+  <text x="76" y="480" font-size="12.5" fill="#334155" data-page-node-id="2s1tcHIdcBJdSeeqKn63I8">或从驾驶舱筛选态带过来的口径</text>
+  <text x="76" y="502" font-size="11.5" fill="#64748B" data-page-node-id="BvlceAkxsEHqjeKCFo1zbu">≤ 200 字 · 单会话 ≤ 20 轮</text>
+
+  <!-- 输入闸 -->
+  <rect x="336" y="406" width="250" height="112" rx="10" fill="#FEF3C7" stroke="#FCD34D" data-page-node-id="Ggw8reOX0RZLeoxYcZ7mIq"/>
+  <text x="356" y="434" font-size="15" font-weight="700" fill="#B45309" data-page-node-id="PRxwMC8iiEfLyn8bRojlhU">输入闸 guard.py</text>
+  <text x="356" y="458" font-size="12.5" fill="#334155" data-page-node-id="p4nxZq88kuzdYqebwBTbIG">20 条规则 / 3 类：注入 · 套提示词 · 越权</text>
+  <text x="356" y="480" font-size="12.5" fill="#334155" data-page-node-id="Hv3x3txgWoAkq9SKVXVyw3">先归一化（全角/零宽/插空格）再匹配</text>
+  <text x="356" y="502" font-size="11.5" fill="#B45309" data-page-node-id="tLxgtpUb5QJtFFTcrW8neV">命中即拒，模型 0 次调用 · 事件入审计</text>
+
+  <!-- 检索 -->
+  <rect x="616" y="406" width="250" height="112" rx="10" fill="#FAF5FF" stroke="#E9D5FF" data-page-node-id="RNTlMOSwHF1UMv42nLu2AE"/>
+  <text x="636" y="434" font-size="15" font-weight="700" fill="#6D28D9" data-page-node-id="bQEJJWvyxRxitjDyHUlThm">混合检索 rag.py</text>
+  <text x="636" y="458" font-size="12.5" fill="#334155" data-page-node-id="kcsWUVBPaNEAsMZ1YtCgiC">BM25 · 同义词扩展 · 字符 n-gram 向量</text>
+  <text x="636" y="480" font-size="12.5" fill="#334155" data-page-node-id="Fd6EukLzvYREmyo7bpuyrN">权重 0.60 / 0.30 / 0.10，融合排序</text>
+  <text x="636" y="502" font-size="11.5" fill="#64748B" data-page-node-id="0Z0EvpxO1wuAmBP15t2TCU">P@5 0.817（关键词基线 0.567）</text>
+
+  <!-- Agent -->
+  <rect x="896" y="406" width="300" height="112" rx="10" fill="#FAF5FF" stroke="#E9D5FF" data-page-node-id="HPwUA4A9ijsJ0b4mA1YF9b"/>
+  <text x="916" y="434" font-size="15" font-weight="700" fill="#6D28D9" data-page-node-id="HQ6V9VHonI1gi3v5AbAeWg">Agent 编排 agent.py</text>
+  <text x="916" y="458" font-size="12.5" fill="#334155" data-page-node-id="3CftOsyYRjjTD3EyHiopxG">先规划 → 调工具（≤6 次）→ 再撰写</text>
+  <text x="916" y="480" font-size="12.5" fill="#334155" data-page-node-id="7bM8sRGFljvPeCdwGVEe1E">SSE 逐条推送：plan / tool / token</text>
+  <text x="916" y="502" font-size="11.5" fill="#64748B" data-page-node-id="EnRWaqWkdEcicinYtDTgAj">失败即降级为规则路由，并如实标注引擎</text>
+
+  <!-- 校验 -->
+  <rect x="1226" y="406" width="318" height="112" rx="10" fill="#ECFDF5" stroke="#A7F3D0" data-page-node-id="Ds8SLtYBOJHJo6tZjybDI3"/>
+  <text x="1246" y="434" font-size="15" font-weight="700" fill="#047857" data-page-node-id="4rmXC6RzvUMvgWMW9nRruK">出口校验</text>
+  <text x="1246" y="458" font-size="12.5" fill="#334155" data-page-node-id="EIAQzanqCqb78Uip016GSp">回答里每个数字回溯工具返回值，不通过即替换</text>
+  <text x="1246" y="480" font-size="12.5" fill="#334155" data-page-node-id="02vzoCkMvtrzBuk4CedGVw">引用必须是检索到的 [CMT-xxxx]，伪造即判失败</text>
+  <text x="1246" y="502" font-size="11.5" fill="#047857" data-page-node-id="K6IJ40jvwxWotmXEV826VI">最后一道 PII 脱敏 → 才允许出门</text>
+
+  <line x1="306" y1="462" x2="330" y2="462" stroke="#6D28D9" stroke-width="2" marker-end="url(#arwV)" data-page-node-id="jgUnWrDY3360jiPFMN4HRf"/>
+  <line x1="586" y1="462" x2="610" y2="462" stroke="#6D28D9" stroke-width="2" marker-end="url(#arwV)" data-page-node-id="NDHzzUAZO5yfsOAPmSpnt1"/>
+  <line x1="866" y1="462" x2="890" y2="462" stroke="#6D28D9" stroke-width="2" marker-end="url(#arwV)" data-page-node-id="6qxIWkJCDOzxaFgorIN3EY"/>
+  <line x1="1196" y1="462" x2="1220" y2="462" stroke="#6D28D9" stroke-width="2" marker-end="url(#arwV)" data-page-node-id="Xb2lgvuXXYBRRPxopHpK0B"/>
+
+  <!-- 工具调用回指向统计层（数据流） -->
+  <path d="M 1046 406 L 1046 336" stroke="#1D4ED8" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arwB)" data-page-node-id="WIc6NxEatS85EwzmF5SbIA"/>
+  <text x="1056" y="378" font-size="11.5" fill="#1D4ED8" data-page-node-id="M4sbZFHxdX8mSIRoBhdDS5">工具取数（返回真数字）</text>
+
+  <!-- 检索读库 -->
+  <path d="M 741 406 L 741 336" stroke="#1D4ED8" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arwB)" data-page-node-id="1ZdwGILZbWD6gDZSaQLRpQ"/>
+  <text x="751" y="378" font-size="11.5" fill="#1D4ED8" data-page-node-id="Ccfk8aPSNcluAVe7NgjjOW">读 content_masked</text>
+
+  <!-- ===== 前端 ===== -->
+  <text x="56" y="592" font-size="13.5" font-weight="700" fill="#334155" data-page-node-id="BXji8OZhSwTNkgXbdSwfae">输出 · 五个页面（Vanilla JS，零构建依赖；深色模式 / 骨架屏 / 手机端抽屉）</text>
+
+  <rect x="56" y="606" width="1488" height="96" rx="10" fill="#F8FAFC" stroke="#E2E8F0" data-page-node-id="n8UhLeYNrWDHMPW3dIE5no"/>
+  <g font-size="13" fill="#0F172A" data-page-node-id="pFRoFXweJLqSnPMVf3ECGv">
+    <rect x="76" y="622" width="270" height="64" rx="8" fill="#FFFFFF" stroke="#CBD5E1" data-page-node-id="qPljvouFhZ5qimfNukHEl6"/>
+    <text x="94" y="646" font-weight="700" data-page-node-id="QXc9tenZixWxVHNfRezuY6">智能驾驶舱</text>
+    <text x="94" y="668" font-size="11.5" fill="#64748B" data-page-node-id="D4EMGj6jVuNIwSRDhPNmIQ">KPI · 趋势 · 分布 · 五组筛选可见可撤</text>
+
+    <rect x="366" y="622" width="270" height="64" rx="8" fill="#FFFFFF" stroke="#CBD5E1" data-page-node-id="kDyi1XmAd4U9pgxjAMXOop"/>
+    <text x="384" y="646" font-weight="700" data-page-node-id="3nCW7jEvrBJs2S2LsPEF6U">AI 分析工作台</text>
+    <text x="384" y="668" font-size="11.5" fill="#64748B" data-page-node-id="EOZEPjVCthTGgezfWKq1wO">流式思考 · 拒答卡片 · 口径一键落地</text>
+
+    <rect x="656" y="622" width="270" height="64" rx="8" fill="#FFFFFF" stroke="#CBD5E1" data-page-node-id="n09fpPbIc8o2jHZxrqR3EP"/>
+    <text x="674" y="646" font-weight="700" data-page-node-id="Mwxrl6RkSMedHT1o4ymKt7">数据洞察中心</text>
+    <text x="674" y="668" font-size="11.5" fill="#64748B" data-page-node-id="M9xKr2MJpxHGJLmAwT0i77">11 张图 · 词云已剔噪 · 按主题分组</text>
+
+    <rect x="946" y="622" width="270" height="64" rx="8" fill="#FFFFFF" stroke="#CBD5E1" data-page-node-id="7q2CaoeMMF1NYFIDYDtzBO"/>
+    <text x="964" y="646" font-weight="700" data-page-node-id="YUfEBwWtzHOC7jaQ8Jdtxn">热点与证据中心</text>
+    <text x="964" y="668" font-size="11.5" fill="#64748B" data-page-node-id="HMcOd2XHn3H2DDxRRdXVOP">原文可点开 · 一律 content_masked</text>
+
+    <rect x="1236" y="622" width="288" height="64" rx="8" fill="#FFFFFF" stroke="#CBD5E1" data-page-node-id="AZ1htuD1WBFnQAEgPMOK0t"/>
+    <text x="1254" y="646" font-weight="700" data-page-node-id="bOTy844L7PFrRNLd7WN4CT">数据与报告中心</text>
+    <text x="1254" y="668" font-size="11.5" fill="#64748B" data-page-node-id="qjaHN6FzwA5hOt41CLOudL">上传即分析 · 报告生成 · 导 PDF</text>
+  </g>
+
+  <path d="M 1385 406 L 1385 600" stroke="#6D28D9" stroke-width="2" marker-end="url(#arwV)" data-page-node-id="RphitktbGweoew6c2gNUSQ"/>
+  <!-- 绕右侧空白走，避免穿过"出口校验"框 -->
+  <path d="M 1544 300 L 1570 300 L 1570 640 L 1552 640" stroke="#1D4ED8" stroke-width="2"
+        stroke-dasharray="5 4" fill="none" marker-end="url(#arwB)" data-page-node-id="3ndecuWSwVxEcWdIeCvuQS"/>
+  <text x="1252" y="592" font-size="11.5" fill="#64748B" data-page-node-id="9vKYAvIScCXEzwSy8ug1Pc">图表规格直达前端（不经模型）</text>
+
+  <!-- ===== 底部：三条反幻觉机制 ===== -->
+  <text x="56" y="754" font-size="13.5" font-weight="700" fill="#334155" data-page-node-id="P32setiHTmWJNc2XVJuP1j">为什么这套东西不会编数据（评委最爱问的一题）</text>
+
+  <rect x="56" y="768" width="486" height="120" rx="10" fill="#FFFFFF" stroke="#E2E8F0" data-page-node-id="AGECWfAuSFfiNPOrCQL6xS"/>
+  <text x="76" y="796" font-size="14" font-weight="700" fill="#B45309" data-page-node-id="ppyhUeBX8GIX6s1GXVxqYU">① 结构上做不到</text>
+  <text x="76" y="820" font-size="12.5" fill="#334155" data-page-node-id="Unu8kAKikQ0gpyQDM1QxnD">图表 option 由后端按工具返回值拼装，</text>
+  <text x="76" y="840" font-size="12.5" fill="#334155" data-page-node-id="768bJIGj2ULSN3krqA3yfl">模型没有"往图里写数"的通道。</text>
+  <text x="76" y="866" font-size="11.5" fill="#64748B" data-page-node-id="75k7xOzCnPFYyAXxdtvWpO">→ 幻觉可以污染文字，污染不了坐标轴</text>
+
+  <rect x="562" y="768" width="486" height="120" rx="10" fill="#FFFFFF" stroke="#E2E8F0" data-page-node-id="Fbr4TEIPnBWFgCKHK8UmRu"/>
+  <text x="582" y="796" font-size="14" font-weight="700" fill="#047857" data-page-node-id="iz0yW8m1CbIr9en1ic7CjD">② 写出来也要被查</text>
+  <text x="582" y="820" font-size="12.5" fill="#334155" data-page-node-id="pVgh1Guza1h4em9Y0YfiBM">回答里每个数字回溯工具结果，对不上就整段</text>
+  <text x="582" y="840" font-size="12.5" fill="#334155" data-page-node-id="DG5SbrW9ZZX3NoPK7vqPrS">替换成统计口径的直述，并标记"需复核"。</text>
+  <text x="582" y="866" font-size="11.5" fill="#64748B" data-page-node-id="lrwnZcTnzgC0WNuRozpPUN">→ 验收里这是硬断言，不是"我们尽力了"</text>
+
+  <rect x="1068" y="768" width="476" height="120" rx="10" fill="#FFFFFF" stroke="#E2E8F0" data-page-node-id="AKIpEcGx0ZKObg4AiCQIoO"/>
+  <text x="1088" y="796" font-size="14" font-weight="700" fill="#6D28D9" data-page-node-id="HSyMrmKAfy3xCC8j6RTCtX">③ 说"人话"必须有出处</text>
+  <text x="1088" y="820" font-size="12.5" fill="#334155" data-page-node-id="P3YWqaLaG2iug2JtxJxRAk">要引用就只能引检索到的片段编号，</text>
+  <text x="1088" y="840" font-size="12.5" fill="#334155" data-page-node-id="Rtx8bo0ryjWNpNCJySTeNU">编号对不上原文即判引用失败。</text>
+  <text x="1088" y="866" font-size="11.5" fill="#64748B" data-page-node-id="qKSCIkD8Rk7WDH82Sr5df6">→ 空数据时必须直说"查不到"，不许补</text>
+
+  <!-- ===== 底部：边界（诚实） ===== -->
+  <rect x="56" y="912" width="1488" height="112" rx="10" fill="#FFFBEB" stroke="#FDE68A" data-page-node-id="zbGEmWOGTn12wzi2hxxVSS"/>
+  <text x="76" y="940" font-size="14" font-weight="700" fill="#B45309" data-page-node-id="6FBNH0UdMrJ1HLnCcIbeP5">已知边界（写进文档，也写进页面）</text>
+  <text x="76" y="966" font-size="12.5" fill="#334155" data-page-node-id="vFKZZaKtdZkittzU4WPfEi">
+    ① 数据来自两个平台的公开评论，不代表全校师生；② 维度是多标签计数，一条评论可命中多个维度，占比分母要看清；
+  </text>
+  <text x="76" y="990" font-size="12.5" fill="#334155" data-page-node-id="AKPaKz2cPHTv9TbV4dehco">
+    ③ 不做事件级聚类（口语短文本上不稳定，宁可说"做不到"）；④ 检索是库内检索，不是全网；⑤ 限流按来源 IP，同出口 NAT 会共享额度。
+  </text>
+  <text x="76" y="1012" font-size="11.5" fill="#92400E" data-page-node-id="jqvZ73n0mzyGiVP7OZWa4w">
+    一句话：这套系统能告诉你"这 1,803 条里负面集中在哪、原话是什么"，不能告诉你"全网都在骂"。
+  </text>
+
+  <text x="56" y="1056" font-size="11.5" fill="#94A3B8" data-page-node-id="FkeHyno3cFzZAzfHgc59vw">
+    CampusPulse V1.0 ｜ 本图所有数字均可在系统内复算 ｜ 验收 56 项端到端 · 浏览器验证 9 项安全 + 14 项前端
+  </text>
+</svg>
+</div>
+</body>
+</html>
