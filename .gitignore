@@ -1,0 +1,48 @@
+# ============================================================
+# CampusPulse .gitignore
+# 原则：密钥、数据、生成物、大体积素材一律不入库；
+#       clone 后只需 requirements.txt + comparison_data/ 即可复现。
+# ============================================================
+
+# ---- 密钥与账号（绝不能进公开仓库）----
+.env
+.env.local
+data/.session_key
+data/demo_accounts.txt
+data/initial_admin.txt
+
+# ---- 虚拟环境与编辑器 ----
+.venv/
+venv/
+.idea/
+.vscode/
+*.swp
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+
+# ---- 运行时数据：数据库 / 备份 / 上传 / 日志 / 临时 ----
+# data/ 目录由 campuspulse/config.py 启动时自动创建，无需入库
+data/
+raw_data/
+
+# ---- 生成物与中间产物 ----
+output/
+cleaned_data/
+flask.log
+*.log
+
+# ---- 大体积素材（演示截图 23MB，随答辩材料单独提交，不进代码仓库）----
+screenshots/
+
+# ---- 本地工具工作目录（记忆 / 缓存 / 备份，46MB）----
+.workbuddy/
+
+# ---- 系统文件 ----
+.DS_Store
+Thumbs.db
+desktop.ini
