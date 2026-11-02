@@ -1,0 +1,5002 @@
+[
+  {
+    "comment_id": "100830",
+    "create_time": 1693498556,
+    "aweme_id": "1025421625713458491",
+    "content": "作为新生，宿舍管理挺人性化，晚归登记一下就行，不会乱扣分，好评",
+    "creator_hash": "5e89419491a4b560",
+    "nickname": "小***可",
+    "sub_comment_count": "1",
+    "like_count": 23
+  },
+  {
+    "comment_id": "100426",
+    "create_time": 1693508656,
+    "aweme_id": "1987057572843150221",
+    "content": "不是我说，食堂卫生堪忧，餐盘上还有油，看到就没胃口了，体验差，确实有点坑",
+    "creator_hash": "3d2a36992bda8c16",
+    "nickname": "学***姐",
+    "sub_comment_count": "37",
+    "like_count": 72
+  },
+  {
+    "comment_id": "100668",
+    "create_time": 1693513821,
+    "aweme_id": "1772376400774489271",
+    "content": "真的，招生简章写得漂亮，实际住宿费学费加起来一年一万八，超预算，确实有点坑",
+    "creator_hash": "e410c1573ba1d549",
+    "nickname": "佛***山",
+    "sub_comment_count": "10",
+    "like_count": 14
+  },
+  {
+    "comment_id": "100154",
+    "create_time": 1693521512,
+    "aweme_id": "1251151820682408795",
+    "content": "住了一学期，说是产教融合，实际学费涨了课没变，家长意见很大，有点坑",
+    "creator_hash": "deec2650bad840cf",
+    "nickname": "考***研",
+    "sub_comment_count": "17",
+    "like_count": 11
+  },
+  {
+    "comment_id": "100080",
+    "create_time": 1693558516,
+    "aweme_id": "1791783534824022850",
+    "content": "绩点怎么算，多少算优秀",
+    "creator_hash": "8f73f051347eda47",
+    "nickname": "夜***猫",
+    "sub_comment_count": "2",
+    "like_count": 1
+  },
+  {
+    "comment_id": "100992",
+    "create_time": 1693559489,
+    "aweme_id": "1595228435918070660",
+    "content": "不得不说，饭堂环境干净，阿姨打菜也不手抖，吃得挺放心，满意",
+    "creator_hash": "73d4fb5df6d1c171",
+    "nickname": "夜***猫",
+    "sub_comment_count": "2",
+    "like_count": 13
+  },
+  {
+    "comment_id": "100094",
+    "create_time": 1693559619,
+    "aweme_id": "1410949175855346315",
+    "content": "招生办的老师回复很及时，问的问题都耐心解答了，好评，给个好评",
+    "creator_hash": "efc61c154225a85b",
+    "nickname": "小***白",
+    "sub_comment_count": "29",
+    "like_count": 36
+  },
+  {
+    "comment_id": "100296",
+    "create_time": 1693569674,
+    "aweme_id": "1811519189678190712",
+    "content": "说实话，骑车十分钟能到商圈，出行其实没那么不方便，还行",
+    "creator_hash": "3ff18ce437bc02e3",
+    "nickname": "小***新",
+    "sub_comment_count": "0",
+    "like_count": 307
+  },
+  {
+    "comment_id": "100298",
+    "create_time": 1693570471,
+    "aweme_id": "1938534997265296596",
+    "content": "学费一年两万五，民办学校这价格真的有点劝退，太贵了，有点失望",
+    "creator_hash": "1dd89bb95dc0c072",
+    "nickname": "追***梦",
+    "sub_comment_count": "56",
+    "like_count": 45
+  },
+  {
+    "comment_id": "100814",
+    "create_time": 1693614205,
+    "aweme_id": "1920645703963190597",
+    "content": "不是我说，作业和实验报告堆成山，一周交三份，根本做不完，麻烦",
+    "creator_hash": "a5dc7674b7da6c85",
+    "nickname": "狮***山",
+    "sub_comment_count": "10",
+    "like_count": 59
+  },
+  {
+    "comment_id": "100642",
+    "create_time": 1693615538,
+    "aweme_id": "1966895795858749444",
+    "content": "忍不住说一句，学费一年三万，民办学校这价格真的有点劝退，太贵了",
+    "creator_hash": "f3835494f9301017",
+    "nickname": "路***人甲",
+    "sub_comment_count": "7",
+    "like_count": 21
+  },
+  {
+    "comment_id": "100710",
+    "create_time": 1693621136,
+    "aweme_id": "1698151856680902671",
+    "content": "客观地说，食堂饭菜又涨价了，一份套餐十二块，学生党真心吃不起，太贵",
+    "creator_hash": "392886e911b5df48",
+    "nickname": "上***岸",
+    "sub_comment_count": "26",
+    "like_count": 14
+  },
+  {
+    "comment_id": "100724",
+    "create_time": 1693628083,
+    "aweme_id": "1556692710912948897",
+    "content": "学费一年两万二，民办学校这价格真的有点劝退，太贵了",
+    "creator_hash": "cbe25899abcc9fb0",
+    "nickname": "网***友",
+    "sub_comment_count": "80",
+    "like_count": 17
+  },
+  {
+    "comment_id": "100282",
+    "create_time": 1693668661,
+    "aweme_id": "1897626882757309443",
+    "content": "作为新生，饭堂的面食窗口很惊喜，现做的，比外卖强多了，点赞，总体不错",
+    "creator_hash": "e6da60e8ef676414",
+    "nickname": "摸***鱼",
+    "sub_comment_count": "0",
+    "like_count": 9
+  },
+  {
+    "comment_id": "100146",
+    "create_time": 1693670251,
+    "aweme_id": "1209367876149481753",
+    "content": "可以放心，学校奖学金挺多的，成绩好一年能抵不少学费，挺良心",
+    "creator_hash": "0b952e7c2a313c43",
+    "nickname": "大***姐",
+    "sub_comment_count": "6",
+    "like_count": 36
+  },
+  {
+    "comment_id": "100630",
+    "create_time": 1693681149,
+    "aweme_id": "1325349919197405916",
+    "content": "作为在读生，饭堂菜品一个月都不换，天天老三样，吃到想吐，确实有点坑",
+    "creator_hash": "8751de2bc1ab8b3c",
+    "nickname": "小***白",
+    "sub_comment_count": "15",
+    "like_count": 10
+  },
+  {
+    "comment_id": "100292",
+    "create_time": 1693685020,
+    "aweme_id": "1000566387508134303",
+    "content": "可以放心，校园绿化做得好，湖边散步很舒服，拍照也出片，推荐",
+    "creator_hash": "749e8184f384bb9e",
+    "nickname": "夜***猫",
+    "sub_comment_count": "33",
+    "like_count": 15
+  },
+  {
+    "comment_id": "100554",
+    "create_time": 1693688298,
+    "aweme_id": "1922081846890964667",
+    "content": "讲真，狮山这边空气好，晚上操场跑步很舒服，环境加分",
+    "creator_hash": "1d7d0162319f278a",
+    "nickname": "学***弟",
+    "sub_comment_count": "1",
+    "like_count": 13
+  },
+  {
+    "comment_id": "100262",
+    "create_time": 1693734541,
+    "aweme_id": "1847515112088900998",
+    "content": "专升本的招生名额一年比一年少，感觉越来越难考了，感觉被劝退了",
+    "creator_hash": "4e647f77a8fb8f19",
+    "nickname": "新***生",
+    "sub_comment_count": "41",
+    "like_count": 2
+  },
+  {
+    "comment_id": "100806",
+    "create_time": 1693742091,
+    "aweme_id": "1602499517300598106",
+    "content": "求问，军训是几月份，要多久",
+    "creator_hash": "586592cbb99009cb",
+    "nickname": "路***人",
+    "sub_comment_count": "7",
+    "like_count": 14
+  },
+  {
+    "comment_id": "100950",
+    "create_time": 1693748547,
+    "aweme_id": "1744512599799252954",
+    "content": "说实话，校园绿化做得好，湖边散步很舒服，拍照也出片，推荐",
+    "creator_hash": "b951ede2f74839f0",
+    "nickname": "考***研",
+    "sub_comment_count": "21",
+    "like_count": 7
+  },
+  {
+    "comment_id": "100832",
+    "create_time": 1693778705,
+    "aweme_id": "1883946628616029529",
+    "content": "招生办的老师回复很及时，问的问题都耐心解答了，好评，推荐给学弟学妹",
+    "creator_hash": "4a9c838e0e0d1190",
+    "nickname": "毕***业",
+    "sub_comment_count": "36",
+    "like_count": 13
+  },
+  {
+    "comment_id": "100702",
+    "create_time": 1693790078,
+    "aweme_id": "1711441283452145229",
+    "content": "不是我说，学费这么贵，奖学金名额还少，普通家庭压力太大了",
+    "creator_hash": "55ee1ff37bc8f6f7",
+    "nickname": "家***长",
+    "sub_comment_count": "7",
+    "like_count": 1390
+  },
+  {
+    "comment_id": "100192",
+    "create_time": 1693796675,
+    "aweme_id": "1814954569822602873",
+    "content": "学校位置太偏，去市区要转两趟公交，单程三十分钟，不方便，感觉被劝退了",
+    "creator_hash": "8ddf950e2aa59fd1",
+    "nickname": "同***学",
+    "sub_comment_count": "5",
+    "like_count": 14
+  },
+  {
+    "comment_id": "100902",
+    "create_time": 1693802223,
+    "aweme_id": "1805530229092112859",
+    "content": "准备报考，小学期要上多久",
+    "creator_hash": "ab1183b367a69339",
+    "nickname": "佛***山",
+    "sub_comment_count": "3",
+    "like_count": 12
+  },
+  {
+    "comment_id": "100718",
+    "create_time": 1693813826,
+    "aweme_id": "1752420005436832179",
+    "content": "宿舍六人间挤得转不开身，行李都没地方放，住着太压抑，不知道别人是不是也这样，确实有点坑",
+    "creator_hash": "d47010fea54a8c69",
+    "nickname": "南***海",
+    "sub_comment_count": "3",
+    "like_count": 52
+  },
+  {
+    "comment_id": "100328",
+    "create_time": 1693840772,
+    "aweme_id": "1143490300392463271",
+    "content": "专升本的招生名额一年比一年少，感觉越来越难考了，心态崩了，确实有点坑",
+    "creator_hash": "df86aebadbe45902",
+    "nickname": "摸***鱼",
+    "sub_comment_count": "2",
+    "like_count": 1
+  },
+  {
+    "comment_id": "100386",
+    "create_time": 1693842875,
+    "aweme_id": "1183762485101833055",
+    "content": "作为新生，分数比去年低一点也能上，性价比挺高的，推荐报考，不后悔来",
+    "creator_hash": "501c9a61b9e144b9",
+    "nickname": "网***友",
+    "sub_comment_count": "25",
+    "like_count": 56
+  },
+  {
+    "comment_id": "100366",
+    "create_time": 1693843025,
+    "aweme_id": "1656922525106438249",
+    "content": "小学期是所有人都要上吗，求解答",
+    "creator_hash": "30637e676cc6867d",
+    "nickname": "南***海",
+    "sub_comment_count": "5",
+    "like_count": 4
+  },
+  {
+    "comment_id": "100662",
+    "create_time": 1693843606,
+    "aweme_id": "1301379549579627529",
+    "content": "宿舍隔音差到离谱，隔壁说话都听得清，晚上根本睡不好，心态崩了",
+    "creator_hash": "60e99a01438118d9",
+    "nickname": "学***姐",
+    "sub_comment_count": "26",
+    "like_count": 2
+  },
+  {
+    "comment_id": "100870",
+    "create_time": 1693851707,
+    "aweme_id": "1673414070638837971",
+    "content": "不得不说，学校门口就有公交站，去佛山西站还挺方便的",
+    "creator_hash": "10658b465ddfc057",
+    "nickname": "早***八",
+    "sub_comment_count": "4",
+    "like_count": 15
+  },
+  {
+    "comment_id": "100872",
+    "create_time": 1693866765,
+    "aweme_id": "1409023370395490522",
+    "content": "专升本的招生名额一年比一年少，感觉越来越难考了，希望学校能管管，确实有点坑",
+    "creator_hash": "df468308d1e82343",
+    "nickname": "早***八",
+    "sub_comment_count": "4",
+    "like_count": 34
+  },
+  {
+    "comment_id": "100918",
+    "create_time": 1693870789,
+    "aweme_id": "1805878025089701281",
+    "content": "问下大家，学校代码是多少，志愿怎么填",
+    "creator_hash": "fc1d931e1dfdf3f3",
+    "nickname": "专***科",
+    "sub_comment_count": "3",
+    "like_count": 49
+  },
+  {
+    "comment_id": "100316",
+    "create_time": 1693886172,
+    "aweme_id": "1380387687252498107",
+    "content": "饭堂的菜越来越贵，量还越来越少，性价比太低，真的很难受",
+    "creator_hash": "734b9a62fcc2c6ff",
+    "nickname": "吃***货",
+    "sub_comment_count": "38",
+    "like_count": 384
+  },
+  {
+    "comment_id": "100152",
+    "create_time": 1693910331,
+    "aweme_id": "1853534937084987003",
+    "content": "客观地说，校区挺大，建筑挺好看，第一眼就挺喜欢的，推荐，挺加分的",
+    "creator_hash": "276917279dacdf9b",
+    "nickname": "南***海",
+    "sub_comment_count": "3",
+    "like_count": 16
+  },
+  {
+    "comment_id": "100930",
+    "create_time": 1693923385,
+    "aweme_id": "1058529165278749309",
+    "content": "说实话，宿管查寝查得严，十一点之后连吹风机都不让用，管理太死板，确实有点坑",
+    "creator_hash": "4db413e119ba6cb1",
+    "nickname": "吃***货",
+    "sub_comment_count": "11",
+    "like_count": 23
+  },
+  {
+    "comment_id": "100638",
+    "create_time": 1693942531,
+    "aweme_id": "1468585887383504518",
+    "content": "安利一下，宿舍楼有电梯，搬东西完全不费劲，这点做得很贴心",
+    "creator_hash": "5203cc7ec0d32721",
+    "nickname": "新***生",
+    "sub_comment_count": "6",
+    "like_count": 38
+  },
+  {
+    "comment_id": "100716",
+    "create_time": 1693976589,
+    "aweme_id": "1580899491882367798",
+    "content": "期末考范围给得特别模糊，复习全靠猜，太难受了，希望学校能管管",
+    "creator_hash": "371460f4ad16325b",
+    "nickname": "吃***货",
+    "sub_comment_count": "7",
+    "like_count": 7
+  },
+  {
+    "comment_id": "100024",
+    "create_time": 1693985237,
+    "aweme_id": "1344183027054530533",
+    "content": "说实话，校园面积不大，走两圈就逛完了，有点失望",
+    "creator_hash": "216b2c2c5710911f",
+    "nickname": "南***海",
+    "sub_comment_count": "31",
+    "like_count": 215
+  },
+  {
+    "comment_id": "100982",
+    "create_time": 1693987436,
+    "aweme_id": "1103062549109641798",
+    "content": "客观地说，学校考研氛围挺浓，图书馆自习位一座难求，挺励志的，总体不错",
+    "creator_hash": "a7c28fb4c2f1b8aa",
+    "nickname": "实***习",
+    "sub_comment_count": "17",
+    "like_count": 6
+  },
+  {
+    "comment_id": "100428",
+    "create_time": 1693989238,
+    "aweme_id": "1489512240932709730",
+    "content": "说实话，老师会带着做真实项目，简历上能写东西，这点很加分，总体不错",
+    "creator_hash": "4328b4446aa6f345",
+    "nickname": "匿***名",
+    "sub_comment_count": "1",
+    "like_count": 1323
+  },
+  {
+    "comment_id": "100334",
+    "create_time": 1694001818,
+    "aweme_id": "1449067736154163337",
+    "content": "宿舍空调是免费的吗，求解答",
+    "creator_hash": "826167ddd92a683a",
+    "nickname": "吃***瓜",
+    "sub_comment_count": "0",
+    "like_count": 10
+  },
+  {
+    "comment_id": "100912",
+    "create_time": 1694004812,
+    "aweme_id": "1101686222925945254",
+    "content": "讲真，饭堂菜品一个月都不换，天天老三样，吃到想吐，不知道别人是不是也这样，确实有点坑",
+    "creator_hash": "57ab4838e93a543c",
+    "nickname": "专***科",
+    "sub_comment_count": "3",
+    "like_count": 55
+  },
+  {
+    "comment_id": "100812",
+    "create_time": 1694011817,
+    "aweme_id": "1578792194822015710",
+    "content": "作为新生，学校门口就有公交站，去佛山西站还挺方便的",
+    "creator_hash": "610fdb1234fe7cae",
+    "nickname": "准***生",
+    "sub_comment_count": "9",
+    "like_count": 59
+  },
+  {
+    "comment_id": "100006",
+    "create_time": 1694012023,
+    "aweme_id": "1572355410933050876",
+    "content": "学校有几个校区",
+    "creator_hash": "2d7fbcffbbc0279f",
+    "nickname": "东***软",
+    "sub_comment_count": "26",
+    "like_count": 25
+  },
+  {
+    "comment_id": "100644",
+    "create_time": 1694015694,
+    "aweme_id": "1443068743553279872",
+    "content": "问下大家，今年招生计划出来了吗",
+    "creator_hash": "0b99bca7e03c9f3d",
+    "nickname": "愤***青",
+    "sub_comment_count": "16",
+    "like_count": 40
+  },
+  {
+    "comment_id": "100938",
+    "create_time": 1694043987,
+    "aweme_id": "1468307948224005317",
+    "content": "可以放心，辅导员人很好，有事找她都能及时解决，挺暖心的",
+    "creator_hash": "6d734667cdaed460",
+    "nickname": "大***姐",
+    "sub_comment_count": "4",
+    "like_count": 39
+  },
+  {
+    "comment_id": "100986",
+    "create_time": 1694044779,
+    "aweme_id": "1770286246164507863",
+    "content": "有人清楚吗，宿舍空调是免费的吗",
+    "creator_hash": "eafce85f73c315b0",
+    "nickname": "准***生",
+    "sub_comment_count": "29",
+    "like_count": 10
+  },
+  {
+    "comment_id": "100666",
+    "create_time": 1694045390,
+    "aweme_id": "1075742690548079409",
+    "content": "实训课多吗，能上手吗，求解答",
+    "creator_hash": "2728b787724abfcb",
+    "nickname": "学***弟",
+    "sub_comment_count": "2",
+    "like_count": 11
+  },
+  {
+    "comment_id": "100310",
+    "create_time": 1694057202,
+    "aweme_id": "1239219084185780527",
+    "content": "宿舍楼下就是快递点和超市，生活挺方便的，点赞，不后悔来",
+    "creator_hash": "f6ce5345dd07c5ff",
+    "nickname": "转***本",
+    "sub_comment_count": "6",
+    "like_count": 114
+  },
+  {
+    "comment_id": "100258",
+    "create_time": 1694079657,
+    "aweme_id": "1463642209959681352",
+    "content": "路过问一句，学校代码是多少，志愿怎么填",
+    "creator_hash": "c9346ef566b64c0e",
+    "nickname": "南***海",
+    "sub_comment_count": "0",
+    "like_count": 14
+  },
+  {
+    "comment_id": "100464",
+    "create_time": 1694088258,
+    "aweme_id": "1887338232776602094",
+    "content": "学费一年两万五，在民办里算正常水平，能接受，可以冲",
+    "creator_hash": "d8e87d22ad337632",
+    "nickname": "愤***青",
+    "sub_comment_count": "11",
+    "like_count": 1
+  },
+  {
+    "comment_id": "100920",
+    "create_time": 1694101068,
+    "aweme_id": "1122136249445630741",
+    "content": "作为新生，宿舍楼有电梯，搬东西完全不费劲，这点做得很贴心，值得",
+    "creator_hash": "6cbb0e3dc0bc2c62",
+    "nickname": "考***研",
+    "sub_comment_count": "3",
+    "like_count": 235
+  },
+  {
+    "comment_id": "100408",
+    "create_time": 1694115658,
+    "aweme_id": "1947253038890826676",
+    "content": "住宿费一年两万五，条件却是上下铺，性价比太低，确实有点坑",
+    "creator_hash": "f4db241b96b1a07f",
+    "nickname": "学***弟",
+    "sub_comment_count": "18",
+    "like_count": 246
+  },
+  {
+    "comment_id": "100056",
+    "create_time": 1694127724,
+    "aweme_id": "1363196631779088845",
+    "content": "准备报考，南海校区环境怎么样，有知道的吗",
+    "creator_hash": "deddf4adf6c14e20",
+    "nickname": "同***学",
+    "sub_comment_count": "79",
+    "like_count": 1
+  },
+  {
+    "comment_id": "100170",
+    "create_time": 1694128831,
+    "aweme_id": "1699594026259615707",
+    "content": "食堂二楼的烧腊饭挺好吃，十五块一份量也足，推荐，推荐给学弟学妹",
+    "creator_hash": "bc1a238e7ce34e72",
+    "nickname": "夜***猫",
+    "sub_comment_count": "73",
+    "like_count": 12
+  },
+  {
+    "comment_id": "100084",
+    "create_time": 1694144420,
+    "aweme_id": "1371351643570765108",
+    "content": "食堂有素食窗口吗，求解答",
+    "creator_hash": "47371e2f9d08ed5c",
+    "nickname": "同***学",
+    "sub_comment_count": "78",
+    "like_count": 9
+  },
+  {
+    "comment_id": "100454",
+    "create_time": 1694155282,
+    "aweme_id": "1892560298851279688",
+    "content": "学费一年两万六，在民办里算正常水平，能接受，可以冲",
+    "creator_hash": "f738c926d7ecb575",
+    "nickname": "夜***猫",
+    "sub_comment_count": "10",
+    "like_count": 51
+  },
+  {
+    "comment_id": "100972",
+    "create_time": 1694159767,
+    "aweme_id": "1803469604043651261",
+    "content": "有点无语，宿舍隔音差到离谱，隔壁说话都听得清，晚上根本睡不好",
+    "creator_hash": "e11090343c4b48b2",
+    "nickname": "考***研",
+    "sub_comment_count": "1",
+    "like_count": 383
+  },
+  {
+    "comment_id": "100202",
+    "create_time": 1694182852,
+    "aweme_id": "1407264145025402903",
+    "content": "认真吐槽一下，专升本的招生名额一年比一年少，感觉越来越难考了",
+    "creator_hash": "7bf7ca26c6456d49",
+    "nickname": "打***工",
+    "sub_comment_count": "8",
+    "like_count": 15
+  },
+  {
+    "comment_id": "100838",
+    "create_time": 1694183573,
+    "aweme_id": "1411433237718563943",
+    "content": "学校附近租房贵吗，感谢",
+    "creator_hash": "8d9af73529d5b7f6",
+    "nickname": "家***长",
+    "sub_comment_count": "5",
+    "like_count": 9
+  },
+  {
+    "comment_id": "100314",
+    "create_time": 1694213085,
+    "aweme_id": "1935052839140943343",
+    "content": "学校有篮球场吗，社团活动能用吗，在线等",
+    "creator_hash": "3ba4e60776eada82",
+    "nickname": "干***饭",
+    "sub_comment_count": "3",
+    "like_count": 4
+  },
+  {
+    "comment_id": "100846",
+    "create_time": 1694236260,
+    "aweme_id": "1328531729757342017",
+    "content": "宿舍楼离教学楼太远，每天上下课走十分钟，累到不想动，太难了",
+    "creator_hash": "aa720b1c8f64fbab",
+    "nickname": "南***海",
+    "sub_comment_count": "8",
+    "like_count": 7
+  },
+  {
+    "comment_id": "100600",
+    "create_time": 1694249402,
+    "aweme_id": "1119392929305603148",
+    "content": "食堂的汤基本就是白开水加盐，还要另外收钱，太坑，真的很难受",
+    "creator_hash": "167efbefa842ba7f",
+    "nickname": "学***姐",
+    "sub_comment_count": "30",
+    "like_count": 2
+  },
+  {
+    "comment_id": "100922",
+    "create_time": 1694270158,
+    "aweme_id": "1154792044193020539",
+    "content": "说句实话，饭堂味道是真的不行，米线像泡面，还卖三十块一份，难吃",
+    "creator_hash": "d4065d865fa0ea70",
+    "nickname": "应***届",
+    "sub_comment_count": "3",
+    "like_count": 12
+  },
+  {
+    "comment_id": "100092",
+    "create_time": 1694330662,
+    "aweme_id": "1363668354684452266",
+    "content": "作为在读生，食堂晚上七点就没菜了，晚自习回来只能吃泡面，太难受，感觉被劝退了",
+    "creator_hash": "2cc47ba3fae0419d",
+    "nickname": "家***长",
+    "sub_comment_count": "0",
+    "like_count": 70
+  },
+  {
+    "comment_id": "100290",
+    "create_time": 1694360962,
+    "aweme_id": "1471169513292426887",
+    "content": "安利一下，学费一年两万八，在民办里算正常水平，能接受，总体不错",
+    "creator_hash": "bd37f45e82bf7a4e",
+    "nickname": "老***生",
+    "sub_comment_count": "30",
+    "like_count": 40
+  },
+  {
+    "comment_id": "100660",
+    "create_time": 1694401594,
+    "aweme_id": "1237718574865274978",
+    "content": "饭堂味道是真的不行，米线像泡面，还卖十八块一份，难吃",
+    "creator_hash": "58daa09aaa0679dd",
+    "nickname": "新***生",
+    "sub_comment_count": "1",
+    "like_count": 3
+  },
+  {
+    "comment_id": "100490",
+    "create_time": 1694405665,
+    "aweme_id": "1438315610674223407",
+    "content": "认真吐槽一下，宿舍楼离教学楼太远，每天上下课走六十分钟，累到不想动",
+    "creator_hash": "e444e8877c24255d",
+    "nickname": "愤***青",
+    "sub_comment_count": "11",
+    "like_count": 636
+  },
+  {
+    "comment_id": "100274",
+    "create_time": 1694413029,
+    "aweme_id": "1680789619821609641",
+    "content": "离地铁站太远了，打车过去要五十块，出行成本太高，有点后悔",
+    "creator_hash": "0d04b691a16963f1",
+    "nickname": "追***梦",
+    "sub_comment_count": "22",
+    "like_count": 19
+  },
+  {
+    "comment_id": "100760",
+    "create_time": 1694422477,
+    "aweme_id": "1971077117396353659",
+    "content": "在线等，学校有几个校区，求解答",
+    "creator_hash": "5af63a266d60827a",
+    "nickname": "专***科",
+    "sub_comment_count": "21",
+    "like_count": 20
+  },
+  {
+    "comment_id": "100792",
+    "create_time": 1694433634,
+    "aweme_id": "1735816646215637283",
+    "content": "食堂有清真窗口和素食窗口，选择挺多，照顾得挺周到，总体挺满意的",
+    "creator_hash": "32e2bbfa0787d95a",
+    "nickname": "网***友",
+    "sub_comment_count": "21",
+    "like_count": 13
+  },
+  {
+    "comment_id": "100048",
+    "create_time": 1694441212,
+    "aweme_id": "1285510310353455486",
+    "content": "新校区还在施工，到处是灰尘和噪音，环境有点差，确实有点坑",
+    "creator_hash": "14f3ff86e884acd6",
+    "nickname": "上***岸",
+    "sub_comment_count": "8",
+    "like_count": 1
+  },
+  {
+    "comment_id": "100042",
+    "create_time": 1694466969,
+    "aweme_id": "1379814637917230018",
+    "content": "快递驿站在校外，取个大件要走十几分钟，太麻烦，不知道别人是不是也这样",
+    "creator_hash": "ff7b107f791d9021",
+    "nickname": "应***届",
+    "sub_comment_count": "48",
+    "like_count": 69
+  },
+  {
+    "comment_id": "100824",
+    "create_time": 1694480314,
+    "aweme_id": "1060956234419512801",
+    "content": "学校的专升本通道挺通畅，学长上岸了，给了不少信心，推荐给学弟学妹",
+    "creator_hash": "fc82edd682772d2a",
+    "nickname": "网***友",
+    "sub_comment_count": "5",
+    "like_count": 32
+  },
+  {
+    "comment_id": "100488",
+    "create_time": 1694522117,
+    "aweme_id": "1243847205539618122",
+    "content": "住了一学期，学校门口就有公交站，去佛山西站还挺方便的",
+    "creator_hash": "0c3c02f22d4b2191",
+    "nickname": "应***届",
+    "sub_comment_count": "2",
+    "like_count": 14
+  },
+  {
+    "comment_id": "100416",
+    "create_time": 1694531306,
+    "aweme_id": "1598497748612425876",
+    "content": "学生会官僚气太重，办个活动流程走一个月，效率太低，不知道别人是不是也这样，确实有点坑",
+    "creator_hash": "4f06f5e97b813aa6",
+    "nickname": "路***人",
+    "sub_comment_count": "17",
+    "like_count": 11
+  },
+  {
+    "comment_id": "100772",
+    "create_time": 1694543330,
+    "aweme_id": "1472187271033387471",
+    "content": "学费虽然不便宜，但实训设备是真的舍得投入，值这个价，总体挺满意的",
+    "creator_hash": "20f52f1c10a109ed",
+    "nickname": "学***姐",
+    "sub_comment_count": "0",
+    "like_count": 4
+  },
+  {
+    "comment_id": "100168",
+    "create_time": 1694580410,
+    "aweme_id": "1815572386383377962",
+    "content": "可以放心，宿舍有空调有热水，宿管阿姨人也好，住着挺安心的",
+    "creator_hash": "8c5e86a9f7968923",
+    "nickname": "老***油",
+    "sub_comment_count": "1",
+    "like_count": 12
+  },
+  {
+    "comment_id": "100248",
+    "create_time": 1694609122,
+    "aweme_id": "1081253284657799231",
+    "content": "新宿舍四人间，独立卫浴加空调，住得比家里还舒服，满意，可以冲",
+    "creator_hash": "e1cb6fce6ba2c231",
+    "nickname": "小***新",
+    "sub_comment_count": "7",
+    "like_count": 12
+  },
+  {
+    "comment_id": "100406",
+    "create_time": 1694639374,
+    "aweme_id": "1091280897995371604",
+    "content": "忍不住说一句，热水限时供应，十一点半之后洗澡只能洗冷水，冬天真的顶不住，确实有点坑",
+    "creator_hash": "6e0a685a1434603a",
+    "nickname": "小***新",
+    "sub_comment_count": "1",
+    "like_count": 60
+  },
+  {
+    "comment_id": "100312",
+    "create_time": 1694701909,
+    "aweme_id": "1073483399260512734",
+    "content": "学校的专升本通道挺通畅，学长上岸了，给了不少信心，总体挺满意的",
+    "creator_hash": "d47cb1a6e7587cd8",
+    "nickname": "大***姐",
+    "sub_comment_count": "66",
+    "like_count": 14
+  },
+  {
+    "comment_id": "100588",
+    "create_time": 1694715623,
+    "aweme_id": "1040339037277700272",
+    "content": "路过问一句，今年录取分数线大概多少，求解答",
+    "creator_hash": "a6655b42243953a8",
+    "nickname": "路***人",
+    "sub_comment_count": "3",
+    "like_count": 287
+  },
+  {
+    "comment_id": "100300",
+    "create_time": 1694750573,
+    "aweme_id": "1642159910613337609",
+    "content": "食堂的鸡扒饭分量很足，肉厚还嫩，十八块值了，推荐",
+    "creator_hash": "88a569e7799a3180",
+    "nickname": "学***长",
+    "sub_comment_count": "2",
+    "like_count": 15
+  },
+  {
+    "comment_id": "100446",
+    "create_time": 1694754097,
+    "aweme_id": "1389490993776326884",
+    "content": "新生报到要带哪些材料，谢谢",
+    "creator_hash": "f91d897f8699b1a0",
+    "nickname": "复***读",
+    "sub_comment_count": "0",
+    "like_count": 255
+  },
+  {
+    "comment_id": "100790",
+    "create_time": 1694755843,
+    "aweme_id": "1489213361028624640",
+    "content": "食堂早餐种类挺多，三十块就能吃饱，比外面划算",
+    "creator_hash": "77fcab97cfee089b",
+    "nickname": "打***工",
+    "sub_comment_count": "6",
+    "like_count": 91
+  },
+  {
+    "comment_id": "100968",
+    "create_time": 1694756659,
+    "aweme_id": "1460726221334733993",
+    "content": "南海校区图书馆大吗，求解答",
+    "creator_hash": "3ff418aea9d3137d",
+    "nickname": "吃***瓜",
+    "sub_comment_count": "3",
+    "like_count": 47
+  },
+  {
+    "comment_id": "100390",
+    "create_time": 1694776778,
+    "aweme_id": "1364150553667208688",
+    "content": "宿舍快递怎么收，有知道的吗",
+    "creator_hash": "ca43b1beca4648cb",
+    "nickname": "早***八",
+    "sub_comment_count": "32",
+    "like_count": 31
+  },
+  {
+    "comment_id": "100606",
+    "create_time": 1694792905,
+    "aweme_id": "1576931604639930638",
+    "content": "综测加分规则太复杂，班委加分一堆，普通学生根本没机会，确实有点坑",
+    "creator_hash": "cb9984005e56dd56",
+    "nickname": "南***海",
+    "sub_comment_count": "3",
+    "like_count": 13
+  },
+  {
+    "comment_id": "100380",
+    "create_time": 1694798206,
+    "aweme_id": "1889516503345412359",
+    "content": "食堂高峰期根本找不到座位，端着盘子站半天，体验太差，有点后悔",
+    "creator_hash": "5b8e5a535f39b437",
+    "nickname": "东***软",
+    "sub_comment_count": "7",
+    "like_count": 1
+  },
+  {
+    "comment_id": "100060",
+    "create_time": 1694809463,
+    "aweme_id": "1401284765574703264",
+    "content": "住宿费一年一万八，条件却是上下铺，性价比太低，确实有点坑",
+    "creator_hash": "f9848438e1b1db4b",
+    "nickname": "毕***业",
+    "sub_comment_count": "5",
+    "like_count": 11
+  },
+  {
+    "comment_id": "100062",
+    "create_time": 1694815032,
+    "aweme_id": "1851785861242654533",
+    "content": "个人体验，辅导员人很好，有事找她都能及时解决，挺暖心的",
+    "creator_hash": "9d39bb5ce018d76f",
+    "nickname": "干***饭",
+    "sub_comment_count": "3",
+    "like_count": 78
+  },
+  {
+    "comment_id": "100086",
+    "create_time": 1694819508,
+    "aweme_id": "1012180361924348615",
+    "content": "求问，学校的投档比例是多少，投档线怎么算，麻烦学长学姐解答一下",
+    "creator_hash": "0051dfe49e578dbe",
+    "nickname": "吃***瓜",
+    "sub_comment_count": "42",
+    "like_count": 8
+  },
+  {
+    "comment_id": "100632",
+    "create_time": 1694824136,
+    "aweme_id": "1841379402429158100",
+    "content": "洗衣机就两台，排队洗一次要等一小时，太不方便，有点失望",
+    "creator_hash": "9cc978412b021336",
+    "nickname": "新***生",
+    "sub_comment_count": "1",
+    "like_count": 16
+  },
+  {
+    "comment_id": "100246",
+    "create_time": 1694825593,
+    "aweme_id": "1754546359225305196",
+    "content": "住了一学期，选课系统一到点就崩，抢课抢了个寂寞，全是水课，太坑，希望学校能管管",
+    "creator_hash": "9d7934b115fe9311",
+    "nickname": "干***饭",
+    "sub_comment_count": "34",
+    "like_count": 7
+  },
+  {
+    "comment_id": "100138",
+    "create_time": 1694841145,
+    "aweme_id": "1680336202331774685",
+    "content": "个人体验，校巴免费的，班次也够用，去地铁站接驳挺顺，方便",
+    "creator_hash": "49aa72debe43c7a7",
+    "nickname": "夜***猫",
+    "sub_comment_count": "1",
+    "like_count": 64
+  },
+  {
+    "comment_id": "100590",
+    "create_time": 1694855731,
+    "aweme_id": "1154290565008732867",
+    "content": "食堂一楼的糖水很良心，六块一杯，夏天喝着很舒服",
+    "creator_hash": "e5b2a50ae5359395",
+    "nickname": "狮***山",
+    "sub_comment_count": "10",
+    "like_count": 72
+  },
+  {
+    "comment_id": "100732",
+    "create_time": 1694878924,
+    "aweme_id": "1832157434640408143",
+    "content": "准备报考，新生报到要带哪些材料，求解答",
+    "creator_hash": "dbcc94ea16d8e16a",
+    "nickname": "转***本",
+    "sub_comment_count": "8",
+    "like_count": 2
+  },
+  {
+    "comment_id": "100040",
+    "create_time": 1694897460,
+    "aweme_id": "1461999558876814512",
+    "content": "外卖比食堂好吃还便宜，谁还去食堂啊，价格该管管了，心态崩了，确实有点坑",
+    "creator_hash": "16f87c44e39e7c4a",
+    "nickname": "老***生",
+    "sub_comment_count": "73",
+    "like_count": 8
+  },
+  {
+    "comment_id": "100506",
+    "create_time": 1694898806,
+    "aweme_id": "1776194965727849754",
+    "content": "说是产教融合，实际学费涨了课没变，家长意见很大，有点坑，有点失望",
+    "creator_hash": "1591308d906052bb",
+    "nickname": "上***岸",
+    "sub_comment_count": "44",
+    "like_count": 12
+  },
+  {
+    "comment_id": "100520",
+    "create_time": 1694949741,
+    "aweme_id": "1189915797960142691",
+    "content": "四六级考场名额少，抢不到只能去外校考，太麻烦了，心态崩了",
+    "creator_hash": "21723dc727ed6de8",
+    "nickname": "老***油",
+    "sub_comment_count": "13",
+    "like_count": 275
+  },
+  {
+    "comment_id": "100362",
+    "create_time": 1694953950,
+    "aweme_id": "1216762072975253468",
+    "content": "校运会强制每个班出人，不去还要扣综测，太离谱，有点后悔",
+    "creator_hash": "7028686b2f249a48",
+    "nickname": "复***读",
+    "sub_comment_count": "9",
+    "like_count": 36
+  },
+  {
+    "comment_id": "100158",
+    "create_time": 1694960300,
+    "aweme_id": "1685240095378876416",
+    "content": "打饭阿姨手抖得厉害，一份肉就三块，价格还不便宜，坑，有点后悔",
+    "creator_hash": "3277694a9f7e722e",
+    "nickname": "吃***瓜",
+    "sub_comment_count": "2",
+    "like_count": 7
+  },
+  {
+    "comment_id": "100508",
+    "create_time": 1694961997,
+    "aweme_id": "1326174064607169043",
+    "content": "客观地说，社团招新收了会费就没下文了，活动一个都没有，太坑，有点后悔",
+    "creator_hash": "52b5e6a271994d99",
+    "nickname": "小***可",
+    "sub_comment_count": "27",
+    "like_count": 13
+  },
+  {
+    "comment_id": "100422",
+    "create_time": 1694965035,
+    "aweme_id": "1664361087459211592",
+    "content": "有点无语，招生简章写得漂亮，实际住宿费学费加起来一年一万八，超预算",
+    "creator_hash": "5ec6ae609db08505",
+    "nickname": "学***妹",
+    "sub_comment_count": "3",
+    "like_count": 2
+  },
+  {
+    "comment_id": "100276",
+    "create_time": 1694976880,
+    "aweme_id": "1225055778358999059",
+    "content": "住了一学期，校园面积不大，走两圈就逛完了，有点失望",
+    "creator_hash": "fd7418daecb960f8",
+    "nickname": "大***姐",
+    "sub_comment_count": "1",
+    "like_count": 56
+  },
+  {
+    "comment_id": "100222",
+    "create_time": 1694981231,
+    "aweme_id": "1423185693255081748",
+    "content": "宿舍可以自己装路由器吗",
+    "creator_hash": "16f78ea628ed46cf",
+    "nickname": "匿***名",
+    "sub_comment_count": "1",
+    "like_count": 21
+  },
+  {
+    "comment_id": "100210",
+    "create_time": 1694985602,
+    "aweme_id": "1076028917590992351",
+    "content": "军训是几月份，要多久",
+    "creator_hash": "054597e7cdcce7ca",
+    "nickname": "吃***货",
+    "sub_comment_count": "72",
+    "like_count": 10
+  },
+  {
+    "comment_id": "100160",
+    "create_time": 1694990523,
+    "aweme_id": "1465075168865419884",
+    "content": "说实话，校区位置太偏僻了，晚上想出去吃个夜宵都没地方，不方便",
+    "creator_hash": "8ed052759f83def3",
+    "nickname": "南***海",
+    "sub_comment_count": "8",
+    "like_count": 14
+  },
+  {
+    "comment_id": "100434",
+    "create_time": 1694992986,
+    "aweme_id": "1153208662877168098",
+    "content": "住宿费一年两万六，条件却是上下铺，性价比太低，确实有点坑",
+    "creator_hash": "dcc97a5e7ac5085b",
+    "nickname": "网***友",
+    "sub_comment_count": "29",
+    "like_count": 3
+  },
+  {
+    "comment_id": "100216",
+    "create_time": 1694997149,
+    "aweme_id": "1128668401088255561",
+    "content": "学费一年两万五，民办学校这价格真的有点劝退，太贵了",
+    "creator_hash": "a1d4dd648995f607",
+    "nickname": "夜***猫",
+    "sub_comment_count": "0",
+    "like_count": 116
+  },
+  {
+    "comment_id": "100924",
+    "create_time": 1694998159,
+    "aweme_id": "1652404773070048197",
+    "content": "客观地说，实训设备老旧，一半机器开不了机，上课只能看演示，很失望",
+    "creator_hash": "ded3b68475a51b91",
+    "nickname": "摸***鱼",
+    "sub_comment_count": "2",
+    "like_count": 79
+  },
+  {
+    "comment_id": "100074",
+    "create_time": 1695023492,
+    "aweme_id": "1796068150066550778",
+    "content": "学校位置太偏，去市区要转两趟公交，单程十分钟，不方便，确实有点坑",
+    "creator_hash": "3b56e44523205bab",
+    "nickname": "小***新",
+    "sub_comment_count": "2",
+    "like_count": 62
+  },
+  {
+    "comment_id": "100544",
+    "create_time": 1695035041,
+    "aweme_id": "1592306939370109598",
+    "content": "认真吐槽一下，校园面积不大，走两圈就逛完了，有点失望",
+    "creator_hash": "bd34d9a6a6a5741a",
+    "nickname": "打***工",
+    "sub_comment_count": "6",
+    "like_count": 56
+  },
+  {
+    "comment_id": "100532",
+    "create_time": 1695054171,
+    "aweme_id": "1213311671874119110",
+    "content": "学费一年两万五，民办学校这价格真的有点劝退，太贵了，真的很难受",
+    "creator_hash": "9af5b4e88eace1d9",
+    "nickname": "干***饭",
+    "sub_comment_count": "16",
+    "like_count": 6
+  },
+  {
+    "comment_id": "100656",
+    "create_time": 1695057350,
+    "aweme_id": "1657407856029343474",
+    "content": "学校奖学金挺多的，成绩好一年能抵不少学费，挺良心，体验不错",
+    "creator_hash": "df74270ae60b3328",
+    "nickname": "专***科",
+    "sub_comment_count": "3",
+    "like_count": 1
+  },
+  {
+    "comment_id": "100994",
+    "create_time": 1695057647,
+    "aweme_id": "1727342491027508869",
+    "content": "有没有人知道，请问420分能上吗，录取分数大概卡在多少",
+    "creator_hash": "1f13513e61612cd1",
+    "nickname": "早***八",
+    "sub_comment_count": "49",
+    "like_count": 29
+  },
+  {
+    "comment_id": "100088",
+    "create_time": 1695065029,
+    "aweme_id": "1921862101349961465",
+    "content": "网费一学期两万六，网速慢得离谱，这钱花得真不值",
+    "creator_hash": "c83f5a5d98f5c1f7",
+    "nickname": "考***研",
+    "sub_comment_count": "20",
+    "like_count": 56
+  },
+  {
+    "comment_id": "100308",
+    "create_time": 1695067837,
+    "aweme_id": "1904224849274054781",
+    "content": "食堂窗口太少，中午排队要六十分钟，饭菜还一般，想吐槽",
+    "creator_hash": "81acc5e831c7e0a3",
+    "nickname": "应***届",
+    "sub_comment_count": "6",
+    "like_count": 10
+  },
+  {
+    "comment_id": "100944",
+    "create_time": 1695098431,
+    "aweme_id": "1758721615260137908",
+    "content": "校园环境比想象中好，干净整洁，保洁做得很到位，值得",
+    "creator_hash": "a84df48c1001025f",
+    "nickname": "南***海",
+    "sub_comment_count": "17",
+    "like_count": 4
+  },
+  {
+    "comment_id": "100978",
+    "create_time": 1695111456,
+    "aweme_id": "1090068493759955386",
+    "content": "住宿费一年两万八，条件却是上下铺，性价比太低，不知道别人是不是也这样，确实有点坑",
+    "creator_hash": "f6a9edf1b6172c9b",
+    "nickname": "小***白",
+    "sub_comment_count": "14",
+    "like_count": 56
+  },
+  {
+    "comment_id": "100226",
+    "create_time": 1695122255,
+    "aweme_id": "1959738762505089266",
+    "content": "有点无语，住四楼没电梯，搬行李上来一趟腿都软了，宿舍条件太差",
+    "creator_hash": "8f375b72338143f5",
+    "nickname": "东***软",
+    "sub_comment_count": "8",
+    "like_count": 12
+  },
+  {
+    "comment_id": "100736",
+    "create_time": 1695122440,
+    "aweme_id": "1733996391742839383",
+    "content": "有没有人知道，新生宿舍是几人间，在线等",
+    "creator_hash": "00b8402598e561cc",
+    "nickname": "夜***猫",
+    "sub_comment_count": "3",
+    "like_count": 1
+  },
+  {
+    "comment_id": "100114",
+    "create_time": 1695183636,
+    "aweme_id": "1285227197024578046",
+    "content": "校园绿化做得好，湖边散步很舒服，拍照也出片，推荐",
+    "creator_hash": "befeae2728db6a54",
+    "nickname": "追***梦",
+    "sub_comment_count": "1",
+    "like_count": 3
+  },
+  {
+    "comment_id": "100302",
+    "create_time": 1695212685,
+    "aweme_id": "1894029181810964570",
+    "content": "住六楼没电梯，搬行李上来一趟腿都软了，宿舍条件太差",
+    "creator_hash": "8d89c368e634b87c",
+    "nickname": "专***科",
+    "sub_comment_count": "8",
+    "like_count": 11
+  },
+  {
+    "comment_id": "100472",
+    "create_time": 1695212811,
+    "aweme_id": "1890293261225243358",
+    "content": "有点无语，食堂高峰期根本找不到座位，端着盘子站半天，体验太差",
+    "creator_hash": "930d3a163774c04c",
+    "nickname": "同***学",
+    "sub_comment_count": "13",
+    "like_count": 42
+  },
+  {
+    "comment_id": "100108",
+    "create_time": 1695213722,
+    "aweme_id": "1377806909416286343",
+    "content": "绩点怎么算，多少算优秀，有知道的吗",
+    "creator_hash": "44378aadf708b343",
+    "nickname": "复***读",
+    "sub_comment_count": "20",
+    "like_count": 10
+  },
+  {
+    "comment_id": "100844",
+    "create_time": 1695218605,
+    "aweme_id": "1146822112044153387",
+    "content": "说实话，住宿费一年两万，条件却是上下铺，性价比太低，确实有点坑",
+    "creator_hash": "35a660e325cdf9d3",
+    "nickname": "家***长",
+    "sub_comment_count": "10",
+    "like_count": 14
+  },
+  {
+    "comment_id": "100684",
+    "create_time": 1695224119,
+    "aweme_id": "1965725435604615523",
+    "content": "新宿舍四人间，独立卫浴加空调，住得比家里还舒服，满意，体验不错",
+    "creator_hash": "1944701bce5c594a",
+    "nickname": "打***工",
+    "sub_comment_count": "1",
+    "like_count": 10
+  },
+  {
+    "comment_id": "100664",
+    "create_time": 1695226142,
+    "aweme_id": "1783408802144701653",
+    "content": "住了一学期，校园环境比想象中好，干净整洁，保洁做得很到位，可以冲",
+    "creator_hash": "42def5082022aa82",
+    "nickname": "老***油",
+    "sub_comment_count": "56",
+    "like_count": 4
+  },
+  {
+    "comment_id": "100776",
+    "create_time": 1695230739,
+    "aweme_id": "1873948825522172777",
+    "content": "有人清楚吗，学校附近租房贵吗",
+    "creator_hash": "db14f83db6d1dc98",
+    "nickname": "路***过",
+    "sub_comment_count": "20",
+    "like_count": 9
+  },
+  {
+    "comment_id": "100126",
+    "create_time": 1695247085,
+    "aweme_id": "1387637086139256107",
+    "content": "说实话，校园环境真不错，绿化多，南海校区挺漂亮的",
+    "creator_hash": "a35ee1d5675a4f4c",
+    "nickname": "学***长",
+    "sub_comment_count": "4",
+    "like_count": 4
+  },
+  {
+    "comment_id": "100786",
+    "create_time": 1695254808,
+    "aweme_id": "1880387453183787268",
+    "content": "宿舍门禁十点就锁门，实习晚回来一次就被记名字，太严格，感觉被劝退了",
+    "creator_hash": "5e8d9952d9d9062b",
+    "nickname": "复***读",
+    "sub_comment_count": "20",
+    "like_count": 6
+  },
+  {
+    "comment_id": "100556",
+    "create_time": 1695335038,
+    "aweme_id": "1505024780718550998",
+    "content": "忍不住说一句，校区位置太偏僻了，晚上想出去吃个夜宵都没地方，不方便，希望学校能管管",
+    "creator_hash": "e38f31c3ba0e1988",
+    "nickname": "大***姐",
+    "sub_comment_count": "1",
+    "like_count": 13
+  },
+  {
+    "comment_id": "100432",
+    "create_time": 1695352569,
+    "aweme_id": "1193197773594941735",
+    "content": "住宿费一年三万，条件却是上下铺，性价比太低，有点后悔",
+    "creator_hash": "d257f97408485c28",
+    "nickname": "在***读",
+    "sub_comment_count": "13",
+    "like_count": 6
+  },
+  {
+    "comment_id": "100010",
+    "create_time": 1695355152,
+    "aweme_id": "1394378671298249666",
+    "content": "招生简章写得漂亮，实际住宿费学费加起来一年两万五，超预算，有点失望",
+    "creator_hash": "fb346c9a804eadd2",
+    "nickname": "学***长",
+    "sub_comment_count": "17",
+    "like_count": 8
+  },
+  {
+    "comment_id": "100396",
+    "create_time": 1695358987,
+    "aweme_id": "1914744687873416297",
+    "content": "可以放心，宿舍干净宽敞，通风也好，夏天开着空调很舒服，值得推荐，不后悔来",
+    "creator_hash": "0c4bfe9d5e144b9e",
+    "nickname": "准***生",
+    "sub_comment_count": "8",
+    "like_count": 19
+  },
+  {
+    "comment_id": "100354",
+    "create_time": 1695363585,
+    "aweme_id": "1395386046889650409",
+    "content": "有点无语，食堂换了承包商之后越来越差，菜咸得要命，价格还涨，希望学校能管管",
+    "creator_hash": "e0811dc03f460072",
+    "nickname": "吃***货",
+    "sub_comment_count": "7",
+    "like_count": 291
+  },
+  {
+    "comment_id": "100418",
+    "create_time": 1695369781,
+    "aweme_id": "1373483483065247242",
+    "content": "真的，社团招新收了会费就没下文了，活动一个都没有，太坑",
+    "creator_hash": "0b84d0a27f968cdd",
+    "nickname": "路***过",
+    "sub_comment_count": "4",
+    "like_count": 4
+  },
+  {
+    "comment_id": "100372",
+    "create_time": 1695381540,
+    "aweme_id": "1079881876357988201",
+    "content": "想问一下，食堂几点开门，早上有早餐吗",
+    "creator_hash": "880af1a480e99469",
+    "nickname": "网***友",
+    "sub_comment_count": "6",
+    "like_count": 57
+  },
+  {
+    "comment_id": "100284",
+    "create_time": 1695392066,
+    "aweme_id": "1076634432552359269",
+    "content": "食堂价格在民办里算便宜的，一顿十块左右能搞定，不错",
+    "creator_hash": "8332442c7df0dfdf",
+    "nickname": "专***科",
+    "sub_comment_count": "6",
+    "like_count": 4
+  },
+  {
+    "comment_id": "100470",
+    "create_time": 1695395390,
+    "aweme_id": "1578782139907432318",
+    "content": "路过问一句，宿舍有独立卫生间吗",
+    "creator_hash": "d2a9307545e733c8",
+    "nickname": "追***梦",
+    "sub_comment_count": "7",
+    "like_count": 10
+  },
+  {
+    "comment_id": "100528",
+    "create_time": 1695426012,
+    "aweme_id": "1444892625512129248",
+    "content": "住了一学期，食堂最近上了自助称重，想吃什么拿什么，还挺方便的，不后悔来",
+    "creator_hash": "0bb865938deb2c3d",
+    "nickname": "小***新",
+    "sub_comment_count": "22",
+    "like_count": 11
+  },
+  {
+    "comment_id": "100522",
+    "create_time": 1695441430,
+    "aweme_id": "1308307019819812470",
+    "content": "学校有几个食堂，感谢",
+    "creator_hash": "414890b37ab2be22",
+    "nickname": "复***读",
+    "sub_comment_count": "4",
+    "like_count": 41
+  },
+  {
+    "comment_id": "100566",
+    "create_time": 1695442758,
+    "aweme_id": "1790981849726981466",
+    "content": "有些课就是念PPT，一节课下来什么都没学到，教学质量有点差，确实有点坑",
+    "creator_hash": "eeca58d4de9c96ac",
+    "nickname": "路***人",
+    "sub_comment_count": "16",
+    "like_count": 25
+  },
+  {
+    "comment_id": "100104",
+    "create_time": 1695450114,
+    "aweme_id": "1455795865231042300",
+    "content": "真的，住六楼没电梯，搬行李上来一趟腿都软了，宿舍条件太差",
+    "creator_hash": "3f8aa6303f3f597d",
+    "nickname": "学***长",
+    "sub_comment_count": "16",
+    "like_count": 10
+  },
+  {
+    "comment_id": "100512",
+    "create_time": 1695484239,
+    "aweme_id": "1430946699770253233",
+    "content": "校巴班次太少，等一趟要二十五分钟，上课差点迟到，不知道别人是不是也这样",
+    "creator_hash": "b1642527a5653b41",
+    "nickname": "本***人",
+    "sub_comment_count": "3",
+    "like_count": 74
+  },
+  {
+    "comment_id": "100156",
+    "create_time": 1695493601,
+    "aweme_id": "1638994806428491964",
+    "content": "学费两万六还不含住宿和教材，算下来一年要花不少，不值，希望学校能管管",
+    "creator_hash": "223cc98e53b3f23d",
+    "nickname": "家***长",
+    "sub_comment_count": "2",
+    "like_count": 56
+  },
+  {
+    "comment_id": "100634",
+    "create_time": 1695505232,
+    "aweme_id": "1413567989976497198",
+    "content": "客观地说，学费虽然不便宜，但实训设备是真的舍得投入，值这个价，总体不错",
+    "creator_hash": "012a38ddba5f8217",
+    "nickname": "复***读",
+    "sub_comment_count": "53",
+    "like_count": 7
+  },
+  {
+    "comment_id": "100012",
+    "create_time": 1695524358,
+    "aweme_id": "1225153686824923367",
+    "content": "准备报考，食堂晚上几点关门",
+    "creator_hash": "0ef9e1986f00d6fd",
+    "nickname": "网***友",
+    "sub_comment_count": "0",
+    "like_count": 7
+  },
+  {
+    "comment_id": "100888",
+    "create_time": 1695525913,
+    "aweme_id": "1661262363460969976",
+    "content": "校园面积不大，走两圈就逛完了，有点失望，感觉被劝退了",
+    "creator_hash": "5f89c0beb5448728",
+    "nickname": "狮***山",
+    "sub_comment_count": "23",
+    "like_count": 6
+  },
+  {
+    "comment_id": "100400",
+    "create_time": 1695529010,
+    "aweme_id": "1381560783550596093",
+    "content": "作为新生，住宿费一年两万二，能有上床下桌和空调，我觉得挺划算的",
+    "creator_hash": "5c0648c1e109e62d",
+    "nickname": "小***白",
+    "sub_comment_count": "8",
+    "like_count": 6
+  },
+  {
+    "comment_id": "100330",
+    "create_time": 1695530767,
+    "aweme_id": "1073492767886323510",
+    "content": "宿舍楼离教学楼太远，每天上下课走五十分钟，累到不想动",
+    "creator_hash": "1b4904a7bb89707b",
+    "nickname": "早***八",
+    "sub_comment_count": "8",
+    "like_count": 32
+  },
+  {
+    "comment_id": "100466",
+    "create_time": 1695533605,
+    "aweme_id": "1120413480120824314",
+    "content": "想问一下，宿舍水电费怎么算",
+    "creator_hash": "b35e6684dd8d7c83",
+    "nickname": "夜***猫",
+    "sub_comment_count": "6",
+    "like_count": 8
+  },
+  {
+    "comment_id": "100008",
+    "create_time": 1695540195,
+    "aweme_id": "1360579677020971443",
+    "content": "有点无语，专升本的招生名额一年比一年少，感觉越来越难考了",
+    "creator_hash": "ef2647444f831a3c",
+    "nickname": "学***姐",
+    "sub_comment_count": "24",
+    "like_count": 11
+  },
+  {
+    "comment_id": "100974",
+    "create_time": 1695561702,
+    "aweme_id": "1515884350640782976",
+    "content": "省排位十一万能冲一下吗",
+    "creator_hash": "19241ac97bb1c327",
+    "nickname": "追***梦",
+    "sub_comment_count": "8",
+    "like_count": 2
+  },
+  {
+    "comment_id": "100318",
+    "create_time": 1695562284,
+    "aweme_id": "1530208092023114417",
+    "content": "作为新生，助学贷款办理流程挺顺的，学长带着走一遍就搞定了，很方便",
+    "creator_hash": "5bcf1f28e3af5f96",
+    "nickname": "学***长",
+    "sub_comment_count": "4",
+    "like_count": 10
+  },
+  {
+    "comment_id": "100342",
+    "create_time": 1695578526,
+    "aweme_id": "1379249856019400929",
+    "content": "校内有校巴吗，怎么坐，谢谢",
+    "creator_hash": "062c8b541e9d049f",
+    "nickname": "路***人甲",
+    "sub_comment_count": "2",
+    "like_count": 1218
+  },
+  {
+    "comment_id": "100224",
+    "create_time": 1695587604,
+    "aweme_id": "1387698276046581978",
+    "content": "作为在读生，学费一年两万，民办学校这价格真的有点劝退，太贵了",
+    "creator_hash": "aa78b9ca419a8e99",
+    "nickname": "干***饭",
+    "sub_comment_count": "4",
+    "like_count": 32
+  },
+  {
+    "comment_id": "100602",
+    "create_time": 1695618516,
+    "aweme_id": "1566734004799120426",
+    "content": "住了一学期，学校在南海狮山，环境安静，很适合读书，不错的",
+    "creator_hash": "59da6f7b0b08d0de",
+    "nickname": "应***届",
+    "sub_comment_count": "6",
+    "like_count": 7
+  },
+  {
+    "comment_id": "100038",
+    "create_time": 1695632280,
+    "aweme_id": "1953185133418837276",
+    "content": "宿舍是上床下桌还是上下铺，有知道的吗",
+    "creator_hash": "8798ad382c339d78",
+    "nickname": "东***软",
+    "sub_comment_count": "26",
+    "like_count": 90
+  },
+  {
+    "comment_id": "100818",
+    "create_time": 1695664824,
+    "aweme_id": "1686290422256790916",
+    "content": "学费一年两万八，民办学校这价格真的有点劝退，太贵了，确实有点坑",
+    "creator_hash": "fad353a65b1ea678",
+    "nickname": "东***软",
+    "sub_comment_count": "0",
+    "like_count": 43
+  },
+  {
+    "comment_id": "100452",
+    "create_time": 1695669079,
+    "aweme_id": "1776124155621850025",
+    "content": "今年录取分数线大概多少，谢谢",
+    "creator_hash": "aa87c9e5908a3425",
+    "nickname": "大***姐",
+    "sub_comment_count": "6",
+    "like_count": 41
+  },
+  {
+    "comment_id": "100106",
+    "create_time": 1695691911,
+    "aweme_id": "1596142465732660362",
+    "content": "学费一年两万八，在民办里算正常水平，能接受，总体不错",
+    "creator_hash": "69b3cfee400bd8b1",
+    "nickname": "上***岸",
+    "sub_comment_count": "6",
+    "like_count": 8
+  },
+  {
+    "comment_id": "100908",
+    "create_time": 1695695478,
+    "aweme_id": "1280619002285505447",
+    "content": "安利一下，骑车十分钟能到商圈，出行其实没那么不方便，还行",
+    "creator_hash": "88c7c68317f92a26",
+    "nickname": "本***人",
+    "sub_comment_count": "0",
+    "like_count": 28
+  },
+  {
+    "comment_id": "100502",
+    "create_time": 1695714594,
+    "aweme_id": "1771759523125458876",
+    "content": "认真吐槽一下，校园里湖边的路灯坏了好几盏，晚上走过去挺黑的，不安全，心态崩了",
+    "creator_hash": "351811cb4fefbdf2",
+    "nickname": "摸***鱼",
+    "sub_comment_count": "6",
+    "like_count": 28
+  },
+  {
+    "comment_id": "100070",
+    "create_time": 1695732914,
+    "aweme_id": "1513868139259850330",
+    "content": "真的，学校位置太偏，去市区要转两趟公交，单程十分钟，不方便，确实有点坑",
+    "creator_hash": "4e68ed384c86fbc4",
+    "nickname": "干***饭",
+    "sub_comment_count": "3",
+    "like_count": 8
+  },
+  {
+    "comment_id": "100552",
+    "create_time": 1695737477,
+    "aweme_id": "1937803357793298192",
+    "content": "讲真，社团招新那天挺热闹，摊位很多，选花了眼，挺有意思，值得",
+    "creator_hash": "882e41862aa05146",
+    "nickname": "追***梦",
+    "sub_comment_count": "10",
+    "like_count": 250
+  },
+  {
+    "comment_id": "100436",
+    "create_time": 1695747685,
+    "aweme_id": "1729236101342253633",
+    "content": "住宿费一年三万，能有上床下桌和空调，我觉得挺划算的",
+    "creator_hash": "22bea5b6d8b3dd9c",
+    "nickname": "吃***瓜",
+    "sub_comment_count": "4",
+    "like_count": 77
+  },
+  {
+    "comment_id": "100050",
+    "create_time": 1695761718,
+    "aweme_id": "1532405338099139503",
+    "content": "一份炒饭二十八块，里面就几片火腿，食堂是把学生当韭菜吗，坑",
+    "creator_hash": "5ad9964e46876c8f",
+    "nickname": "愤***青",
+    "sub_comment_count": "5",
+    "like_count": 352
+  },
+  {
+    "comment_id": "100536",
+    "create_time": 1695784951,
+    "aweme_id": "1878400820788090894",
+    "content": "不得不说，食堂二楼的烧腊饭挺好吃，十四块一份量也足，推荐",
+    "creator_hash": "a0e42a5886dbbf3e",
+    "nickname": "小***白",
+    "sub_comment_count": "5",
+    "like_count": 15
+  },
+  {
+    "comment_id": "100570",
+    "create_time": 1695822942,
+    "aweme_id": "1890717112449963552",
+    "content": "学费可以分期交吗",
+    "creator_hash": "e36011822a0a0c07",
+    "nickname": "转***本",
+    "sub_comment_count": "71",
+    "like_count": 13
+  },
+  {
+    "comment_id": "100440",
+    "create_time": 1695830985,
+    "aweme_id": "1377686770617512942",
+    "content": "有没有人知道，学校有专升本吗",
+    "creator_hash": "564224816d9e98be",
+    "nickname": "东***软",
+    "sub_comment_count": "15",
+    "like_count": 33
+  },
+  {
+    "comment_id": "100364",
+    "create_time": 1695845087,
+    "aweme_id": "1538958140553288839",
+    "content": "客观地说，专升本的招生名额一年比一年少，感觉越来越难考了，确实有点坑",
+    "creator_hash": "af0c1115a84b8fcf",
+    "nickname": "学***姐",
+    "sub_comment_count": "2",
+    "like_count": 176
+  },
+  {
+    "comment_id": "100286",
+    "create_time": 1695878961,
+    "aweme_id": "1852760267169541300",
+    "content": "助学贷款办理流程挺顺的，学长带着走一遍就搞定了，很方便，推荐给学弟学妹",
+    "creator_hash": "598a7663f47fa8b8",
+    "nickname": "追***梦",
+    "sub_comment_count": "0",
+    "like_count": 16
+  },
+  {
+    "comment_id": "100584",
+    "create_time": 1695882124,
+    "aweme_id": "1992590458117312095",
+    "content": "住八楼没电梯，搬行李上来一趟腿都软了，宿舍条件太差，太难了",
+    "creator_hash": "2bc098bd33ae5af9",
+    "nickname": "吃***瓜",
+    "sub_comment_count": "66",
+    "like_count": 50
+  },
+  {
+    "comment_id": "100124",
+    "create_time": 1695913374,
+    "aweme_id": "1646207771723833977",
+    "content": "专升本的招生名额一年比一年少，感觉越来越难考了，有点后悔",
+    "creator_hash": "8183de42adefb0eb",
+    "nickname": "小***白",
+    "sub_comment_count": "1",
+    "like_count": 5
+  },
+  {
+    "comment_id": "100268",
+    "create_time": 1695921575,
+    "aweme_id": "1212990573025998590",
+    "content": "住了一学期，骑车十分钟能到商圈，出行其实没那么不方便，还行，值得",
+    "creator_hash": "7d8d9cf2ca988f48",
+    "nickname": "夜***猫",
+    "sub_comment_count": "2",
+    "like_count": 391
+  },
+  {
+    "comment_id": "100750",
+    "create_time": 1695921679,
+    "aweme_id": "1389772309210928462",
+    "content": "忍不住说一句，学费一年两万五，民办学校这价格真的有点劝退，太贵了",
+    "creator_hash": "1bab98616a3ebf59",
+    "nickname": "新***生",
+    "sub_comment_count": "1",
+    "like_count": 2
+  },
+  {
+    "comment_id": "100608",
+    "create_time": 1695969121,
+    "aweme_id": "1618720886461007659",
+    "content": "安利一下，助学贷款办理流程挺顺的，学长带着走一遍就搞定了，很方便",
+    "creator_hash": "a369d20b39612b75",
+    "nickname": "家***长",
+    "sub_comment_count": "15",
+    "like_count": 1
+  },
+  {
+    "comment_id": "100730",
+    "create_time": 1695979477,
+    "aweme_id": "1494303307932184244",
+    "content": "学费三万还不含住宿和教材，算下来一年要花不少，不值，真的很难受",
+    "creator_hash": "b81ecea03338de9a",
+    "nickname": "愤***青",
+    "sub_comment_count": "1",
+    "like_count": 9
+  },
+  {
+    "comment_id": "100578",
+    "create_time": 1695991406,
+    "aweme_id": "1342059541505737883",
+    "content": "不得不说，食堂价格在民办里算便宜的，一顿十块左右能搞定，不错",
+    "creator_hash": "a2a9d9b8fd453c39",
+    "nickname": "摸***鱼",
+    "sub_comment_count": "6",
+    "like_count": 354
+  },
+  {
+    "comment_id": "100904",
+    "create_time": 1696010450,
+    "aweme_id": "1791825163746104716",
+    "content": "有没有人知道，专业组是怎么划分的",
+    "creator_hash": "f27be7438fcd2eac",
+    "nickname": "狮***山",
+    "sub_comment_count": "38",
+    "like_count": 218
+  },
+  {
+    "comment_id": "100478",
+    "create_time": 1696044143,
+    "aweme_id": "1395148834486046876",
+    "content": "讲真，宿舍晚上十一点就断电，笔记本还没保存就黑屏了，太难受，真的很难受",
+    "creator_hash": "80804172cdcadfef",
+    "nickname": "追***梦",
+    "sub_comment_count": "18",
+    "like_count": 648
+  },
+  {
+    "comment_id": "100764",
+    "create_time": 1696071622,
+    "aweme_id": "1802603464839464689",
+    "content": "想问一下，学生会怎么报名",
+    "creator_hash": "5c332da795367396",
+    "nickname": "考***研",
+    "sub_comment_count": "5",
+    "like_count": 13
+  },
+  {
+    "comment_id": "100122",
+    "create_time": 1696089498,
+    "aweme_id": "1947675446338871217",
+    "content": "真心觉得，饭堂菜品比以前丰富多了，价格也还算合理，可以的",
+    "creator_hash": "82f8cdf6ae582fd8",
+    "nickname": "专***科",
+    "sub_comment_count": "18",
+    "like_count": 10
+  },
+  {
+    "comment_id": "100756",
+    "create_time": 1696095106,
+    "aweme_id": "1741773973842592841",
+    "content": "在线等，学校在狮山那边吗",
+    "creator_hash": "b38268ccd58b5806",
+    "nickname": "新***生",
+    "sub_comment_count": "49",
+    "like_count": 12
+  },
+  {
+    "comment_id": "100064",
+    "create_time": 1696110456,
+    "aweme_id": "1321441381422983127",
+    "content": "宿舍门禁十一点半就锁门，实习晚回来一次就被记名字，太严格",
+    "creator_hash": "e91951a2ac383580",
+    "nickname": "毕***业",
+    "sub_comment_count": "1",
+    "like_count": 1322
+  },
+  {
+    "comment_id": "100800",
+    "create_time": 1696112461,
+    "aweme_id": "1382845688157776000",
+    "content": "讲真，寝室校园网信号只有一格，躺着刷视频一直缓冲，网速慢得离谱",
+    "creator_hash": "4e775c519600feaf",
+    "nickname": "路***人",
+    "sub_comment_count": "7",
+    "like_count": 29
+  },
+  {
+    "comment_id": "100860",
+    "create_time": 1696115855,
+    "aweme_id": "1840718734982337597",
+    "content": "校区位置太偏僻了，晚上想出去吃个夜宵都没地方，不方便，感觉被劝退了",
+    "creator_hash": "f389ee13b35c3610",
+    "nickname": "准***生",
+    "sub_comment_count": "7",
+    "like_count": 330
+  },
+  {
+    "comment_id": "100804",
+    "create_time": 1696159167,
+    "aweme_id": "1727716995329317228",
+    "content": "学校位置太偏，去市区要转两趟公交，单程十分钟，不方便，希望学校能管管，确实有点坑",
+    "creator_hash": "d6a1a75649060780",
+    "nickname": "实***习",
+    "sub_comment_count": "63",
+    "like_count": 6
+  },
+  {
+    "comment_id": "100378",
+    "create_time": 1696159564,
+    "aweme_id": "1734664928640712456",
+    "content": "宿管查寝查得严，十点半之后连吹风机都不让用，管理太死板，确实有点坑",
+    "creator_hash": "f2aa6cc534857558",
+    "nickname": "在***读",
+    "sub_comment_count": "25",
+    "like_count": 15
+  },
+  {
+    "comment_id": "100796",
+    "create_time": 1696163193,
+    "aweme_id": "1164363963237733480",
+    "content": "真的，校园里湖边的路灯坏了好几盏，晚上走过去挺黑的，不安全，确实有点坑",
+    "creator_hash": "62e69100c49560ed",
+    "nickname": "早***八",
+    "sub_comment_count": "11",
+    "like_count": 13
+  },
+  {
+    "comment_id": "100696",
+    "create_time": 1696168941,
+    "aweme_id": "1157453288549654003",
+    "content": "作为在读生，宿舍隔音差到离谱，隔壁说话都听得清，晚上根本睡不好",
+    "creator_hash": "6763793455991edb",
+    "nickname": "转***本",
+    "sub_comment_count": "3",
+    "like_count": 144
+  },
+  {
+    "comment_id": "100636",
+    "create_time": 1696169027,
+    "aweme_id": "1003213880283511271",
+    "content": "安利一下，食堂一楼的糖水很良心，八块一杯，夏天喝着很舒服",
+    "creator_hash": "f79333026281454c",
+    "nickname": "狮***山",
+    "sub_comment_count": "36",
+    "like_count": 3
+  },
+  {
+    "comment_id": "100518",
+    "create_time": 1696211085,
+    "aweme_id": "1684538391541427887",
+    "content": "学校在狮山，周边挺荒的，想逛个商场要坐车二十五分钟，位置太偏，确实有点坑",
+    "creator_hash": "b7392f0ec8179e16",
+    "nickname": "路***过",
+    "sub_comment_count": "5",
+    "like_count": 70
+  },
+  {
+    "comment_id": "100926",
+    "create_time": 1696212566,
+    "aweme_id": "1232592469336555908",
+    "content": "招生简章写得漂亮，实际住宿费学费加起来一年两万六，超预算，确实有点坑",
+    "creator_hash": "6a965452f1b7d4f4",
+    "nickname": "网***友",
+    "sub_comment_count": "65",
+    "like_count": 7
+  },
+  {
+    "comment_id": "100468",
+    "create_time": 1696218488,
+    "aweme_id": "1009686595403666449",
+    "content": "骑车十分钟能到商圈，出行其实没那么不方便，还行，总体挺满意的",
+    "creator_hash": "3fea0df4b983b61c",
+    "nickname": "干***饭",
+    "sub_comment_count": "30",
+    "like_count": 10
+  },
+  {
+    "comment_id": "100206",
+    "create_time": 1696244740,
+    "aweme_id": "1698510341339237703",
+    "content": "四六级考场名额少，抢不到只能去外校考，太麻烦了，确实有点坑",
+    "creator_hash": "9833ef0b9e409b1c",
+    "nickname": "同***学",
+    "sub_comment_count": "8",
+    "like_count": 130
+  },
+  {
+    "comment_id": "100014",
+    "create_time": 1696248920,
+    "aweme_id": "1488725301881590756",
+    "content": "问下大家，学费一年大概多少钱，感谢",
+    "creator_hash": "877f0e6093998658",
+    "nickname": "大***姐",
+    "sub_comment_count": "15",
+    "like_count": 10
+  },
+  {
+    "comment_id": "100234",
+    "create_time": 1696254878,
+    "aweme_id": "1826618239533236591",
+    "content": "学费虽然不便宜，但实训设备是真的舍得投入，值这个价，可以冲",
+    "creator_hash": "234fedc7be59a2e2",
+    "nickname": "老***生",
+    "sub_comment_count": "19",
+    "like_count": 56
+  },
+  {
+    "comment_id": "100676",
+    "create_time": 1696256735,
+    "aweme_id": "1040565873057176318",
+    "content": "说实话，热水限时供应，十二点之后洗澡只能洗冷水，冬天真的顶不住，确实有点坑",
+    "creator_hash": "90b8214d8d9a620c",
+    "nickname": "毕***业",
+    "sub_comment_count": "5",
+    "like_count": 6
+  },
+  {
+    "comment_id": "100082",
+    "create_time": 1696257442,
+    "aweme_id": "1273930826341215484",
+    "content": "学校位置太偏，去市区要转两趟公交，单程十五分钟，不方便，确实有点坑",
+    "creator_hash": "15ba532b5baaacdb",
+    "nickname": "复***读",
+    "sub_comment_count": "20",
+    "like_count": 8
+  },
+  {
+    "comment_id": "100438",
+    "create_time": 1696258452,
+    "aweme_id": "1954718178374579438",
+    "content": "狮山附近有商圈吗，谢谢",
+    "creator_hash": "7d15399e3b294ca8",
+    "nickname": "实***习",
+    "sub_comment_count": "0",
+    "like_count": 53
+  },
+  {
+    "comment_id": "100704",
+    "create_time": 1696282543,
+    "aweme_id": "1708580751463946765",
+    "content": "校园里湖边的路灯坏了好几盏，晚上走过去挺黑的，不安全，真的很难受",
+    "creator_hash": "c32ee323fafdbad5",
+    "nickname": "大***姐",
+    "sub_comment_count": "8",
+    "like_count": 1
+  },
+  {
+    "comment_id": "100324",
+    "create_time": 1696327572,
+    "aweme_id": "1418762140854095268",
+    "content": "宿舍校园网一到晚上就卡成PPT，网速慢到打游戏疯狂掉线，网费还照收，真的很难受",
+    "creator_hash": "8313e92b5810f6eb",
+    "nickname": "新***生",
+    "sub_comment_count": "22",
+    "like_count": 8
+  },
+  {
+    "comment_id": "100498",
+    "create_time": 1696336737,
+    "aweme_id": "1685088728701577634",
+    "content": "在线等，学校到地铁站怎么坐，有知道的吗",
+    "creator_hash": "ba93e19d90efc2fd",
+    "nickname": "路***人",
+    "sub_comment_count": "6",
+    "like_count": 15
+  },
+  {
+    "comment_id": "100594",
+    "create_time": 1696345898,
+    "aweme_id": "1465095205427768007",
+    "content": "作为在读生，说是产教融合，实际学费涨了课没变，家长意见很大，有点坑",
+    "creator_hash": "39ca84666dbb91cc",
+    "nickname": "学***姐",
+    "sub_comment_count": "4",
+    "like_count": 91
+  },
+  {
+    "comment_id": "100766",
+    "create_time": 1696348424,
+    "aweme_id": "1992194545246415790",
+    "content": "客观地说，宿舍空调要自己交电费，夏天开一晚上十几块，实在用不起，确实有点坑",
+    "creator_hash": "ff410986b0217267",
+    "nickname": "家***长",
+    "sub_comment_count": "21",
+    "like_count": 48
+  },
+  {
+    "comment_id": "100374",
+    "create_time": 1696371622,
+    "aweme_id": "1487547845884427864",
+    "content": "说句实话，宿舍门禁十点半就锁门，实习晚回来一次就被记名字，太严格，不知道别人是不是也这样",
+    "creator_hash": "baa120b61311d015",
+    "nickname": "路***人",
+    "sub_comment_count": "0",
+    "like_count": 8
+  },
+  {
+    "comment_id": "100774",
+    "create_time": 1696390662,
+    "aweme_id": "1341725678718738012",
+    "content": "学生会怎么报名",
+    "creator_hash": "96585c7f46cefcc3",
+    "nickname": "夜***猫",
+    "sub_comment_count": "1",
+    "like_count": 33
+  },
+  {
+    "comment_id": "100820",
+    "create_time": 1696423575,
+    "aweme_id": "1155495058892849858",
+    "content": "学费一年两万六，民办学校这价格真的有点劝退，太贵了",
+    "creator_hash": "78a2a0b36e354201",
+    "nickname": "吃***瓜",
+    "sub_comment_count": "68",
+    "like_count": 372
+  },
+  {
+    "comment_id": "100242",
+    "create_time": 1696431493,
+    "aweme_id": "1739803906486733882",
+    "content": "辅导员人很好，有事找她都能及时解决，挺暖心的，体验不错",
+    "creator_hash": "00b73a300ec1e735",
+    "nickname": "追***梦",
+    "sub_comment_count": "10",
+    "like_count": 7
+  },
+  {
+    "comment_id": "100964",
+    "create_time": 1696437039,
+    "aweme_id": "1712245550001134917",
+    "content": "请问490分能上吗，录取分数大概卡在多少",
+    "creator_hash": "e74d97a734993c3c",
+    "nickname": "考***研",
+    "sub_comment_count": "25",
+    "like_count": 14
+  },
+  {
+    "comment_id": "100294",
+    "create_time": 1696447243,
+    "aweme_id": "1219092682091398630",
+    "content": "有人清楚吗，军训是几月份，要多久",
+    "creator_hash": "cdc1bf38abff2828",
+    "nickname": "专***科",
+    "sub_comment_count": "27",
+    "like_count": 39
+  },
+  {
+    "comment_id": "100706",
+    "create_time": 1696458442,
+    "aweme_id": "1430052828948227403",
+    "content": "忍不住说一句，饭堂的菜越来越贵，量还越来越少，性价比太低，确实有点坑",
+    "creator_hash": "3040b7f40c0c42f3",
+    "nickname": "路***过",
+    "sub_comment_count": "8",
+    "like_count": 2
+  },
+  {
+    "comment_id": "100078",
+    "create_time": 1696518135,
+    "aweme_id": "1972548812084605839",
+    "content": "安利一下，学校奖学金挺多的，成绩好一年能抵不少学费，挺良心",
+    "creator_hash": "b05f2592bec6dedd",
+    "nickname": "专***科",
+    "sub_comment_count": "1",
+    "like_count": 5
+  },
+  {
+    "comment_id": "100526",
+    "create_time": 1696533339,
+    "aweme_id": "1269839704431742744",
+    "content": "学费这么贵，奖学金名额还少，普通家庭压力太大了，有点失望",
+    "creator_hash": "08e558b96407ba91",
+    "nickname": "路***人",
+    "sub_comment_count": "3",
+    "like_count": 195
+  },
+  {
+    "comment_id": "100208",
+    "create_time": 1696549716,
+    "aweme_id": "1222493955243701565",
+    "content": "校园网经常断网，交着网费还要开自己的热点，真的无语，真的很难受",
+    "creator_hash": "050782ea568ca604",
+    "nickname": "小***白",
+    "sub_comment_count": "6",
+    "like_count": 5
+  },
+  {
+    "comment_id": "100906",
+    "create_time": 1696590777,
+    "aweme_id": "1263450665838737412",
+    "content": "新生宿舍是几人间，谢谢",
+    "creator_hash": "c21ae0e5ae5f9dfc",
+    "nickname": "实***习",
+    "sub_comment_count": "7",
+    "like_count": 13
+  },
+  {
+    "comment_id": "100680",
+    "create_time": 1696592913,
+    "aweme_id": "1201075585205382133",
+    "content": "校内有校巴吗，怎么坐",
+    "creator_hash": "2be8a7a7d210f282",
+    "nickname": "毕***业",
+    "sub_comment_count": "8",
+    "like_count": 46
+  },
+  {
+    "comment_id": "100096",
+    "create_time": 1696614493,
+    "aweme_id": "1547919223488942070",
+    "content": "住了一学期，助学贷款手续特别麻烦，跑了好几趟还没办下来，太折腾",
+    "creator_hash": "cf1193aa71a49c3a",
+    "nickname": "考***研",
+    "sub_comment_count": "3",
+    "like_count": 64
+  },
+  {
+    "comment_id": "100966",
+    "create_time": 1696615770,
+    "aweme_id": "1709515833149005027",
+    "content": "助学贷款手续特别麻烦，跑了好几趟还没办下来，太折腾，太难了",
+    "creator_hash": "f80a20f9f0e75006",
+    "nickname": "学***弟",
+    "sub_comment_count": "6",
+    "like_count": 31
+  },
+  {
+    "comment_id": "100414",
+    "create_time": 1696648326,
+    "aweme_id": "1883193092308127918",
+    "content": "有人清楚吗，食堂几点开门，早上有早餐吗",
+    "creator_hash": "070323fb14717891",
+    "nickname": "摸***鱼",
+    "sub_comment_count": "5",
+    "like_count": 10
+  },
+  {
+    "comment_id": "100200",
+    "create_time": 1696684215,
+    "aweme_id": "1892475267557369815",
+    "content": "食堂价格在民办里算便宜的，一顿十二块左右能搞定，不错",
+    "creator_hash": "ce9d9eb9b03ab958",
+    "nickname": "佛***山",
+    "sub_comment_count": "3",
+    "like_count": 51
+  },
+  {
+    "comment_id": "100842",
+    "create_time": 1696721809,
+    "aweme_id": "1160219686961915742",
+    "content": "外卖比食堂好吃还便宜，谁还去食堂啊，价格该管管了，感觉被劝退了",
+    "creator_hash": "ed35756eae1b011a",
+    "nickname": "吃***瓜",
+    "sub_comment_count": "26",
+    "like_count": 54
+  },
+  {
+    "comment_id": "100102",
+    "create_time": 1696731711,
+    "aweme_id": "1798676929923335731",
+    "content": "校巴免费的，班次也够用，去地铁站接驳挺顺，方便，总体挺满意的",
+    "creator_hash": "a7c626ccb73f64c7",
+    "nickname": "吃***货",
+    "sub_comment_count": "0",
+    "like_count": 7
+  },
+  {
+    "comment_id": "100826",
+    "create_time": 1696767023,
+    "aweme_id": "1905721560446640072",
+    "content": "说实话，宿舍离食堂只有两分钟，早上赖床也能赶上早饭，很方便",
+    "creator_hash": "621f753c6b6af60b",
+    "nickname": "老***生",
+    "sub_comment_count": "4",
+    "like_count": 6
+  },
+  {
+    "comment_id": "100864",
+    "create_time": 1696810076,
+    "aweme_id": "1326212826123142371",
+    "content": "住宿费一年两万八，条件却是上下铺，性价比太低，心态崩了，确实有点坑",
+    "creator_hash": "adbfd53d62a9812d",
+    "nickname": "实***习",
+    "sub_comment_count": "30",
+    "like_count": 5
+  },
+  {
+    "comment_id": "100034",
+    "create_time": 1696812526,
+    "aweme_id": "1452736293385014859",
+    "content": "学校奖学金挺多的，成绩好一年能抵不少学费，挺良心，可以冲",
+    "creator_hash": "531302d7d9f5b524",
+    "nickname": "路***人",
+    "sub_comment_count": "0",
+    "like_count": 57
+  },
+  {
+    "comment_id": "100360",
+    "create_time": 1696816109,
+    "aweme_id": "1919728540242068385",
+    "content": "不得不说，宿舍楼下就是快递点和超市，生活挺方便的，点赞",
+    "creator_hash": "85cb845aa3341cae",
+    "nickname": "专***科",
+    "sub_comment_count": "75",
+    "like_count": 7
+  },
+  {
+    "comment_id": "100176",
+    "create_time": 1696821964,
+    "aweme_id": "1900191264625966525",
+    "content": "说句实话，招生简章写得漂亮，实际住宿费学费加起来一年两万二，超预算，确实有点坑",
+    "creator_hash": "27bda4672afbbdcb",
+    "nickname": "打***工",
+    "sub_comment_count": "2",
+    "like_count": 273
+  },
+  {
+    "comment_id": "100890",
+    "create_time": 1696857953,
+    "aweme_id": "1729806299143977737",
+    "content": "忍不住说一句，网费一学期两万五，网速慢得离谱，这钱花得真不值",
+    "creator_hash": "08d5fe1056ca28ca",
+    "nickname": "复***读",
+    "sub_comment_count": "9",
+    "like_count": 1112
+  },
+  {
+    "comment_id": "100326",
+    "create_time": 1696860039,
+    "aweme_id": "1188798110543753115",
+    "content": "不是我说，学费三万还不含住宿和教材，算下来一年要花不少，不值，真的很难受",
+    "creator_hash": "d40d0d8909212d05",
+    "nickname": "夜***猫",
+    "sub_comment_count": "27",
+    "like_count": 20
+  },
+  {
+    "comment_id": "100752",
+    "create_time": 1696870419,
+    "aweme_id": "1786512582861895151",
+    "content": "老师会带着做真实项目，简历上能写东西，这点很加分，挺加分的，总体不错",
+    "creator_hash": "8aaba8030c3c70ad",
+    "nickname": "老***油",
+    "sub_comment_count": "8",
+    "like_count": 42
+  },
+  {
+    "comment_id": "100546",
+    "create_time": 1696890098,
+    "aweme_id": "1360696530137937934",
+    "content": "作为新生，食堂早餐种类挺多，十块就能吃饱，比外面划算",
+    "creator_hash": "715bde5e2dcd8704",
+    "nickname": "转***本",
+    "sub_comment_count": "2",
+    "like_count": 4
+  },
+  {
+    "comment_id": "100856",
+    "create_time": 1696905148,
+    "aweme_id": "1940666400839857794",
+    "content": "不是我说，招生简章写得漂亮，实际住宿费学费加起来一年两万，超预算，确实有点坑",
+    "creator_hash": "b3e79904f8a30edf",
+    "nickname": "愤***青",
+    "sub_comment_count": "27",
+    "like_count": 64
+  },
+  {
+    "comment_id": "100596",
+    "create_time": 1696907694,
+    "aweme_id": "1453954825211033381",
+    "content": "作为在读生，宿舍晚上十一点就断电，笔记本还没保存就黑屏了，太难受",
+    "creator_hash": "062d42f5f09e4770",
+    "nickname": "匿***名",
+    "sub_comment_count": "67",
+    "like_count": 393
+  },
+  {
+    "comment_id": "100686",
+    "create_time": 1696907775,
+    "aweme_id": "1425333360924173882",
+    "content": "说实话，住宿费一年三万，条件却是上下铺，性价比太低，确实有点坑",
+    "creator_hash": "49da2e3ad98097de",
+    "nickname": "学***长",
+    "sub_comment_count": "68",
+    "like_count": 32
+  },
+  {
+    "comment_id": "100394",
+    "create_time": 1696914593,
+    "aweme_id": "1643435153167008054",
+    "content": "忍不住说一句，有些老师上课就是放视频，学生自己看，学费花得不值",
+    "creator_hash": "f39dd08d4c47d8c3",
+    "nickname": "早***八",
+    "sub_comment_count": "6",
+    "like_count": 10
+  },
+  {
+    "comment_id": "100708",
+    "create_time": 1696915454,
+    "aweme_id": "1393909853592004980",
+    "content": "住了一学期，综测加分规则太复杂，班委加分一堆，普通学生根本没机会，确实有点坑",
+    "creator_hash": "9338c8fa36c9d012",
+    "nickname": "佛***山",
+    "sub_comment_count": "5",
+    "like_count": 6
+  },
+  {
+    "comment_id": "100962",
+    "create_time": 1696930670,
+    "aweme_id": "1244085992743432087",
+    "content": "有点无语，食堂换了承包商之后越来越差，菜咸得要命，价格还涨，有点失望",
+    "creator_hash": "8899c82d58af7c1f",
+    "nickname": "夜***猫",
+    "sub_comment_count": "0",
+    "like_count": 117
+  },
+  {
+    "comment_id": "100530",
+    "create_time": 1696938885,
+    "aweme_id": "1318721755488764767",
+    "content": "补考一般是几月，麻烦学长学姐解答一下",
+    "creator_hash": "1f233b5a343f9b82",
+    "nickname": "本***人",
+    "sub_comment_count": "7",
+    "like_count": 15
+  },
+  {
+    "comment_id": "100098",
+    "create_time": 1696939804,
+    "aweme_id": "1998201970126501270",
+    "content": "招生简章写得漂亮，实际住宿费学费加起来一年两万，超预算，心态崩了，确实有点坑",
+    "creator_hash": "f03b48c07e6bc2ce",
+    "nickname": "家***长",
+    "sub_comment_count": "10",
+    "like_count": 15
+  },
+  {
+    "comment_id": "100688",
+    "create_time": 1696942514,
+    "aweme_id": "1880195473823249305",
+    "content": "宿舍有空调有热水，宿管阿姨人也好，住着挺安心的，可以冲",
+    "creator_hash": "108594545423fd38",
+    "nickname": "干***饭",
+    "sub_comment_count": "2",
+    "like_count": 2
+  },
+  {
+    "comment_id": "100990",
+    "create_time": 1696956930,
+    "aweme_id": "1936457265338709459",
+    "content": "作为新生，专业课老师很负责，课后答疑也很耐心，好评",
+    "creator_hash": "0a2d35cdadb2fa63",
+    "nickname": "佛***山",
+    "sub_comment_count": "4",
+    "like_count": 8
+  },
+  {
+    "comment_id": "100198",
+    "create_time": 1696960759,
+    "aweme_id": "1596612275612279941",
+    "content": "真心觉得，宿舍干净宽敞，通风也好，夏天开着空调很舒服，值得推荐",
+    "creator_hash": "6988ad2f94089cb5",
+    "nickname": "干***饭",
+    "sub_comment_count": "1",
+    "like_count": 9
+  },
+  {
+    "comment_id": "100028",
+    "create_time": 1696994264,
+    "aweme_id": "1906714736684713542",
+    "content": "新生报到要带哪些材料",
+    "creator_hash": "53d349650a7c69e9",
+    "nickname": "应***届",
+    "sub_comment_count": "2",
+    "like_count": 39
+  },
+  {
+    "comment_id": "100280",
+    "create_time": 1697035188,
+    "aweme_id": "1645964763874013573",
+    "content": "客观地说，校园环境真不错，绿化多，南海校区挺漂亮的，体验不错",
+    "creator_hash": "4ca2c1556ea78cee",
+    "nickname": "路***人甲",
+    "sub_comment_count": "18",
+    "like_count": 12
+  },
+  {
+    "comment_id": "100382",
+    "create_time": 1697039137,
+    "aweme_id": "1779521382742051241",
+    "content": "食堂最近上了自助称重，想吃什么拿什么，还挺方便的，不后悔来",
+    "creator_hash": "9f5719d0c905efac",
+    "nickname": "准***生",
+    "sub_comment_count": "18",
+    "like_count": 887
+  },
+  {
+    "comment_id": "100476",
+    "create_time": 1697112996,
+    "aweme_id": "1906006896759852209",
+    "content": "食堂早餐种类挺多，二十块就能吃饱，比外面划算",
+    "creator_hash": "7b5f872bd529a8e9",
+    "nickname": "吃***瓜",
+    "sub_comment_count": "8",
+    "like_count": 9
+  },
+  {
+    "comment_id": "100002",
+    "create_time": 1697113685,
+    "aweme_id": "1122648087526893726",
+    "content": "食堂卫生堪忧，餐盘上还有油，看到就没胃口了，体验差，感觉被劝退了",
+    "creator_hash": "ac0846fee1019a20",
+    "nickname": "新***生",
+    "sub_comment_count": "4",
+    "like_count": 59
+  },
+  {
+    "comment_id": "100942",
+    "create_time": 1697114568,
+    "aweme_id": "1693951343281419728",
+    "content": "助学贷款办理流程挺顺的，学长带着走一遍就搞定了，很方便，不后悔来",
+    "creator_hash": "2acd84aadf352e38",
+    "nickname": "本***人",
+    "sub_comment_count": "1",
+    "like_count": 19
+  },
+  {
+    "comment_id": "100448",
+    "create_time": 1697117779,
+    "aweme_id": "1976198649532305511",
+    "content": "说实话，饭堂的面食窗口很惊喜，现做的，比外卖强多了，点赞，总体不错",
+    "creator_hash": "82436e66bd9175f5",
+    "nickname": "狮***山",
+    "sub_comment_count": "5",
+    "like_count": 22
+  },
+  {
+    "comment_id": "100184",
+    "create_time": 1697167872,
+    "aweme_id": "1938634802802873414",
+    "content": "校区离市区远吗",
+    "creator_hash": "5c4680e7aa8687dc",
+    "nickname": "实***习",
+    "sub_comment_count": "5",
+    "like_count": 7
+  },
+  {
+    "comment_id": "100036",
+    "create_time": 1697170309,
+    "aweme_id": "1720903653309650698",
+    "content": "学校在狮山，周边挺荒的，想逛个商场要坐车四十分钟，位置太偏，感觉被劝退了",
+    "creator_hash": "82d3bb06b908eae3",
+    "nickname": "追***梦",
+    "sub_comment_count": "1",
+    "like_count": 1
+  },
+  {
+    "comment_id": "100598",
+    "create_time": 1697174563,
+    "aweme_id": "1458779186521338109",
+    "content": "住五楼没电梯，搬行李上来一趟腿都软了，宿舍条件太差",
+    "creator_hash": "3581f421847c7eb5",
+    "nickname": "早***八",
+    "sub_comment_count": "67",
+    "like_count": 12
+  },
+  {
+    "comment_id": "100368",
+    "create_time": 1697199114,
+    "aweme_id": "1030886832578236070",
+    "content": "可以放心，学校奖学金挺多的，成绩好一年能抵不少学费，挺良心，体验不错",
+    "creator_hash": "94491c488c6cfdb5",
+    "nickname": "追***梦",
+    "sub_comment_count": "17",
+    "like_count": 5
+  },
+  {
+    "comment_id": "100788",
+    "create_time": 1697208879,
+    "aweme_id": "1571770514760096635",
+    "content": "新校区还在施工，到处是灰尘和噪音，环境有点差，感觉被劝退了",
+    "creator_hash": "23ff86b4f5e432da",
+    "nickname": "夜***猫",
+    "sub_comment_count": "3",
+    "like_count": 16
+  },
+  {
+    "comment_id": "100142",
+    "create_time": 1697214726,
+    "aweme_id": "1555462227222518843",
+    "content": "作为新生，宿舍干净宽敞，通风也好，夏天开着空调很舒服，值得推荐",
+    "creator_hash": "8665df42eb9962fe",
+    "nickname": "干***饭",
+    "sub_comment_count": "6",
+    "like_count": 34
+  },
+  {
+    "comment_id": "100560",
+    "create_time": 1697232353,
+    "aweme_id": "1483722322411528145",
+    "content": "不是我说，学生会官僚气太重，办个活动流程走一个月，效率太低，确实有点坑",
+    "creator_hash": "9e62262cb97da333",
+    "nickname": "应***届",
+    "sub_comment_count": "0",
+    "like_count": 159
+  },
+  {
+    "comment_id": "100500",
+    "create_time": 1697282429,
+    "aweme_id": "1585114699439800191",
+    "content": "助学贷款办理流程挺顺的，学长带着走一遍就搞定了，很方便，体验不错",
+    "creator_hash": "9a88642b29be83fa",
+    "nickname": "实***习",
+    "sub_comment_count": "8",
+    "like_count": 386
+  },
+  {
+    "comment_id": "100852",
+    "create_time": 1697283747,
+    "aweme_id": "1288042155102787912",
+    "content": "说实话，食堂新开的麻辣香锅味道不错，一份十四块能吃很撑，好评",
+    "creator_hash": "1f665a3c458cfd7d",
+    "nickname": "小***新",
+    "sub_comment_count": "41",
+    "like_count": 73
+  },
+  {
+    "comment_id": "100430",
+    "create_time": 1697283802,
+    "aweme_id": "1415225780621412310",
+    "content": "食堂饭菜又涨价了，一份套餐三十块，学生党真心吃不起，太贵，希望学校能管管",
+    "creator_hash": "3335dc5422779719",
+    "nickname": "大***姐",
+    "sub_comment_count": "18",
+    "like_count": 24
+  },
+  {
+    "comment_id": "100674",
+    "create_time": 1697293441,
+    "aweme_id": "1527427855909063489",
+    "content": "小学期又要上一个月课，暑假直接缩水，别人放假我还在教室，难受，有点失望",
+    "creator_hash": "01472f9f15b6a203",
+    "nickname": "南***海",
+    "sub_comment_count": "8",
+    "like_count": 18
+  },
+  {
+    "comment_id": "100166",
+    "create_time": 1697327351,
+    "aweme_id": "1445143051006190541",
+    "content": "在线等，食堂有清真窗口吗",
+    "creator_hash": "d5ecff90d7be9922",
+    "nickname": "吃***货",
+    "sub_comment_count": "7",
+    "like_count": 1
+  },
+  {
+    "comment_id": "100172",
+    "create_time": 1697338697,
+    "aweme_id": "1877167843287138122",
+    "content": "校园环境真不错，绿化多，南海校区挺漂亮的，挺加分的",
+    "creator_hash": "a2258f93fc657f19",
+    "nickname": "东***软",
+    "sub_comment_count": "1",
+    "like_count": 61
+  },
+  {
+    "comment_id": "100940",
+    "create_time": 1697343829,
+    "aweme_id": "1595079400330545336",
+    "content": "网费一学期两万五，网速慢得离谱，这钱花得真不值，心态崩了",
+    "creator_hash": "489f9b00ced2b358",
+    "nickname": "实***习",
+    "sub_comment_count": "0",
+    "like_count": 2
+  },
+  {
+    "comment_id": "100306",
+    "create_time": 1697355453,
+    "aweme_id": "1026003764461246099",
+    "content": "安利一下，课程安排合理，理论和实训结合得不错，学得挺扎实",
+    "creator_hash": "f3b4cbcc9eef631a",
+    "nickname": "南***海",
+    "sub_comment_count": "19",
+    "like_count": 12
+  },
+  {
+    "comment_id": "100744",
+    "create_time": 1697383502,
+    "aweme_id": "1470196172223941671",
+    "content": "住五楼没电梯，搬行李上来一趟腿都软了，宿舍条件太差，希望学校能管管",
+    "creator_hash": "e88f676b93ea9264",
+    "nickname": "小***新",
+    "sub_comment_count": "5",
+    "like_count": 8
+  },
+  {
+    "comment_id": "100840",
+    "create_time": 1697407630,
+    "aweme_id": "1422990015056622432",
+    "content": "宿舍楼有电梯吗，谢谢",
+    "creator_hash": "478cf0949c624287",
+    "nickname": "学***妹",
+    "sub_comment_count": "0",
+    "like_count": 22
+  },
+  {
+    "comment_id": "100754",
+    "create_time": 1697422384,
+    "aweme_id": "1288857706267677221",
+    "content": "真心觉得，学费一年两万六，在民办里算正常水平，能接受，可以冲",
+    "creator_hash": "43482cb3f77770ec",
+    "nickname": "同***学",
+    "sub_comment_count": "25",
+    "like_count": 7
+  },
+  {
+    "comment_id": "100304",
+    "create_time": 1697430318,
+    "aweme_id": "1856480323010603111",
+    "content": "认真吐槽一下，校园里湖边的路灯坏了好几盏，晚上走过去挺黑的，不安全",
+    "creator_hash": "361fa94fe2c49d21",
+    "nickname": "路***过",
+    "sub_comment_count": "4",
+    "like_count": 51
+  },
+  {
+    "comment_id": "100240",
+    "create_time": 1697458460,
+    "aweme_id": "1332816407837135791",
+    "content": "校巴班次太少，等一趟要三十分钟，上课差点迟到，真的很难受",
+    "creator_hash": "10b922bdbe1bf636",
+    "nickname": "摸***鱼",
+    "sub_comment_count": "5",
+    "like_count": 140
+  },
+  {
+    "comment_id": "100980",
+    "create_time": 1697458632,
+    "aweme_id": "1897395814345453989",
+    "content": "客观地说，学校离高速口近，节假日坐车回家很顺，交通挺方便",
+    "creator_hash": "beb34db1ce391e37",
+    "nickname": "准***生",
+    "sub_comment_count": "5",
+    "like_count": 10
+  },
+  {
+    "comment_id": "100960",
+    "create_time": 1697467084,
+    "aweme_id": "1640633731692184488",
+    "content": "住宿费一年两万六，能有上床下桌和空调，我觉得挺划算的，总体挺满意的",
+    "creator_hash": "491250e2ce1dbc9c",
+    "nickname": "路***人甲",
+    "sub_comment_count": "16",
+    "like_count": 4
+  },
+  {
+    "comment_id": "100828",
+    "create_time": 1697472969,
+    "aweme_id": "1251644923100946369",
+    "content": "宿舍管理挺人性化，晚归登记一下就行，不会乱扣分，好评，推荐给学弟学妹",
+    "creator_hash": "a4157d98df7efbcc",
+    "nickname": "学***弟",
+    "sub_comment_count": "20",
+    "like_count": 6
+  },
+  {
+    "comment_id": "100802",
+    "create_time": 1697481456,
+    "aweme_id": "1289685988990064485",
+    "content": "住了一学期，宿舍是上床下桌还带空调，环境真的不错，学弟学妹放心来",
+    "creator_hash": "2b9488af8102a070",
+    "nickname": "本***人",
+    "sub_comment_count": "3",
+    "like_count": 18
+  },
+  {
+    "comment_id": "100720",
+    "create_time": 1697487042,
+    "aweme_id": "1019077535291775663",
+    "content": "求问，食堂有清真窗口吗",
+    "creator_hash": "30ff194384f3e032",
+    "nickname": "干***饭",
+    "sub_comment_count": "1",
+    "like_count": 10
+  },
+  {
+    "comment_id": "100118",
+    "create_time": 1697487183,
+    "aweme_id": "1000550549423528399",
+    "content": "有没有人知道，新生报到要带哪些材料",
+    "creator_hash": "78b5e65e22b7b293",
+    "nickname": "东***软",
+    "sub_comment_count": "8",
+    "like_count": 79
+  },
+  {
+    "comment_id": "100572",
+    "create_time": 1697515869,
+    "aweme_id": "1526969191076537640",
+    "content": "校区大不大，逛一圈要多久，谢谢",
+    "creator_hash": "488129ee6b8ce582",
+    "nickname": "打***工",
+    "sub_comment_count": "20",
+    "like_count": 64
+  },
+  {
+    "comment_id": "100392",
+    "create_time": 1697515871,
+    "aweme_id": "1512857213729647669",
+    "content": "住宿费一年两万八，能有上床下桌和空调，我觉得挺划算的",
+    "creator_hash": "9f1212ca8950a966",
+    "nickname": "干***饭",
+    "sub_comment_count": "12",
+    "like_count": 4
+  },
+  {
+    "comment_id": "100320",
+    "create_time": 1697537414,
+    "aweme_id": "1508043311781805275",
+    "content": "学校有考研辅导班吗，在线等",
+    "creator_hash": "4b5678d4401eeb15",
+    "nickname": "上***岸",
+    "sub_comment_count": "7",
+    "like_count": 61
+  },
+  {
+    "comment_id": "100768",
+    "create_time": 1697540537,
+    "aweme_id": "1635403372391288677",
+    "content": "图书馆又大又新，自习位置多，环境挺适合学习的，挺加分的，总体不错",
+    "creator_hash": "c9333c25b212ba3b",
+    "nickname": "小***可",
+    "sub_comment_count": "6",
+    "like_count": 34
+  },
+  {
+    "comment_id": "100494",
+    "create_time": 1697542490,
+    "aweme_id": "1322766653663061627",
+    "content": "作为在读生，社团招新收了会费就没下文了，活动一个都没有，太坑",
+    "creator_hash": "cdc43099576e5d95",
+    "nickname": "摸***鱼",
+    "sub_comment_count": "6",
+    "like_count": 6
+  },
+  {
+    "comment_id": "100288",
+    "create_time": 1697543335,
+    "aweme_id": "1803883322640706278",
+    "content": "离地铁站太远了，打车过去要五十块，出行成本太高，感觉被劝退了",
+    "creator_hash": "87181da10a9e5033",
+    "nickname": "老***生",
+    "sub_comment_count": "6",
+    "like_count": 131
+  },
+  {
+    "comment_id": "100910",
+    "create_time": 1697545900,
+    "aweme_id": "1741728296773223278",
+    "content": "招生简章写得漂亮，实际住宿费学费加起来一年两万二，超预算，确实有点坑",
+    "creator_hash": "b780cf94955a3f9f",
+    "nickname": "夜***猫",
+    "sub_comment_count": "8",
+    "like_count": 3
+  },
+  {
+    "comment_id": "100934",
+    "create_time": 1697549565,
+    "aweme_id": "1758267580334786886",
+    "content": "离地铁站太远了，打车过去要四十五块，出行成本太高",
+    "creator_hash": "60d766a9f5166a9a",
+    "nickname": "南***海",
+    "sub_comment_count": "13",
+    "like_count": 15
+  },
+  {
+    "comment_id": "100026",
+    "create_time": 1697553007,
+    "aweme_id": "1386352108594506963",
+    "content": "食堂新开的麻辣香锅味道不错，一份十二块能吃很撑，好评",
+    "creator_hash": "58b7ebd0c64ba4e4",
+    "nickname": "学***姐",
+    "sub_comment_count": "9",
+    "like_count": 23
+  },
+  {
+    "comment_id": "100758",
+    "create_time": 1697560688,
+    "aweme_id": "1087401364541202845",
+    "content": "饭堂的菜越来越贵，量还越来越少，性价比太低，不知道别人是不是也这样",
+    "creator_hash": "19c1d4d86f4557a3",
+    "nickname": "在***读",
+    "sub_comment_count": "7",
+    "like_count": 2
+  },
+  {
+    "comment_id": "100236",
+    "create_time": 1697572839,
+    "aweme_id": "1430853224672290422",
+    "content": "校园绿化做得好，湖边散步很舒服，拍照也出片，推荐，值得",
+    "creator_hash": "9f32070d87de0bb4",
+    "nickname": "小***可",
+    "sub_comment_count": "80",
+    "like_count": 13
+  },
+  {
+    "comment_id": "100558",
+    "create_time": 1697573965,
+    "aweme_id": "1786670156116261667",
+    "content": "在线等，学校有考研辅导班吗",
+    "creator_hash": "c051159b2ddd4e8c",
+    "nickname": "老***生",
+    "sub_comment_count": "3",
+    "like_count": 8
+  },
+  {
+    "comment_id": "100194",
+    "create_time": 1697575159,
+    "aweme_id": "1008303101369886927",
+    "content": "住了一学期，学校考研氛围挺浓，图书馆自习位一座难求，挺励志的，总体不错",
+    "creator_hash": "950395b5f45ab281",
+    "nickname": "小***可",
+    "sub_comment_count": "15",
+    "like_count": 9
+  },
+  {
+    "comment_id": "100022",
+    "create_time": 1697601618,
+    "aweme_id": "1385917766937125662",
+    "content": "分数比去年低一点也能上，性价比挺高的，推荐报考，总体挺满意的",
+    "creator_hash": "51d826c5639e37f1",
+    "nickname": "实***习",
+    "sub_comment_count": "6",
+    "like_count": 36
+  },
+  {
+    "comment_id": "100134",
+    "create_time": 1697605664,
+    "aweme_id": "1153795890496358929",
+    "content": "学费一年一万八，民办学校这价格真的有点劝退，太贵了",
+    "creator_hash": "ae334783964f344f",
+    "nickname": "狮***山",
+    "sub_comment_count": "43",
+    "like_count": 18
+  },
+  {
+    "comment_id": "100652",
+    "create_time": 1697624085,
+    "aweme_id": "1734710774044447943",
+    "content": "作为在读生，补考安排在大年初几，回家一趟又要回来，太折腾，确实有点坑",
+    "creator_hash": "c9fdd28c8163979c",
+    "nickname": "吃***瓜",
+    "sub_comment_count": "8",
+    "like_count": 354
+  },
+  {
+    "comment_id": "100640",
+    "create_time": 1697645390,
+    "aweme_id": "1522055796248446037",
+    "content": "讲真，校园环境比想象中好，干净整洁，保洁做得很到位",
+    "creator_hash": "d818e8b2aa09c4e7",
+    "nickname": "干***饭",
+    "sub_comment_count": "0",
+    "like_count": 96
+  },
+  {
+    "comment_id": "100228",
+    "create_time": 1697660220,
+    "aweme_id": "1170752579155914841",
+    "content": "宿舍门禁十一点就锁门，实习晚回来一次就被记名字，太严格",
+    "creator_hash": "beb4e80f07bc6de9",
+    "nickname": "追***梦",
+    "sub_comment_count": "2",
+    "like_count": 675
+  },
+  {
+    "comment_id": "100848",
+    "create_time": 1697663949,
+    "aweme_id": "1268472290309520526",
+    "content": "宿舍管理挺人性化，晚归登记一下就行，不会乱扣分，好评，体验不错",
+    "creator_hash": "a9606e2a4b99048c",
+    "nickname": "网***友",
+    "sub_comment_count": "25",
+    "like_count": 2
+  },
+  {
+    "comment_id": "100948",
+    "create_time": 1697690257,
+    "aweme_id": "1145370337402409134",
+    "content": "说实话，校区挺大，建筑挺好看，第一眼就挺喜欢的，推荐",
+    "creator_hash": "4594f15c91765e55",
+    "nickname": "网***友",
+    "sub_comment_count": "6",
+    "like_count": 10
+  },
+  {
+    "comment_id": "100250",
+    "create_time": 1697694138,
+    "aweme_id": "1409435113940209235",
+    "content": "宿舍是上床下桌还带空调，环境真的不错，学弟学妹放心来，挺加分的",
+    "creator_hash": "4c95d28dc955dce6",
+    "nickname": "复***读",
+    "sub_comment_count": "4",
+    "like_count": 7
+  },
+  {
+    "comment_id": "100622",
+    "create_time": 1697695404,
+    "aweme_id": "1877013865908329032",
+    "content": "校区位置太偏僻了，晚上想出去吃个夜宵都没地方，不方便，希望学校能管管",
+    "creator_hash": "543c920f3f8575d5",
+    "nickname": "上***岸",
+    "sub_comment_count": "0",
+    "like_count": 29
+  },
+  {
+    "comment_id": "100956",
+    "create_time": 1697713351,
+    "aweme_id": "1678858139810618395",
+    "content": "不得不说，校园环境真不错，绿化多，南海校区挺漂亮的，不后悔来",
+    "creator_hash": "27f1663dc02caa5c",
+    "nickname": "小***新",
+    "sub_comment_count": "26",
+    "like_count": 12
+  },
+  {
+    "comment_id": "100346",
+    "create_time": 1697718483,
+    "aweme_id": "1336970270567910411",
+    "content": "食堂价格在民办里算便宜的，一顿十二块左右能搞定，不错，总体挺满意的",
+    "creator_hash": "2d04f1495205b548",
+    "nickname": "路***人",
+    "sub_comment_count": "17",
+    "like_count": 77
+  },
+  {
+    "comment_id": "100350",
+    "create_time": 1697726635,
+    "aweme_id": "1289119380491936202",
+    "content": "真心觉得，学校奖学金挺多的，成绩好一年能抵不少学费，挺良心",
+    "creator_hash": "0dd2fdab91c2e36e",
+    "nickname": "同***学",
+    "sub_comment_count": "6",
+    "like_count": 12
+  },
+  {
+    "comment_id": "100480",
+    "create_time": 1697730013,
+    "aweme_id": "1579970369986297607",
+    "content": "宿管查寝查得严，十点之后连吹风机都不让用，管理太死板，确实有点坑",
+    "creator_hash": "1d7d83cfc9a10b4f",
+    "nickname": "愤***青",
+    "sub_comment_count": "20",
+    "like_count": 28
+  },
+  {
+    "comment_id": "100670",
+    "create_time": 1697732166,
+    "aweme_id": "1081574745950482508",
+    "content": "佛山西站离学校不近，放假回家拎着行李转车很麻烦，有点失望",
+    "creator_hash": "60434b0195c531ae",
+    "nickname": "干***饭",
+    "sub_comment_count": "20",
+    "like_count": 25
+  },
+  {
+    "comment_id": "100148",
+    "create_time": 1697744801,
+    "aweme_id": "1423178410133328456",
+    "content": "不是我说，宿舍门禁十一点半就锁门，实习晚回来一次就被记名字，太严格",
+    "creator_hash": "001c48602a1a273e",
+    "nickname": "复***读",
+    "sub_comment_count": "0",
+    "like_count": 12
+  },
+  {
+    "comment_id": "100462",
+    "create_time": 1697772248,
+    "aweme_id": "1499073848389204778",
+    "content": "宿舍门禁十点半就锁门，实习晚回来一次就被记名字，太严格",
+    "creator_hash": "c5796f13ae8c1c6e",
+    "nickname": "转***本",
+    "sub_comment_count": "13",
+    "like_count": 57
+  },
+  {
+    "comment_id": "100898",
+    "create_time": 1697779232,
+    "aweme_id": "1019791810564440213",
+    "content": "说句实话，学校在狮山，周边挺荒的，想逛个商场要坐车四十分钟，位置太偏，确实有点坑",
+    "creator_hash": "b8551fe2d107de53",
+    "nickname": "网***友",
+    "sub_comment_count": "6",
+    "like_count": 45
+  },
+  {
+    "comment_id": "100450",
+    "create_time": 1697815519,
+    "aweme_id": "1226228992417146323",
+    "content": "真的，宿舍水电费贵得离谱，一个月下来比住宿费还心疼，太坑",
+    "creator_hash": "c1143aebfe6ad8ae",
+    "nickname": "小***白",
+    "sub_comment_count": "24",
+    "like_count": 2
+  },
+  {
+    "comment_id": "100484",
+    "create_time": 1697834904,
+    "aweme_id": "1837201860254027424",
+    "content": "讲真，校园面积不大，走两圈就逛完了，有点失望",
+    "creator_hash": "7d86e8d6498608cb",
+    "nickname": "复***读",
+    "sub_comment_count": "3",
+    "like_count": 33
+  },
+  {
+    "comment_id": "100516",
+    "create_time": 1697837334,
+    "aweme_id": "1911986029188130269",
+    "content": "在线等，住宿费一年多少钱",
+    "creator_hash": "546991f39cb8b47b",
+    "nickname": "吃***瓜",
+    "sub_comment_count": "8",
+    "like_count": 13
+  },
+  {
+    "comment_id": "100540",
+    "create_time": 1697838607,
+    "aweme_id": "1978489776050238496",
+    "content": "有点无语，小学期又要上一个月课，暑假直接缩水，别人放假我还在教室，难受，太难了",
+    "creator_hash": "0ac0b761d7ce0c7d",
+    "nickname": "老***油",
+    "sub_comment_count": "1",
+    "like_count": 13
+  },
+  {
+    "comment_id": "100658",
+    "create_time": 1697839667,
+    "aweme_id": "1045489804796533613",
+    "content": "作为在读生，宿舍空调要自己交电费，夏天开一晚上十几块，实在用不起，心态崩了，确实有点坑",
+    "creator_hash": "5d899f957ae3ce75",
+    "nickname": "家***长",
+    "sub_comment_count": "4",
+    "like_count": 585
+  },
+  {
+    "comment_id": "100954",
+    "create_time": 1697874501,
+    "aweme_id": "1747307378008735256",
+    "content": "说实话，学费三万还不含住宿和教材，算下来一年要花不少，不值",
+    "creator_hash": "d2d2e1e75f78e071",
+    "nickname": "老***生",
+    "sub_comment_count": "4",
+    "like_count": 8
+  },
+  {
+    "comment_id": "100020",
+    "create_time": 1697900958,
+    "aweme_id": "1528772798446147592",
+    "content": "宿舍门禁是几点，晚归能进吗",
+    "creator_hash": "54b76a0e12d1c8b0",
+    "nickname": "老***油",
+    "sub_comment_count": "15",
+    "like_count": 5
+  },
+  {
+    "comment_id": "100550",
+    "create_time": 1697916734,
+    "aweme_id": "1423257562066635576",
+    "content": "学费一年两万六，在民办里算正常水平，能接受，总体挺满意的",
+    "creator_hash": "d4a64e7fa5212952",
+    "nickname": "考***研",
+    "sub_comment_count": "6",
+    "like_count": 13
+  },
+  {
+    "comment_id": "100770",
+    "create_time": 1697980633,
+    "aweme_id": "1142298875495367621",
+    "content": "食堂早餐种类挺多，十块就能吃饱，比外面划算",
+    "creator_hash": "8de2b2fa7c54331d",
+    "nickname": "早***八",
+    "sub_comment_count": "65",
+    "like_count": 42
+  },
+  {
+    "comment_id": "100690",
+    "create_time": 1697985253,
+    "aweme_id": "1131699852487098907",
+    "content": "真的，小学期又要上一个月课，暑假直接缩水，别人放假我还在教室，难受",
+    "creator_hash": "399cf42db080474c",
+    "nickname": "夜***猫",
+    "sub_comment_count": "1",
+    "like_count": 14
+  },
+  {
+    "comment_id": "100542",
+    "create_time": 1698002526,
+    "aweme_id": "1145853650880351333",
+    "content": "不是我说，宿舍晚上十二点就断电，笔记本还没保存就黑屏了，太难受，有点失望",
+    "creator_hash": "3c5e6a6f6b0cbc70",
+    "nickname": "本***人",
+    "sub_comment_count": "76",
+    "like_count": 41
+  },
+  {
+    "comment_id": "100358",
+    "create_time": 1698010258,
+    "aweme_id": "1525508525017661812",
+    "content": "食堂卫生堪忧，餐盘上还有油，看到就没胃口了，体验差，心态崩了",
+    "creator_hash": "bfc56ee1dffa57dd",
+    "nickname": "复***读",
+    "sub_comment_count": "22",
+    "like_count": 9
+  },
+  {
+    "comment_id": "100878",
+    "create_time": 1698026827,
+    "aweme_id": "1952843935284984407",
+    "content": "学校有菜鸟驿站吗，在哪，谢谢",
+    "creator_hash": "86bae7dd6c977d59",
+    "nickname": "路***人",
+    "sub_comment_count": "5",
+    "like_count": 8
+  },
+  {
+    "comment_id": "100150",
+    "create_time": 1698061506,
+    "aweme_id": "1689691229361100723",
+    "content": "食堂早餐种类挺多，二十八块就能吃饱，比外面划算",
+    "creator_hash": "a811dcbd237a0d8d",
+    "nickname": "毕***业",
+    "sub_comment_count": "3",
+    "like_count": 4
+  },
+  {
+    "comment_id": "100678",
+    "create_time": 1698061515,
+    "aweme_id": "1289526148612327994",
+    "content": "真心觉得，食堂一楼的糖水很良心，五块一杯，夏天喝着很舒服",
+    "creator_hash": "3051797974c188af",
+    "nickname": "追***梦",
+    "sub_comment_count": "6",
+    "like_count": 6
+  },
+  {
+    "comment_id": "100278",
+    "create_time": 1698075270,
+    "aweme_id": "1458990270948948983",
+    "content": "住了一学期，学校在南海狮山，环境安静，很适合读书，不错的，给个好评",
+    "creator_hash": "fe7b992986f45199",
+    "nickname": "本***人",
+    "sub_comment_count": "6",
+    "like_count": 31
+  },
+  {
+    "comment_id": "100000",
+    "create_time": 1698117462,
+    "aweme_id": "1635031149958693363",
+    "content": "专业组是怎么划分的",
+    "creator_hash": "934ef40218caa3b9",
+    "nickname": "在***读",
+    "sub_comment_count": "1",
+    "like_count": 7
+  },
+  {
+    "comment_id": "100574",
+    "create_time": 1698126815,
+    "aweme_id": "1672947185042714000",
+    "content": "讲真，专升本的招生名额一年比一年少，感觉越来越难考了，确实有点坑",
+    "creator_hash": "3e3c596e0390d228",
+    "nickname": "摸***鱼",
+    "sub_comment_count": "0",
+    "like_count": 4
+  },
+  {
+    "comment_id": "100072",
+    "create_time": 1698155937,
+    "aweme_id": "1496379821178266346",
+    "content": "宿舍有独立卫生间，还配了洗衣机，条件在民办里算好的，给个好评",
+    "creator_hash": "92ac39c90369cff4",
+    "nickname": "吃***瓜",
+    "sub_comment_count": "4",
+    "like_count": 206
+  },
+  {
+    "comment_id": "100748",
+    "create_time": 1698161433,
+    "aweme_id": "1890926530006148117",
+    "content": "客观地说，综测加分规则太复杂，班委加分一堆，普通学生根本没机会，希望学校能管管，确实有点坑",
+    "creator_hash": "1131b82d6413184b",
+    "nickname": "干***饭",
+    "sub_comment_count": "8",
+    "like_count": 380
+  },
+  {
+    "comment_id": "100030",
+    "create_time": 1698173110,
+    "aweme_id": "1111162298168709098",
+    "content": "宿舍能用吹风机吗，功率有限制吗",
+    "creator_hash": "c94ec00453480306",
+    "nickname": "南***海",
+    "sub_comment_count": "2",
+    "like_count": 65
+  },
+  {
+    "comment_id": "100916",
+    "create_time": 1698174441,
+    "aweme_id": "1698494938332322433",
+    "content": "省排位八万能冲一下吗，谢谢",
+    "creator_hash": "6f094d4cb4b13163",
+    "nickname": "摸***鱼",
+    "sub_comment_count": "5",
+    "like_count": 14
+  },
+  {
+    "comment_id": "100976",
+    "create_time": 1698177196,
+    "aweme_id": "1659851442609467540",
+    "content": "学校附近租房贵吗，谢谢",
+    "creator_hash": "1ebe1df65e1e5f0f",
+    "nickname": "大***姐",
+    "sub_comment_count": "8",
+    "like_count": 14
+  },
+  {
+    "comment_id": "100196",
+    "create_time": 1698181149,
+    "aweme_id": "1335509844001324464",
+    "content": "真心觉得，宿舍条件超出预期，上床下桌空间够用，还有阳台晒衣服，好评，值得",
+    "creator_hash": "e9c3f8d4295d090c",
+    "nickname": "摸***鱼",
+    "sub_comment_count": "10",
+    "like_count": 3
+  },
+  {
+    "comment_id": "100164",
+    "create_time": 1698194498,
+    "aweme_id": "1449625960856380916",
+    "content": "说句实话，学校在狮山，周边挺荒的，想逛个商场要坐车二十五分钟，位置太偏，确实有点坑",
+    "creator_hash": "33923c8ed58e98b8",
+    "nickname": "大***姐",
+    "sub_comment_count": "6",
+    "like_count": 4
+  },
+  {
+    "comment_id": "100120",
+    "create_time": 1698205005,
+    "aweme_id": "1654849635882128823",
+    "content": "客观地说，社团挺多的，活动也丰富，课余生活不会无聊，不错，推荐给学弟学妹",
+    "creator_hash": "b4165a6364c568f7",
+    "nickname": "网***友",
+    "sub_comment_count": "8",
+    "like_count": 17
+  },
+  {
+    "comment_id": "100260",
+    "create_time": 1698212025,
+    "aweme_id": "1484595721102693952",
+    "content": "食堂能打包带走吗",
+    "creator_hash": "5ddfc98d1daa50c0",
+    "nickname": "愤***青",
+    "sub_comment_count": "0",
+    "like_count": 55
+  },
+  {
+    "comment_id": "100162",
+    "create_time": 1698234286,
+    "aweme_id": "1515023985462664646",
+    "content": "真心觉得，宿舍四人间的书桌很大，放两台显示器都不挤，学习打游戏都爽，值得",
+    "creator_hash": "b2fe011ff870f6d9",
+    "nickname": "学***弟",
+    "sub_comment_count": "6",
+    "like_count": 4
+  },
+  {
+    "comment_id": "100442",
+    "create_time": 1698243947,
+    "aweme_id": "1012721438900652454",
+    "content": "小学期是所有人都要上吗，有知道的吗",
+    "creator_hash": "42a09d56379b7743",
+    "nickname": "追***梦",
+    "sub_comment_count": "27",
+    "like_count": 3
+  },
+  {
+    "comment_id": "100496",
+    "create_time": 1698252975,
+    "aweme_id": "1547124958733581674",
+    "content": "可以放心，狮山这边空气好，晚上操场跑步很舒服，环境加分",
+    "creator_hash": "e505d9674ac78987",
+    "nickname": "早***八",
+    "sub_comment_count": "5",
+    "like_count": 38
+  },
+  {
+    "comment_id": "100460",
+    "create_time": 1698255247,
+    "aweme_id": "1343600547732058390",
+    "content": "助学贷款办理流程挺顺的，学长带着走一遍就搞定了，很方便，挺加分的",
+    "creator_hash": "d639c6e707b64c4c",
+    "nickname": "学***妹",
+    "sub_comment_count": "4",
+    "like_count": 73
+  },
+  {
+    "comment_id": "100482",
+    "create_time": 1698289244,
+    "aweme_id": "1719532684092443654",
+    "content": "打饭阿姨手抖得厉害，一份肉就三块，价格还不便宜，坑，有点失望",
+    "creator_hash": "fd31c3345a3a9ad6",
+    "nickname": "匿***名",
+    "sub_comment_count": "8",
+    "like_count": 10
+  },
+  {
+    "comment_id": "100874",
+    "create_time": 1698289271,
+    "aweme_id": "1875896444473782146",
+    "content": "快递驿站在校外，取个大件要走十几分钟，太麻烦，感觉被劝退了",
+    "creator_hash": "ba5e9f10811599e4",
+    "nickname": "夜***猫",
+    "sub_comment_count": "17",
+    "like_count": 206
+  },
+  {
+    "comment_id": "100876",
+    "create_time": 1698290276,
+    "aweme_id": "1900124151202384135",
+    "content": "准备报考，食堂有清真窗口吗",
+    "creator_hash": "3e437b3be5d18d8d",
+    "nickname": "大***姐",
+    "sub_comment_count": "24",
+    "like_count": 57
+  },
+  {
+    "comment_id": "100700",
+    "create_time": 1698334437,
+    "aweme_id": "1044783316509613798",
+    "content": "实训设备老旧，一半机器开不了机，上课只能看演示，很失望，有点失望",
+    "creator_hash": "9cddbf10c2a37ed8",
+    "nickname": "准***生",
+    "sub_comment_count": "21",
+    "like_count": 72
+  },
+  {
+    "comment_id": "100692",
+    "create_time": 1698335109,
+    "aweme_id": "1678452490828520213",
+    "content": "校园里到处是绿树，夏天也不怎么晒，走着挺凉快，舒服，体验不错",
+    "creator_hash": "837120a2759e3c18",
+    "nickname": "路***人",
+    "sub_comment_count": "1",
+    "like_count": 56
+  },
+  {
+    "comment_id": "100388",
+    "create_time": 1698410180,
+    "aweme_id": "1893985923604573064",
+    "content": "有点无语，饭堂的菜越来越贵，量还越来越少，性价比太低",
+    "creator_hash": "c23fd10f6617334d",
+    "nickname": "打***工",
+    "sub_comment_count": "5",
+    "like_count": 50
+  },
+  {
+    "comment_id": "100970",
+    "create_time": 1698418881,
+    "aweme_id": "1556619221976882913",
+    "content": "个人体验，宿舍条件超出预期，上床下桌空间够用，还有阳台晒衣服，好评",
+    "creator_hash": "c6ccd8ea09ceda24",
+    "nickname": "小***白",
+    "sub_comment_count": "2",
+    "like_count": 3
+  },
+  {
+    "comment_id": "100946",
+    "create_time": 1698430363,
+    "aweme_id": "1026286394669155797",
+    "content": "不是我说，学校在狮山，周边挺荒的，想逛个商场要坐车十五分钟，位置太偏，确实有点坑",
+    "creator_hash": "894e03f7c51e17cb",
+    "nickname": "复***读",
+    "sub_comment_count": "10",
+    "like_count": 22
+  },
+  {
+    "comment_id": "100178",
+    "create_time": 1698442743,
+    "aweme_id": "1042196572885016156",
+    "content": "学费可以分期交吗，在线等",
+    "creator_hash": "c361673f9f45eef9",
+    "nickname": "应***届",
+    "sub_comment_count": "29",
+    "like_count": 35
+  },
+  {
+    "comment_id": "100474",
+    "create_time": 1698463125,
+    "aweme_id": "1691331965863426037",
+    "content": "宿舍水电费怎么算，感谢",
+    "creator_hash": "3a7fbbcfe4b2eb9e",
+    "nickname": "网***友",
+    "sub_comment_count": "20",
+    "like_count": 21
+  },
+  {
+    "comment_id": "100076",
+    "create_time": 1698467587,
+    "aweme_id": "1389734398315455826",
+    "content": "求问，宿舍可以自己装路由器吗",
+    "creator_hash": "6de011f2a0e55fe4",
+    "nickname": "佛***山",
+    "sub_comment_count": "0",
+    "like_count": 51
+  },
+  {
+    "comment_id": "100648",
+    "create_time": 1698485869,
+    "aweme_id": "1426909631021163511",
+    "content": "辩论赛和歌手赛都能报名，平台挺多的，锻炼机会不少，总体挺满意的",
+    "creator_hash": "63d1f89b8ffc8913",
+    "nickname": "新***生",
+    "sub_comment_count": "4",
+    "like_count": 2
+  },
+  {
+    "comment_id": "100862",
+    "create_time": 1698517400,
+    "aweme_id": "1633924376040428240",
+    "content": "饭堂的面食窗口很惊喜，现做的，比外卖强多了，点赞，不后悔来，总体不错",
+    "creator_hash": "808dc08e4db4182b",
+    "nickname": "准***生",
+    "sub_comment_count": "3",
+    "like_count": 1
+  },
+  {
+    "comment_id": "100726",
+    "create_time": 1698534640,
+    "aweme_id": "1573911970339832966",
+    "content": "宿舍干净宽敞，通风也好，夏天开着空调很舒服，值得推荐，值得",
+    "creator_hash": "9e3813957598c30a",
+    "nickname": "干***饭",
+    "sub_comment_count": "5",
+    "like_count": 64
+  },
+  {
+    "comment_id": "100936",
+    "create_time": 1698552269,
+    "aweme_id": "1244222640835825866",
+    "content": "宿舍管理挺人性化，晚归登记一下就行，不会乱扣分，好评，不后悔来",
+    "creator_hash": "297ddc06f0a5ce37",
+    "nickname": "佛***山",
+    "sub_comment_count": "0",
+    "like_count": 26
+  },
+  {
+    "comment_id": "100728",
+    "create_time": 1698573372,
+    "aweme_id": "1674021080254483931",
+    "content": "校巴班次太少，等一趟要三十分钟，上课差点迟到",
+    "creator_hash": "132d2d6f6bb85480",
+    "nickname": "专***科",
+    "sub_comment_count": "0",
+    "like_count": 16
+  },
+  {
+    "comment_id": "100998",
+    "create_time": 1698576222,
+    "aweme_id": "1502843880879223360",
+    "content": "老师会带着做真实项目，简历上能写东西，这点很加分，体验不错",
+    "creator_hash": "1d203ba649009395",
+    "nickname": "路***人甲",
+    "sub_comment_count": "16",
+    "like_count": 9
+  },
+  {
+    "comment_id": "100694",
+    "create_time": 1698591769,
+    "aweme_id": "1516091000013974269",
+    "content": "客观地说，食堂二楼的烧腊饭挺好吃，十二块一份量也足，推荐",
+    "creator_hash": "ea3cbe26c504b72a",
+    "nickname": "学***弟",
+    "sub_comment_count": "4",
+    "like_count": 13
+  },
+  {
+    "comment_id": "100780",
+    "create_time": 1698601215,
+    "aweme_id": "1791516302859005592",
+    "content": "有点无语，住六楼没电梯，搬行李上来一趟腿都软了，宿舍条件太差",
+    "creator_hash": "70993d897e9922e0",
+    "nickname": "学***长",
+    "sub_comment_count": "7",
+    "like_count": 31
+  },
+  {
+    "comment_id": "100458",
+    "create_time": 1698605320,
+    "aweme_id": "1317459330068896618",
+    "content": "宿舍校园网一到晚上就卡成PPT，网速慢到打游戏疯狂掉线，网费还照收，确实有点坑",
+    "creator_hash": "63a8707cf35007ad",
+    "nickname": "准***生",
+    "sub_comment_count": "21",
+    "like_count": 786
+  },
+  {
+    "comment_id": "100180",
+    "create_time": 1698619188,
+    "aweme_id": "1834527464584799310",
+    "content": "讲真，网费一学期两万，网速慢得离谱，这钱花得真不值",
+    "creator_hash": "c41948823185b5be",
+    "nickname": "准***生",
+    "sub_comment_count": "7",
+    "like_count": 9
+  },
+  {
+    "comment_id": "100424",
+    "create_time": 1698623650,
+    "aweme_id": "1506763474660166717",
+    "content": "学校考研氛围挺浓，图书馆自习位一座难求，挺励志的，可以冲",
+    "creator_hash": "e5623633d593381f",
+    "nickname": "路***人甲",
+    "sub_comment_count": "5",
+    "like_count": 62
+  },
+  {
+    "comment_id": "100534",
+    "create_time": 1698626836,
+    "aweme_id": "1441559776060489732",
+    "content": "宿舍是上床下桌还是上下铺，感谢",
+    "creator_hash": "3be4457050c624f3",
+    "nickname": "路***过",
+    "sub_comment_count": "2",
+    "like_count": 30
+  },
+  {
+    "comment_id": "100264",
+    "create_time": 1698629567,
+    "aweme_id": "1981099157343327301",
+    "content": "住宿费一年三万，条件却是上下铺，性价比太低，确实有点坑",
+    "creator_hash": "5d5835f12b09f305",
+    "nickname": "小***新",
+    "sub_comment_count": "1",
+    "like_count": 37
+  },
+  {
+    "comment_id": "100896",
+    "create_time": 1698635836,
+    "aweme_id": "1070301059863860064",
+    "content": "忍不住说一句，说是产教融合，实际学费涨了课没变，家长意见很大，有点坑",
+    "creator_hash": "cd43ee925a3ecf30",
+    "nickname": "佛***山",
+    "sub_comment_count": "5",
+    "like_count": 80
+  },
+  {
+    "comment_id": "100110",
+    "create_time": 1698636415,
+    "aweme_id": "1624399295327004444",
+    "content": "课程安排合理，理论和实训结合得不错，学得挺扎实，推荐给学弟学妹",
+    "creator_hash": "4ec2e745255d69ac",
+    "nickname": "上***岸",
+    "sub_comment_count": "1",
+    "like_count": 9
+  },
+  {
+    "comment_id": "100880",
+    "create_time": 1698665050,
+    "aweme_id": "1726490713407685133",
+    "content": "宿舍床位是先到先得还是学校安排，有知道的吗",
+    "creator_hash": "51026a87d68f3607",
+    "nickname": "上***岸",
+    "sub_comment_count": "12",
+    "like_count": 8
+  },
+  {
+    "comment_id": "100348",
+    "create_time": 1698691527,
+    "aweme_id": "1888320801029759817",
+    "content": "不是我说，学校位置太偏，去市区要转两趟公交，单程四十分钟，不方便，确实有点坑",
+    "creator_hash": "1226d6b699c382cf",
+    "nickname": "家***长",
+    "sub_comment_count": "4",
+    "like_count": 7
+  },
+  {
+    "comment_id": "100404",
+    "create_time": 1698705668,
+    "aweme_id": "1838191074475652586",
+    "content": "准备报考，南海校区图书馆大吗",
+    "creator_hash": "539ffabfe846276d",
+    "nickname": "愤***青",
+    "sub_comment_count": "13",
+    "like_count": 28
+  },
+  {
+    "comment_id": "100620",
+    "create_time": 1698721340,
+    "aweme_id": "1327721778071876745",
+    "content": "宿舍门禁十一点就锁门，实习晚回来一次就被记名字，太严格，心态崩了",
+    "creator_hash": "73a0005315c63fcc",
+    "nickname": "应***届",
+    "sub_comment_count": "3",
+    "like_count": 33
+  },
+  {
+    "comment_id": "100858",
+    "create_time": 1698739906,
+    "aweme_id": "1401679177285625015",
+    "content": "求问，食堂一顿饭大概多少钱，麻烦学长学姐解答一下",
+    "creator_hash": "f53c6f3f5d48e5d4",
+    "nickname": "专***科",
+    "sub_comment_count": "21",
+    "like_count": 20
+  },
+  {
+    "comment_id": "100682",
+    "create_time": 1698742803,
+    "aweme_id": "1844197406912972390",
+    "content": "学校周边有哪些去处，谢谢",
+    "creator_hash": "2bccd25f07628274",
+    "nickname": "老***油",
+    "sub_comment_count": "1",
+    "like_count": 32
+  },
+  {
+    "comment_id": "100854",
+    "create_time": 1698742924,
+    "aweme_id": "1328243138518168095",
+    "content": "宿管查寝查得严，十一点之后连吹风机都不让用，管理太死板，不知道别人是不是也这样，确实有点坑",
+    "creator_hash": "b3c75db2a2639f89",
+    "nickname": "学***姐",
+    "sub_comment_count": "20",
+    "like_count": 9
+  },
+  {
+    "comment_id": "100604",
+    "create_time": 1698745385,
+    "aweme_id": "1471846015666418325",
+    "content": "认真吐槽一下，学校位置太偏，去市区要转两趟公交，单程四十分钟，不方便",
+    "creator_hash": "a31161c477679323",
+    "nickname": "准***生",
+    "sub_comment_count": "26",
+    "like_count": 10
+  },
+  {
+    "comment_id": "100562",
+    "create_time": 1698770888,
+    "aweme_id": "1892677173516506246",
+    "content": "说句实话，作业和实验报告堆成山，一周交三份，根本做不完，麻烦",
+    "creator_hash": "3804899e8d3d3bf1",
+    "nickname": "路***人",
+    "sub_comment_count": "2",
+    "like_count": 8
+  },
+  {
+    "comment_id": "100254",
+    "create_time": 1698782210,
+    "aweme_id": "1239531563367881200",
+    "content": "校区大不大，逛一圈要多久",
+    "creator_hash": "81547ba6b0931402",
+    "nickname": "毕***业",
+    "sub_comment_count": "26",
+    "like_count": 30
+  },
+  {
+    "comment_id": "100032",
+    "create_time": 1698844718,
+    "aweme_id": "1983178369926010285",
+    "content": "补考安排在大年初几，回家一趟又要回来，太折腾，有点失望",
+    "creator_hash": "a81164f6648f4d22",
+    "nickname": "同***学",
+    "sub_comment_count": "5",
+    "like_count": 965
+  },
+  {
+    "comment_id": "100018",
+    "create_time": 1698847407,
+    "aweme_id": "1216131041438546204",
+    "content": "宿舍阳台朝南，采光很好，晒被子一天就干，挺满意的，推荐给学弟学妹",
+    "creator_hash": "345f7ba0ef95f573",
+    "nickname": "老***油",
+    "sub_comment_count": "30",
+    "like_count": 2
+  },
+  {
+    "comment_id": "100698",
+    "create_time": 1698854299,
+    "aweme_id": "1016886245633996750",
+    "content": "真心觉得，实训室的设备挺新的，能上手操作，比纯理论强多了，总体不错",
+    "creator_hash": "4e77968d312075ba",
+    "nickname": "老***生",
+    "sub_comment_count": "8",
+    "like_count": 239
+  },
+  {
+    "comment_id": "100090",
+    "create_time": 1698897160,
+    "aweme_id": "1215523227087518352",
+    "content": "求问，食堂有夜宵吗，麻烦学长学姐解答一下",
+    "creator_hash": "319cc873f9db0194",
+    "nickname": "毕***业",
+    "sub_comment_count": "7",
+    "like_count": 33
+  },
+  {
+    "comment_id": "100654",
+    "create_time": 1698899691,
+    "aweme_id": "1781813789184995289",
+    "content": "讲真，食堂换了承包商之后越来越差，菜咸得要命，价格还涨",
+    "creator_hash": "87e99a50c7951c10",
+    "nickname": "干***饭",
+    "sub_comment_count": "0",
+    "like_count": 11
+  },
+  {
+    "comment_id": "100412",
+    "create_time": 1698900942,
+    "aweme_id": "1655949228723284874",
+    "content": "住了一学期，饭堂味道是真的不行，米线像泡面，还卖十四块一份，难吃",
+    "creator_hash": "6d18783be1226ff4",
+    "nickname": "本***人",
+    "sub_comment_count": "10",
+    "like_count": 59
+  },
+  {
+    "comment_id": "100232",
+    "create_time": 1698936313,
+    "aweme_id": "1472327042503422938",
+    "content": "一份炒饭二十二块，里面就几片火腿，食堂是把学生当韭菜吗，坑",
+    "creator_hash": "e8cbbcb7cd350f68",
+    "nickname": "学***姐",
+    "sub_comment_count": "8",
+    "like_count": 51
+  },
+  {
+    "comment_id": "100782",
+    "create_time": 1698949730,
+    "aweme_id": "1783998726148769635",
+    "content": "助学贷款手续特别麻烦，跑了好几趟还没办下来，太折腾，心态崩了",
+    "creator_hash": "c1224aff5cf7088f",
+    "nickname": "家***长",
+    "sub_comment_count": "29",
+    "like_count": 5
+  },
+  {
+    "comment_id": "100322",
+    "create_time": 1698967612,
+    "aweme_id": "1350823791817384340",
+    "content": "住了一学期，四六级考场名额少，抢不到只能去外校考，太麻烦了",
+    "creator_hash": "be11cb08ce79238e",
+    "nickname": "学***长",
+    "sub_comment_count": "1",
+    "like_count": 315
+  },
+  {
+    "comment_id": "100252",
+    "create_time": 1698973879,
+    "aweme_id": "1215636165519090333",
+    "content": "狮山这边空气好，晚上操场跑步很舒服，环境加分，总体挺满意的",
+    "creator_hash": "a2dc110850d0db99",
+    "nickname": "学***弟",
+    "sub_comment_count": "10",
+    "like_count": 38
+  },
+  {
+    "comment_id": "100810",
+    "create_time": 1698978418,
+    "aweme_id": "1223891992939090799",
+    "content": "认真吐槽一下，佛山西站离学校不近，放假回家拎着行李转车很麻烦",
+    "creator_hash": "ffff74928f7ae3e3",
+    "nickname": "小***可",
+    "sub_comment_count": "6",
+    "like_count": 5
+  },
+  {
+    "comment_id": "100238",
+    "create_time": 1699004246,
+    "aweme_id": "1655703371935343305",
+    "content": "有没有人知道，放假回家坐高铁怎么走，交通方便吗",
+    "creator_hash": "1b7608613999d9ea",
+    "nickname": "学***妹",
+    "sub_comment_count": "25",
+    "like_count": 1
+  },
+  {
+    "comment_id": "100734",
+    "create_time": 1699005471,
+    "aweme_id": "1615327892254394560",
+    "content": "服从调剂会不会被分到冷门专业",
+    "creator_hash": "4a531a4941051712",
+    "nickname": "小***可",
+    "sub_comment_count": "50",
+    "like_count": 14
+  },
+  {
+    "comment_id": "100650",
+    "create_time": 1699013418,
+    "aweme_id": "1678785146669341182",
+    "content": "说句实话，学费这么贵，奖学金名额还少，普通家庭压力太大了，确实有点坑",
+    "creator_hash": "8cf4bb4415eac3c1",
+    "nickname": "夜***猫",
+    "sub_comment_count": "15",
+    "like_count": 14
+  },
+  {
+    "comment_id": "100100",
+    "create_time": 1699020684,
+    "aweme_id": "1355072188237079205",
+    "content": "不是我说，宿舍水电费贵得离谱，一个月下来比住宿费还心疼，太坑",
+    "creator_hash": "5452470ae6c05d5d",
+    "nickname": "应***届",
+    "sub_comment_count": "26",
+    "like_count": 45
+  },
+  {
+    "comment_id": "100214",
+    "create_time": 1699034521,
+    "aweme_id": "1687423466599113080",
+    "content": "食堂二楼的烧腊饭挺好吃，二十五块一份量也足，推荐",
+    "creator_hash": "73d75cad46ec4e19",
+    "nickname": "南***海",
+    "sub_comment_count": "5",
+    "like_count": 80
+  },
+  {
+    "comment_id": "100836",
+    "create_time": 1699051292,
+    "aweme_id": "1733834340690301844",
+    "content": "宿舍条件超出预期，上床下桌空间够用，还有阳台晒衣服，好评，不后悔来",
+    "creator_hash": "83bbd78ac294cdef",
+    "nickname": "准***生",
+    "sub_comment_count": "4",
+    "like_count": 9
+  },
+  {
+    "comment_id": "100958",
+    "create_time": 1699058279,
+    "aweme_id": "1740687885495035251",
+    "content": "客观地说，助学贷款办理流程挺顺的，学长带着走一遍就搞定了，很方便",
+    "creator_hash": "13279d30f1db456a",
+    "nickname": "上***岸",
+    "sub_comment_count": "6",
+    "like_count": 6
+  },
+  {
+    "comment_id": "100952",
+    "create_time": 1699062109,
+    "aweme_id": "1045578195944105896",
+    "content": "住了一学期，专升本的招生名额一年比一年少，感觉越来越难考了，确实有点坑",
+    "creator_hash": "859e22fc4c0f9e6e",
+    "nickname": "本***人",
+    "sub_comment_count": "68",
+    "like_count": 6
+  },
+  {
+    "comment_id": "100052",
+    "create_time": 1699069838,
+    "aweme_id": "1861356334022587295",
+    "content": "不得不说，校运会组织得不错，还有趣味项目，参与感挺强",
+    "creator_hash": "ed2582485310a918",
+    "nickname": "打***工",
+    "sub_comment_count": "34",
+    "like_count": 70
+  },
+  {
+    "comment_id": "100794",
+    "create_time": 1699096229,
+    "aweme_id": "1785980661697764169",
+    "content": "有点无语，选课系统一到点就崩，抢课抢了个寂寞，全是水课，太坑",
+    "creator_hash": "1c6e54baccdce59b",
+    "nickname": "匿***名",
+    "sub_comment_count": "58",
+    "like_count": 1710
+  },
+  {
+    "comment_id": "100058",
+    "create_time": 1699108209,
+    "aweme_id": "1783641663628795387",
+    "content": "真心觉得，招生办的老师回复很及时，问的问题都耐心解答了，好评",
+    "creator_hash": "22548472621a35fa",
+    "nickname": "本***人",
+    "sub_comment_count": "30",
+    "like_count": 58
+  },
+  {
+    "comment_id": "100116",
+    "create_time": 1699129130,
+    "aweme_id": "1406045618808463028",
+    "content": "学校在狮山，周边挺荒的，想逛个商场要坐车二十分钟，位置太偏，确实有点坑",
+    "creator_hash": "f802465500759136",
+    "nickname": "应***届",
+    "sub_comment_count": "11",
+    "like_count": 30
+  },
+  {
+    "comment_id": "100610",
+    "create_time": 1699134896,
+    "aweme_id": "1068578129762376374",
+    "content": "校园网经常断网，交着网费还要开自己的热点，真的无语，有点后悔",
+    "creator_hash": "bd4c8a553d525c02",
+    "nickname": "在***读",
+    "sub_comment_count": "12",
+    "like_count": 44
+  },
+  {
+    "comment_id": "100646",
+    "create_time": 1699154548,
+    "aweme_id": "1574889727154721151",
+    "content": "录取结果一般什么时候出，在线等",
+    "creator_hash": "9197c81576af3dc2",
+    "nickname": "毕***业",
+    "sub_comment_count": "4",
+    "like_count": 122
+  },
+  {
+    "comment_id": "100564",
+    "create_time": 1699160038,
+    "aweme_id": "1085074574979015360",
+    "content": "忍不住说一句，食堂的汤基本就是白开水加盐，还要另外收钱，太坑",
+    "creator_hash": "4c6aba248f6d776e",
+    "nickname": "吃***货",
+    "sub_comment_count": "35",
+    "like_count": 22
+  },
+  {
+    "comment_id": "100066",
+    "create_time": 1699197889,
+    "aweme_id": "1651807824166863914",
+    "content": "助学贷款手续特别麻烦，跑了好几趟还没办下来，太折腾，感觉被劝退了",
+    "creator_hash": "ba22a7813c2a3245",
+    "nickname": "在***读",
+    "sub_comment_count": "30",
+    "like_count": 39
+  },
+  {
+    "comment_id": "100336",
+    "create_time": 1699208740,
+    "aweme_id": "1616074105197093024",
+    "content": "准备报考，食堂一顿饭大概多少钱",
+    "creator_hash": "43d07c6fd01e11ca",
+    "nickname": "专***科",
+    "sub_comment_count": "1",
+    "like_count": 58
+  },
+  {
+    "comment_id": "100798",
+    "create_time": 1699244690,
+    "aweme_id": "1698945624151474364",
+    "content": "食堂有清真窗口吗",
+    "creator_hash": "6ff4ccdbaabb7fc9",
+    "nickname": "实***习",
+    "sub_comment_count": "76",
+    "like_count": 7
+  },
+  {
+    "comment_id": "100144",
+    "create_time": 1699255894,
+    "aweme_id": "1104113812721429491",
+    "content": "宿舍晚上几点断电",
+    "creator_hash": "426cb9dd1d86d2b7",
+    "nickname": "路***过",
+    "sub_comment_count": "17",
+    "like_count": 14
+  },
+  {
+    "comment_id": "100538",
+    "create_time": 1699274574,
+    "aweme_id": "1713849092753972362",
+    "content": "食堂价格在民办里算便宜的，一顿十四块左右能搞定，不错，给个好评",
+    "creator_hash": "66a4962e908958d9",
+    "nickname": "学***妹",
+    "sub_comment_count": "7",
+    "like_count": 11
+  },
+  {
+    "comment_id": "100398",
+    "create_time": 1699276054,
+    "aweme_id": "1042319016334258421",
+    "content": "晚上八点之后就没公交了，出门只能打车，很不方便，确实有点坑",
+    "creator_hash": "2d21fb8530ef2d39",
+    "nickname": "东***软",
+    "sub_comment_count": "9",
+    "like_count": 221
+  },
+  {
+    "comment_id": "100592",
+    "create_time": 1699292287,
+    "aweme_id": "1504990799370362310",
+    "content": "学校在狮山，周边挺荒的，想逛个商场要坐车二十五分钟，位置太偏，感觉被劝退了",
+    "creator_hash": "7cd1671a4677b747",
+    "nickname": "追***梦",
+    "sub_comment_count": "5",
+    "like_count": 358
+  },
+  {
+    "comment_id": "100778",
+    "create_time": 1699298342,
+    "aweme_id": "1495054499893282102",
+    "content": "食堂二楼的烧腊饭挺好吃，十二块一份量也足，推荐，值得",
+    "creator_hash": "eae1a05752eec641",
+    "nickname": "小***新",
+    "sub_comment_count": "0",
+    "like_count": 7
+  },
+  {
+    "comment_id": "100256",
+    "create_time": 1699333373,
+    "aweme_id": "1411779732181604570",
+    "content": "真的，佛山西站离学校不近，放假回家拎着行李转车很麻烦",
+    "creator_hash": "5bd2b9eb7d0d1da3",
+    "nickname": "夜***猫",
+    "sub_comment_count": "20",
+    "like_count": 362
+  },
+  {
+    "comment_id": "100352",
+    "create_time": 1699333669,
+    "aweme_id": "1988493648549966775",
+    "content": "校园里有湖吗，在线等",
+    "creator_hash": "5c9ae68212b79d71",
+    "nickname": "狮***山",
+    "sub_comment_count": "2",
+    "like_count": 46
+  },
+  {
+    "comment_id": "100524",
+    "create_time": 1699346766,
+    "aweme_id": "1744810473510885842",
+    "content": "校园里有湖吗，求解答",
+    "creator_hash": "855d064f3300e5ab",
+    "nickname": "同***学",
+    "sub_comment_count": "19",
+    "like_count": 40
+  },
+  {
+    "comment_id": "100618",
+    "create_time": 1699356681,
+    "aweme_id": "1650203840771099807",
+    "content": "学校有几个校区，谢谢",
+    "creator_hash": "553b8a7159f096c4",
+    "nickname": "本***人",
+    "sub_comment_count": "2",
+    "like_count": 48
+  },
+  {
+    "comment_id": "100722",
+    "create_time": 1699366790,
+    "aweme_id": "1124573471017541598",
+    "content": "网费一学期两万，网速慢得离谱，这钱花得真不值",
+    "creator_hash": "27ffbf4bd3c55906",
+    "nickname": "考***研",
+    "sub_comment_count": "1",
+    "like_count": 135
+  },
+  {
+    "comment_id": "100816",
+    "create_time": 1699367231,
+    "aweme_id": "1004347889623066849",
+    "content": "路过问一句，学校有考研辅导班吗，谢谢",
+    "creator_hash": "b69926bc09ed1d4e",
+    "nickname": "毕***业",
+    "sub_comment_count": "13",
+    "like_count": 170
+  },
+  {
+    "comment_id": "100270",
+    "create_time": 1699374803,
+    "aweme_id": "1203609967952008709",
+    "content": "不得不说，食堂价格在民办里算便宜的，一顿十块左右能搞定，不错，挺加分的",
+    "creator_hash": "08d2f873b0587de5",
+    "nickname": "愤***青",
+    "sub_comment_count": "27",
+    "like_count": 13
+  },
+  {
+    "comment_id": "100822",
+    "create_time": 1699414028,
+    "aweme_id": "1407895355117767752",
+    "content": "有没有人知道，宿舍门禁是几点，晚归能进吗，感谢",
+    "creator_hash": "930eb70686b0288d",
+    "nickname": "学***妹",
+    "sub_comment_count": "5",
+    "like_count": 12
+  },
+  {
+    "comment_id": "100866",
+    "create_time": 1699424608,
+    "aweme_id": "1132790149898831158",
+    "content": "准备报考，学校在狮山那边吗，感谢",
+    "creator_hash": "422788a526565c4c",
+    "nickname": "东***软",
+    "sub_comment_count": "30",
+    "like_count": 3
+  },
+  {
+    "comment_id": "100218",
+    "create_time": 1699446071,
+    "aweme_id": "1880021403369009079",
+    "content": "路过问一句，新生宿舍是几人间",
+    "creator_hash": "f3c09f097e318f99",
+    "nickname": "打***工",
+    "sub_comment_count": "3",
+    "like_count": 1600
+  },
+  {
+    "comment_id": "100132",
+    "create_time": 1699447792,
+    "aweme_id": "1390763782446976843",
+    "content": "学校在南海狮山，环境安静，很适合读书，不错的，总体挺满意的",
+    "creator_hash": "330e8d30cd26f200",
+    "nickname": "实***习",
+    "sub_comment_count": "19",
+    "like_count": 43
+  },
+  {
+    "comment_id": "100384",
+    "create_time": 1699450894,
+    "aweme_id": "1761026757159770713",
+    "content": "新宿舍四人间，独立卫浴加空调，住得比家里还舒服，满意，推荐给学弟学妹",
+    "creator_hash": "295f2dd1f5811bf9",
+    "nickname": "大***姐",
+    "sub_comment_count": "5",
+    "like_count": 10
+  },
+  {
+    "comment_id": "100582",
+    "create_time": 1699451668,
+    "aweme_id": "1373922745296162600",
+    "content": "食堂的鸡扒饭分量很足，肉厚还嫩，十六块值了，推荐，不后悔来",
+    "creator_hash": "92e0eb46d157d0cd",
+    "nickname": "摸***鱼",
+    "sub_comment_count": "6",
+    "like_count": 4
+  },
+  {
+    "comment_id": "100486",
+    "create_time": 1699455195,
+    "aweme_id": "1430830631886236430",
+    "content": "讲真，有些课就是念PPT，一节课下来什么都没学到，教学质量有点差",
+    "creator_hash": "a29cb1470e881f81",
+    "nickname": "愤***青",
+    "sub_comment_count": "70",
+    "like_count": 67
+  },
+  {
+    "comment_id": "100510",
+    "create_time": 1699458440,
+    "aweme_id": "1813825633199690648",
+    "content": "社团挺多的，活动也丰富，课余生活不会无聊，不错，总体挺满意的",
+    "creator_hash": "c388257e3b62271c",
+    "nickname": "复***读",
+    "sub_comment_count": "20",
+    "like_count": 15
+  },
+  {
+    "comment_id": "100370",
+    "create_time": 1699481937,
+    "aweme_id": "1977098048727169719",
+    "content": "安利一下，宿舍有独立卫生间，还配了洗衣机，条件在民办里算好的",
+    "creator_hash": "64c0881a05959779",
+    "nickname": "学***妹",
+    "sub_comment_count": "30",
+    "like_count": 78
+  },
+  {
+    "comment_id": "100884",
+    "create_time": 1699499056,
+    "aweme_id": "1527308039827721183",
+    "content": "说句实话，迎新晚会节目质量一般，音响还老出问题，体验不好",
+    "creator_hash": "83f711161beb11a9",
+    "nickname": "老***油",
+    "sub_comment_count": "1",
+    "like_count": 4159
+  },
+  {
+    "comment_id": "100046",
+    "create_time": 1699501783,
+    "aweme_id": "1112970313183587353",
+    "content": "食堂早餐种类挺多，二十五块就能吃饱，比外面划算，可以冲",
+    "creator_hash": "7cc4a92620d5413b",
+    "nickname": "转***本",
+    "sub_comment_count": "3",
+    "like_count": 330
+  },
+  {
+    "comment_id": "100356",
+    "create_time": 1699513094,
+    "aweme_id": "1021943740617120153",
+    "content": "校运会强制每个班出人，不去还要扣综测，太离谱，有点失望",
+    "creator_hash": "688eaff18c727ccb",
+    "nickname": "小***白",
+    "sub_comment_count": "1",
+    "like_count": 2
+  },
+  {
+    "comment_id": "100612",
+    "create_time": 1699524865,
+    "aweme_id": "1652228764347904550",
+    "content": "在线等，食堂可以用微信支付吗",
+    "creator_hash": "7bf051e18da4fa66",
+    "nickname": "吃***瓜",
+    "sub_comment_count": "1",
+    "like_count": 124
+  },
+  {
+    "comment_id": "100220",
+    "create_time": 1699583933,
+    "aweme_id": "1466587786162855784",
+    "content": "真心觉得，助学贷款办理流程挺顺的，学长带着走一遍就搞定了，很方便，给个好评",
+    "creator_hash": "f19c7d4d006c8c1a",
+    "nickname": "摸***鱼",
+    "sub_comment_count": "17",
+    "like_count": 2
+  },
+  {
+    "comment_id": "100984",
+    "create_time": 1699587103,
+    "aweme_id": "1859074527656876802",
+    "content": "作为新生，学费一年两万八，在民办里算正常水平，能接受，总体不错",
+    "creator_hash": "17e96b53f19a968f",
+    "nickname": "早***八",
+    "sub_comment_count": "11",
+    "like_count": 61
+  },
+  {
+    "comment_id": "100514",
+    "create_time": 1699588503,
+    "aweme_id": "1984165719492978639",
+    "content": "作为新生，宿舍有独立卫生间，还配了洗衣机，条件在民办里算好的，体验不错",
+    "creator_hash": "298093e22685ef7c",
+    "nickname": "在***读",
+    "sub_comment_count": "63",
+    "like_count": 950
+  },
+  {
+    "comment_id": "100332",
+    "create_time": 1699591823,
+    "aweme_id": "1647560267673512273",
+    "content": "食堂有夜宵吗，有知道的吗",
+    "creator_hash": "a75c358116a1e833",
+    "nickname": "南***海",
+    "sub_comment_count": "10",
+    "like_count": 35
+  },
+  {
+    "comment_id": "100882",
+    "create_time": 1699592987,
+    "aweme_id": "1696248728978202774",
+    "content": "有没有人知道，学费可以分期交吗，麻烦学长学姐解答一下",
+    "creator_hash": "2aedc8846f4459f6",
+    "nickname": "上***岸",
+    "sub_comment_count": "33",
+    "like_count": 12
+  },
+  {
+    "comment_id": "100742",
+    "create_time": 1699617457,
+    "aweme_id": "1904579063098164351",
+    "content": "学费一年大概多少钱，谢谢",
+    "creator_hash": "d3686531da498b30",
+    "nickname": "学***姐",
+    "sub_comment_count": "7",
+    "like_count": 15
+  },
+  {
+    "comment_id": "100868",
+    "create_time": 1699626436,
+    "aweme_id": "1600334347850563911",
+    "content": "住了一学期，宿舍六人间挤得转不开身，行李都没地方放，住着太压抑，确实有点坑",
+    "creator_hash": "ec894adfe3f7be74",
+    "nickname": "南***海",
+    "sub_comment_count": "25",
+    "like_count": 2
+  },
+  {
+    "comment_id": "100128",
+    "create_time": 1699643672,
+    "aweme_id": "1107296786881777533",
+    "content": "食堂一楼的糖水很良心，八块一杯，夏天喝着很舒服",
+    "creator_hash": "993ee4ffedc81b13",
+    "nickname": "学***姐",
+    "sub_comment_count": "2",
+    "like_count": 5
+  },
+  {
+    "comment_id": "100376",
+    "create_time": 1699646617,
+    "aweme_id": "1445469099207058783",
+    "content": "认真吐槽一下，新校区还在施工，到处是灰尘和噪音，环境有点差",
+    "creator_hash": "1c355d3bb1b10833",
+    "nickname": "家***长",
+    "sub_comment_count": "23",
+    "like_count": 34
+  },
+  {
+    "comment_id": "100886",
+    "create_time": 1699673005,
+    "aweme_id": "1601507563234352574",
+    "content": "有点无语，补考安排在大年初几，回家一趟又要回来，太折腾",
+    "creator_hash": "2995291ee09f6cd5",
+    "nickname": "摸***鱼",
+    "sub_comment_count": "7",
+    "like_count": 9
+  },
+  {
+    "comment_id": "100444",
+    "create_time": 1699673931,
+    "aweme_id": "1143095623034110317",
+    "content": "有点无语，新校区还在施工，到处是灰尘和噪音，环境有点差",
+    "creator_hash": "959f02356ffe5e21",
+    "nickname": "新***生",
+    "sub_comment_count": "20",
+    "like_count": 183
+  },
+  {
+    "comment_id": "100624",
+    "create_time": 1699675887,
+    "aweme_id": "1579527012740948023",
+    "content": "学校的志愿活动挺多，能攒志愿时长，还能认识人，推荐，挺加分的",
+    "creator_hash": "23c5cc399ccd1bd8",
+    "nickname": "家***长",
+    "sub_comment_count": "5",
+    "like_count": 5
+  },
+  {
+    "comment_id": "100740",
+    "create_time": 1699682374,
+    "aweme_id": "1687669673409366762",
+    "content": "小学期一般安排在什么时候，感谢",
+    "creator_hash": "7d3243cb4aacb751",
+    "nickname": "同***学",
+    "sub_comment_count": "14",
+    "like_count": 7
+  },
+  {
+    "comment_id": "100016",
+    "create_time": 1699726968,
+    "aweme_id": "1320374040081768957",
+    "content": "食堂晚上七点就没菜了，晚自习回来只能吃泡面，太难受",
+    "creator_hash": "f311639e11fde401",
+    "nickname": "实***习",
+    "sub_comment_count": "74",
+    "like_count": 74
+  },
+  {
+    "comment_id": "100492",
+    "create_time": 1699747234,
+    "aweme_id": "1812048106610732434",
+    "content": "说句实话，宿舍水电费贵得离谱，一个月下来比住宿费还心疼，太坑",
+    "creator_hash": "a8ea9ef432b6cafb",
+    "nickname": "南***海",
+    "sub_comment_count": "8",
+    "like_count": 61
+  },
+  {
+    "comment_id": "100130",
+    "create_time": 1699757403,
+    "aweme_id": "1541406480958556102",
+    "content": "求问，宿舍快递怎么收",
+    "creator_hash": "93cbebbfc2179c16",
+    "nickname": "愤***青",
+    "sub_comment_count": "2",
+    "like_count": 23
+  },
+  {
+    "comment_id": "100004",
+    "create_time": 1699779169,
+    "aweme_id": "1932189835234650952",
+    "content": "求问，校区离市区远吗",
+    "creator_hash": "3869f231033c033d",
+    "nickname": "毕***业",
+    "sub_comment_count": "30",
+    "like_count": 3
+  },
+  {
+    "comment_id": "100456",
+    "create_time": 1699779351,
+    "aweme_id": "1356746001646367923",
+    "content": "请问500分能上吗，录取分数大概卡在多少",
+    "creator_hash": "afa45acb1459b0a8",
+    "nickname": "应***届",
+    "sub_comment_count": "4",
+    "like_count": 15
+  },
+  {
+    "comment_id": "100044",
+    "create_time": 1699785405,
+    "aweme_id": "1622063682749625389",
+    "content": "住了一学期，校园里湖边的路灯坏了好几盏，晚上走过去挺黑的，不安全，确实有点坑",
+    "creator_hash": "b4da326f3b95555b",
+    "nickname": "路***人",
+    "sub_comment_count": "41",
+    "like_count": 61
+  },
+  {
+    "comment_id": "100616",
+    "create_time": 1699795116,
+    "aweme_id": "1115103667483846765",
+    "content": "个人体验，助学贷款办理流程挺顺的，学长带着走一遍就搞定了，很方便",
+    "creator_hash": "1eac868a0cc87926",
+    "nickname": "吃***瓜",
+    "sub_comment_count": "4",
+    "like_count": 9
+  },
+  {
+    "comment_id": "100266",
+    "create_time": 1699801548,
+    "aweme_id": "1653650717969632635",
+    "content": "有点无语，说是产教融合，实际学费涨了课没变，家长意见很大，有点坑",
+    "creator_hash": "14f813176ddf3934",
+    "nickname": "东***软",
+    "sub_comment_count": "0",
+    "like_count": 36
+  },
+  {
+    "comment_id": "100892",
+    "create_time": 1699823310,
+    "aweme_id": "1907604109424309868",
+    "content": "安利一下，学费一年三万，在民办里算正常水平，能接受，值得",
+    "creator_hash": "3a9fdf0ceaeb37db",
+    "nickname": "考***研",
+    "sub_comment_count": "0",
+    "like_count": 9
+  },
+  {
+    "comment_id": "100580",
+    "create_time": 1699830605,
+    "aweme_id": "1278101263028838130",
+    "content": "讲真，助学贷款手续特别麻烦，跑了好几趟还没办下来，太折腾",
+    "creator_hash": "321e464508af4e14",
+    "nickname": "老***生",
+    "sub_comment_count": "7",
+    "like_count": 9
+  },
+  {
+    "comment_id": "100568",
+    "create_time": 1699890612,
+    "aweme_id": "1633704661867501420",
+    "content": "有人清楚吗，宿舍可以自己装路由器吗",
+    "creator_hash": "f0b4f95d4b404025",
+    "nickname": "毕***业",
+    "sub_comment_count": "8",
+    "like_count": 8
+  },
+  {
+    "comment_id": "100834",
+    "create_time": 1699894400,
+    "aweme_id": "1455892110955168032",
+    "content": "作为新生，食堂早餐种类挺多，十六块就能吃饱，比外面划算",
+    "creator_hash": "c7392533d298e101",
+    "nickname": "小***新",
+    "sub_comment_count": "6",
+    "like_count": 9
+  },
+  {
+    "comment_id": "100996",
+    "create_time": 1699904308,
+    "aweme_id": "1822528624513894284",
+    "content": "可以放心，学费一年两万，在民办里算正常水平，能接受",
+    "creator_hash": "a2e6a8e867b5e445",
+    "nickname": "小***可",
+    "sub_comment_count": "19",
+    "like_count": 22
+  },
+  {
+    "comment_id": "100900",
+    "create_time": 1699915491,
+    "aweme_id": "1834542564346844916",
+    "content": "问下大家，请问460分能上吗，录取分数大概卡在多少",
+    "creator_hash": "1648973a3507ce2b",
+    "nickname": "新***生",
+    "sub_comment_count": "3",
+    "like_count": 40
+  },
+  {
+    "comment_id": "100746",
+    "create_time": 1699937691,
+    "aweme_id": "1259780652512722256",
+    "content": "想问一下，新生宿舍是几人间",
+    "creator_hash": "cc9373191ab6b144",
+    "nickname": "准***生",
+    "sub_comment_count": "3",
+    "like_count": 61
+  },
+  {
+    "comment_id": "100054",
+    "create_time": 1699941990,
+    "aweme_id": "1252936169060753831",
+    "content": "讲真，有些老师上课就是放视频，学生自己看，学费花得不值",
+    "creator_hash": "7781cc1e2f77666c",
+    "nickname": "追***梦",
+    "sub_comment_count": "6",
+    "like_count": 22
+  },
+  {
+    "comment_id": "100576",
+    "create_time": 1699962212,
+    "aweme_id": "1623089650209238179",
+    "content": "离地铁站太远了，打车过去要五十块，出行成本太高",
+    "creator_hash": "680965cd922b11c2",
+    "nickname": "追***梦",
+    "sub_comment_count": "7",
+    "like_count": 3
+  },
+  {
+    "comment_id": "100344",
+    "create_time": 1699982066,
+    "aweme_id": "1785277649071749677",
+    "content": "校园里湖边的路灯坏了好几盏，晚上走过去挺黑的，不安全，有点后悔",
+    "creator_hash": "3458cca935beecc3",
+    "nickname": "佛***山",
+    "sub_comment_count": "3",
+    "like_count": 1
+  },
+  {
+    "comment_id": "100762",
+    "create_time": 1699996100,
+    "aweme_id": "1212909020350910247",
+    "content": "安利一下，宿舍阳台朝南，采光很好，晒被子一天就干，挺满意的",
+    "creator_hash": "d061c7a9cc72c58c",
+    "nickname": "学***弟",
+    "sub_comment_count": "4",
+    "like_count": 3
+  },
+  {
+    "comment_id": "100894",
+    "create_time": 1700011370,
+    "aweme_id": "1160406750835840898",
+    "content": "真心觉得，校园环境真不错，绿化多，南海校区挺漂亮的",
+    "creator_hash": "fd64b437d2ebfdc9",
+    "nickname": "干***饭",
+    "sub_comment_count": "5",
+    "like_count": 14
+  },
+  {
+    "comment_id": "100914",
+    "create_time": 1700023706,
+    "aweme_id": "1357354049011331384",
+    "content": "不是我说，宿舍晚上十点半就断电，笔记本还没保存就黑屏了，太难受",
+    "creator_hash": "7e2fba33eade23af",
+    "nickname": "大***姐",
+    "sub_comment_count": "5",
+    "like_count": 13
+  },
+  {
+    "comment_id": "100410",
+    "create_time": 1700029715,
+    "aweme_id": "1628591761500474694",
+    "content": "招生简章写得漂亮，实际住宿费学费加起来一年一万八，超预算，心态崩了，确实有点坑",
+    "creator_hash": "bd37c1b45ac6bc0c",
+    "nickname": "毕***业",
+    "sub_comment_count": "26",
+    "like_count": 6
+  },
+  {
+    "comment_id": "100338",
+    "create_time": 1700034355,
+    "aweme_id": "1093684176486433598",
+    "content": "安利一下，校园环境真不错，绿化多，南海校区挺漂亮的",
+    "creator_hash": "2fdd6a482fe24e35",
+    "nickname": "实***习",
+    "sub_comment_count": "4",
+    "like_count": 37
+  },
+  {
+    "comment_id": "100672",
+    "create_time": 1700054822,
+    "aweme_id": "1536695667563410346",
+    "content": "作为在读生，食堂卫生堪忧，餐盘上还有油，看到就没胃口了，体验差",
+    "creator_hash": "7c88580f844c8211",
+    "nickname": "复***读",
+    "sub_comment_count": "30",
+    "like_count": 10
+  },
+  {
+    "comment_id": "100738",
+    "create_time": 1700062324,
+    "aweme_id": "1975600384648377043",
+    "content": "食堂有清真窗口和素食窗口，选择挺多，照顾得挺周到，值得",
+    "creator_hash": "0a0400322bb3a9ee",
+    "nickname": "吃***货",
+    "sub_comment_count": "26",
+    "like_count": 48
+  },
+  {
+    "comment_id": "100212",
+    "create_time": 1700082148,
+    "aweme_id": "1241258874217125930",
+    "content": "宿舍楼离教学楼太远，每天上下课走六十分钟，累到不想动，心态崩了",
+    "creator_hash": "76c0bf5d128b1b45",
+    "nickname": "东***软",
+    "sub_comment_count": "7",
+    "like_count": 2
+  },
+  {
+    "comment_id": "100628",
+    "create_time": 1700089806,
+    "aweme_id": "1963397277251173391",
+    "content": "想问一下，社团招新一般什么时候",
+    "creator_hash": "142576ea9ac23767",
+    "nickname": "考***研",
+    "sub_comment_count": "6",
+    "like_count": 203
+  },
+  {
+    "comment_id": "100174",
+    "create_time": 1700098528,
+    "aweme_id": "1760322528121100624",
+    "content": "有人清楚吗，小学期一般安排在什么时候",
+    "creator_hash": "bf664936a77e46cb",
+    "nickname": "追***梦",
+    "sub_comment_count": "67",
+    "like_count": 20
+  },
+  {
+    "comment_id": "100190",
+    "create_time": 1700108255,
+    "aweme_id": "1954976053484420747",
+    "content": "有点无语，校运会强制每个班出人，不去还要扣综测，太离谱",
+    "creator_hash": "eabd55ec9583bd22",
+    "nickname": "狮***山",
+    "sub_comment_count": "1",
+    "like_count": 56
+  },
+  {
+    "comment_id": "100850",
+    "create_time": 1700111061,
+    "aweme_id": "1811767699620536484",
+    "content": "作为在读生，宿舍楼离教学楼太远，每天上下课走六十分钟，累到不想动，太难了",
+    "creator_hash": "ed7da24e7bfeb737",
+    "nickname": "转***本",
+    "sub_comment_count": "30",
+    "like_count": 4
+  },
+  {
+    "comment_id": "100402",
+    "create_time": 1700117198,
+    "aweme_id": "1775926198623121622",
+    "content": "学校湖景很好看，傍晚落日特别美，拍照随手出片，总体挺满意的",
+    "creator_hash": "259ccb99019f7b5a",
+    "nickname": "南***海",
+    "sub_comment_count": "74",
+    "like_count": 41
+  },
+  {
+    "comment_id": "100504",
+    "create_time": 1700147718,
+    "aweme_id": "1291449607719219855",
+    "content": "宿舍门禁十一点半就锁门，实习晚回来一次就被记名字，太严格，感觉被劝退了",
+    "creator_hash": "33b00a30ee6a5192",
+    "nickname": "学***姐",
+    "sub_comment_count": "1",
+    "like_count": 77
+  },
+  {
+    "comment_id": "100932",
+    "create_time": 1700174994,
+    "aweme_id": "1468133847801168781",
+    "content": "有没有新生群，想进去问问，求解答",
+    "creator_hash": "fa81037afb3efd47",
+    "nickname": "吃***瓜",
+    "sub_comment_count": "20",
+    "like_count": 34
+  },
+  {
+    "comment_id": "100586",
+    "create_time": 1700211139,
+    "aweme_id": "1197607728515925358",
+    "content": "食堂新开的麻辣香锅味道不错，一份二十二块能吃很撑，好评",
+    "creator_hash": "f0e5a86e06ac1442",
+    "nickname": "路***人甲",
+    "sub_comment_count": "25",
+    "like_count": 7
+  },
+  {
+    "comment_id": "100140",
+    "create_time": 1700265187,
+    "aweme_id": "1603136815300529260",
+    "content": "招生简章写得漂亮，实际住宿费学费加起来一年两万八，超预算，确实有点坑",
+    "creator_hash": "6d204c14406b42a4",
+    "nickname": "吃***货",
+    "sub_comment_count": "20",
+    "like_count": 6
+  },
+  {
+    "comment_id": "100928",
+    "create_time": 1700283178,
+    "aweme_id": "1143436280969196072",
+    "content": "作为在读生，食堂饭菜又涨价了，一份套餐二十五块，学生党真心吃不起，太贵，真的很难受",
+    "creator_hash": "63985e4bd70de7d8",
+    "nickname": "同***学",
+    "sub_comment_count": "75",
+    "like_count": 60
+  },
+  {
+    "comment_id": "100112",
+    "create_time": 1700292081,
+    "aweme_id": "1376148061556981207",
+    "content": "客观地说，食堂二楼的烧腊饭挺好吃，三十块一份量也足，推荐",
+    "creator_hash": "22760fa020cc0edb",
+    "nickname": "夜***猫",
+    "sub_comment_count": "15",
+    "like_count": 8
+  },
+  {
+    "comment_id": "100182",
+    "create_time": 1700322407,
+    "aweme_id": "1152586333913120099",
+    "content": "食堂的汤基本就是白开水加盐，还要另外收钱，太坑",
+    "creator_hash": "66a1ea5b61e47bf8",
+    "nickname": "路***人",
+    "sub_comment_count": "7",
+    "like_count": 377
+  },
+  {
+    "comment_id": "100230",
+    "create_time": 1700352705,
+    "aweme_id": "1135230377764348383",
+    "content": "校区大不大，逛一圈要多久，求解答",
+    "creator_hash": "d54b48571fceb825",
+    "nickname": "吃***货",
+    "sub_comment_count": "2",
+    "like_count": 59
+  },
+  {
+    "comment_id": "100548",
+    "create_time": 1700358033,
+    "aweme_id": "1022167959579641112",
+    "content": "食堂新开的麻辣香锅味道不错，一份十块能吃很撑，好评",
+    "creator_hash": "3de42cd6194f7239",
+    "nickname": "复***读",
+    "sub_comment_count": "4",
+    "like_count": 1
+  },
+  {
+    "comment_id": "100712",
+    "create_time": 1700361449,
+    "aweme_id": "1103219156354695639",
+    "content": "认真吐槽一下，学费一年三万，民办学校这价格真的有点劝退，太贵了",
+    "creator_hash": "c13f6fa90d1da30e",
+    "nickname": "老***油",
+    "sub_comment_count": "2",
+    "like_count": 2
+  },
+  {
+    "comment_id": "100808",
+    "create_time": 1700366664,
+    "aweme_id": "1053048491738325125",
+    "content": "问下大家，宿舍有洗衣机吗，是扫码的还是投币的",
+    "creator_hash": "752d7215251a5095",
+    "nickname": "路***人",
+    "sub_comment_count": "0",
+    "like_count": 12
+  },
+  {
+    "comment_id": "100784",
+    "create_time": 1700381262,
+    "aweme_id": "1804410805723181481",
+    "content": "不得不说，宿舍离食堂只有两分钟，早上赖床也能赶上早饭，很方便",
+    "creator_hash": "a20a085b843b234d",
+    "nickname": "东***软",
+    "sub_comment_count": "6",
+    "like_count": 7
+  },
+  {
+    "comment_id": "100204",
+    "create_time": 1700386213,
+    "aweme_id": "1608532003947029600",
+    "content": "有些课就是念PPT，一节课下来什么都没学到，教学质量有点差，有点失望",
+    "creator_hash": "c4bb587a729afc30",
+    "nickname": "路***人",
+    "sub_comment_count": "4",
+    "like_count": 103
+  },
+  {
+    "comment_id": "100244",
+    "create_time": 1700395310,
+    "aweme_id": "1688240513390939021",
+    "content": "问下大家，校园里有湖吗，有知道的吗",
+    "creator_hash": "4651d78be9120626",
+    "nickname": "干***饭",
+    "sub_comment_count": "3",
+    "like_count": 6
+  },
+  {
+    "comment_id": "100272",
+    "create_time": 1700396124,
+    "aweme_id": "1104661266181819861",
+    "content": "有点无语，住五楼没电梯，搬行李上来一趟腿都软了，宿舍条件太差",
+    "creator_hash": "a326b09470b945d7",
+    "nickname": "专***科",
+    "sub_comment_count": "26",
+    "like_count": 9
+  },
+  {
+    "comment_id": "100340",
+    "create_time": 1700400196,
+    "aweme_id": "1794544199277420634",
+    "content": "宿舍楼离教学楼太远，每天上下课走六十分钟，累到不想动",
+    "creator_hash": "5a0f7ef02d5bca17",
+    "nickname": "家***长",
+    "sub_comment_count": "3",
+    "like_count": 29
+  },
+  {
+    "comment_id": "100186",
+    "create_time": 1700416937,
+    "aweme_id": "1474037578158557914",
+    "content": "在线等，宿舍离教学楼走路要多久",
+    "creator_hash": "53528f8891c02d64",
+    "nickname": "转***本",
+    "sub_comment_count": "26",
+    "like_count": 5
+  },
+  {
+    "comment_id": "100188",
+    "create_time": 1700424408,
+    "aweme_id": "1663081764318577828",
+    "content": "校巴班次太少，等一趟要五十分钟，上课差点迟到，心态崩了",
+    "creator_hash": "02a0f1cd501ddfdb",
+    "nickname": "吃***瓜",
+    "sub_comment_count": "4",
+    "like_count": 74
+  },
+  {
+    "comment_id": "100626",
+    "create_time": 1700445654,
+    "aweme_id": "1322753341048618114",
+    "content": "讲真，学校在狮山，周边挺荒的，想逛个商场要坐车十五分钟，位置太偏，确实有点坑",
+    "creator_hash": "495af2c75f82816e",
+    "nickname": "毕***业",
+    "sub_comment_count": "13",
+    "like_count": 207
+  },
+  {
+    "comment_id": "100068",
+    "create_time": 1700458770,
+    "aweme_id": "1857305653522454306",
+    "content": "学校有考研辅导班吗，麻烦学长学姐解答一下",
+    "creator_hash": "d502001025277bbb",
+    "nickname": "愤***青",
+    "sub_comment_count": "65",
+    "like_count": 4
+  },
+  {
+    "comment_id": "100714",
+    "create_time": 1700462683,
+    "aweme_id": "1213799995713095777",
+    "content": "说句实话，宿舍隔音差到离谱，隔壁说话都听得清，晚上根本睡不好",
+    "creator_hash": "594dd5e241195e97",
+    "nickname": "狮***山",
+    "sub_comment_count": "8",
+    "like_count": 210
+  },
+  {
+    "comment_id": "100988",
+    "create_time": 1700465931,
+    "aweme_id": "1589429608963032654",
+    "content": "招生简章写得漂亮，实际住宿费学费加起来一年三万，超预算，有点失望",
+    "creator_hash": "b25ff68468e40562",
+    "nickname": "佛***山",
+    "sub_comment_count": "3",
+    "like_count": 21
+  },
+  {
+    "comment_id": "100614",
+    "create_time": 1700468528,
+    "aweme_id": "1960468081876143572",
+    "content": "新宿舍四人间，独立卫浴加空调，住得比家里还舒服，满意，值得",
+    "creator_hash": "79fd57bfad26e8fe",
+    "nickname": "本***人",
+    "sub_comment_count": "3",
+    "like_count": 76
+  },
+  {
+    "comment_id": "100136",
+    "create_time": 1700481285,
+    "aweme_id": "1741825149238267647",
+    "content": "认真吐槽一下，招生简章写得漂亮，实际住宿费学费加起来一年三万，超预算",
+    "creator_hash": "b90eb641eb83b79e",
+    "nickname": "学***弟",
+    "sub_comment_count": "2",
+    "like_count": 15
+  },
+  {
+    "comment_id": "100420",
+    "create_time": 1700488810,
+    "aweme_id": "1952612087952394247",
+    "content": "食堂新开的麻辣香锅味道不错，一份十四块能吃很撑，好评",
+    "creator_hash": "3fd588917aa56056",
+    "nickname": "老***油",
+    "sub_comment_count": "6",
+    "like_count": 12
+  }
+]
