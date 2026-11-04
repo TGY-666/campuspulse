@@ -126,6 +126,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ static_url('vendor/echarts-wordcloud.min.js') }}"></script>
+{# 词云插件不在首屏加载：16KB 的扩展只为一张图服务，
+   由 insights.js 的 ensureWordCloud() 在滚到该图时动态注入。 #}
 <script src="{{ static_url('cp/insights.js') }}"></script>
 {% endblock %}

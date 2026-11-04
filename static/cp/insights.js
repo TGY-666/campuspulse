@@ -14,20 +14,43 @@
         }, extra || {});
     }
 
-    /** I09 联动下钻：点击图表元素 → 带着当前筛选条件跳到证据中心 */
+    /** I09 联动下钻：点击图表元素 → 带着当前筛选条件跳到证据中心
+     *
+     * 用 CP.onChart 而不是 CP.chart：图表是惰性初始化的，首屏看不见的图还没有实例，
+     * 直接取会拿到 null 并且**静默**丢掉下钻能力——用户滚到那张图时点它没反应，
+     * 而且没有任何报错，最难排查的那种问题。
+     */
     function drillTo(el, mapper) {
-        const inst = CP.chart(el);
-        if (!inst || !inst.on) return;
-        inst.off('click');
-        inst.on('click', p => {
-            const extra = mapper(p);
-            if (!extra) return;
-            location.href = '/evidence?' + CP.qs(extra);
+        CP.onChart(el, inst => {
+            if (!inst.on) return;
+            inst.off('click');
+            inst.on('click', p => {
+                const extra = mapper(p);
+                if (!extra) return;
+                location.href = '/evidence?' + CP.qs(extra);
+            });
+            try {
+                const zr = inst.getZr();
+                if (zr && typeof zr.setCursorStyle === 'function') zr.setCursorStyle('pointer');
+            } catch (e) { /* 光标样式非关键，失败不影响下钻 */ }
         });
-        try {
-            const zr = inst.getZr();
-            if (zr && typeof zr.setCursorStyle === 'function') zr.setCursorStyle('pointer');
-        } catch (e) { /* 光标样式非关键，失败不影响下钻 */ }
+    }
+
+    /** 词云插件按需加载：16KB 的扩展只为一张图服务，没必要拖慢首屏 */
+    let wordCloudPromise = null;
+    function ensureWordCloud() {
+        if (typeof window.echarts === 'undefined') return Promise.resolve(false);
+        if (window.__CP_WORDCLOUD_READY) return Promise.resolve(true);
+        if (wordCloudPromise) return wordCloudPromise;
+        wordCloudPromise = new Promise(resolve => {
+            const s = document.createElement('script');
+            s.src = (window.__CP_WORDCLOUD_URL || '/static/vendor/echarts-wordcloud.min.js');
+            s.async = true;
+            s.onload = () => { window.__CP_WORDCLOUD_READY = true; resolve(true); };
+            s.onerror = () => { wordCloudPromise = null; resolve(false); };
+            document.head.appendChild(s);
+        });
+        return wordCloudPromise;
     }
 
     /* ---------------- AI 解读 ---------------- */
@@ -319,41 +342,50 @@
                 + `<br><b>着色规则</b>：${CP.esc(kf.tone_rule || '')}（当前基线 ${kf.base_neg_rate || 0}%）。`;
         }
 
-        try {
-            setOption(el, Object.assign(themeBase(), {
-                tooltip: Object.assign(themeBase().tooltip, {
-                    formatter: p => {
-                        const w = words.find(x => x.name === p.name) || {};
-                        return `<b>${CP.esc(p.name)}</b> · 出现 ${p.value} 次<br>`
-                            + `负面语境 ${w.neg || 0} 条 / 正面语境 ${w.pos || 0} 条 / 中性 ${w.neu || 0} 条<br>`
-                            + `负面占比 ${w.neg_share || 0}%，整体基线 ${kf.base_neg_rate || 0}%（${w.lift || 0} 倍）`;
-                    }
-                }),
-                series: [{
-                    type: 'wordCloud', shape: 'circle',
-                    left: 0, top: 0, right: 0, bottom: 0,
-                    sizeRange: [14, 54], rotationRange: [0, 0], gridSize: 6,
-                    textStyle: { fontWeight: 600 },
-                    emphasis: { textStyle: { textShadowBlur: 8, textShadowColor: 'rgba(22,93,255,.28)' } },
-                    data: words.map(w => ({
-                        name: w.name, value: w.value,
-                        textStyle: { color: TONE_COLOR[w.tone] || TONE_COLOR.neu }
-                    }))
-                }]
-            }));
-        } catch (e) {            // 插件缺失时退化为柱状图，保证信息仍然可读
-            setOption(el, baseOpt({
-                grid: { left: 4, right: 12, top: 10, bottom: 2, containLabel: true },
-                xAxis: Object.assign({ type: 'category', data: words.slice(0, 15).map(w => w.name), splitLine: { show: false } }, AX,
-                    { axisLabel: { color: CP.themeColors().ink4, fontSize: 10, rotate: 30, interval: 0 } }),
-                yAxis: Object.assign({ type: 'value' }, AX),
-                series: [{
-                    type: 'bar',
-                    data: words.slice(0, 15).map(w => ({ value: w.value, itemStyle: { color: TONE_COLOR[w.tone] || TONE_COLOR.neu } })),
-                    itemStyle: { borderRadius: [4, 4, 0, 0] }
-                }]
-            }));
-        }
+        // 词云插件按需加载：16KB 的扩展只在滚到这张图时才请求。
+        // 注意这里"整张图"都推迟到可见时再画，而且**不阻塞右侧明细表**——
+        // 表是纯 DOM，没理由陪着图表一起等。
+        const drawCloud = async () => {
+            const cloudReady = (await ensureWordCloud()) === true;
+            try {
+                if (!cloudReady) throw new Error('wordcloud plugin unavailable');
+                setOption(el, Object.assign(themeBase(), {
+                    tooltip: Object.assign(themeBase().tooltip, {
+                        formatter: p => {
+                            const w = words.find(x => x.name === p.name) || {};
+                            return `<b>${CP.esc(p.name)}</b> · 出现 ${p.value} 次<br>`
+                                + `负面语境 ${w.neg || 0} 条 / 正面语境 ${w.pos || 0} 条 / 中性 ${w.neu || 0} 条<br>`
+                                + `负面占比 ${w.neg_share || 0}%，整体基线 ${kf.base_neg_rate || 0}%（${w.lift || 0} 倍）`;
+                        }
+                    }),
+                    series: [{
+                        type: 'wordCloud', shape: 'circle',
+                        left: 0, top: 0, right: 0, bottom: 0,
+                        sizeRange: [14, 54], rotationRange: [0, 0], gridSize: 6,
+                        textStyle: { fontWeight: 600 },
+                        emphasis: { textStyle: { textShadowBlur: 8, textShadowColor: 'rgba(22,93,255,.28)' } },
+                        data: words.map(w => ({
+                            name: w.name, value: w.value,
+                            textStyle: { color: TONE_COLOR[w.tone] || TONE_COLOR.neu }
+                        }))
+                    }]
+                }));
+            } catch (e) {            // 插件缺失时退化为柱状图，保证信息仍然可读
+                setOption(el, baseOpt({
+                    grid: { left: 4, right: 12, top: 10, bottom: 2, containLabel: true },
+                    xAxis: Object.assign({ type: 'category', data: words.slice(0, 15).map(w => w.name), splitLine: { show: false } }, AX,
+                        { axisLabel: { color: CP.themeColors().ink4, fontSize: 10, rotate: 30, interval: 0 } }),
+                    yAxis: Object.assign({ type: 'value' }, AX),
+                    series: [{
+                        type: 'bar',
+                        data: words.slice(0, 15).map(w => ({ value: w.value, itemStyle: { color: TONE_COLOR[w.tone] || TONE_COLOR.neu } })),
+                        itemStyle: { borderRadius: [4, 4, 0, 0] }
+                    }]
+                }));
+            }
+        };
+        if (typeof CP.whenVisible === 'function') CP.whenVisible(el, drawCloud);
+        else drawCloud();
 
         // 右侧高频词明细：词云之外给出可读的数值与情绪构成
         const top = words.slice(0, 12);
@@ -407,7 +439,7 @@
     document.addEventListener('cp:filter', () => { loadAll(); loadInsights(); });
     document.addEventListener('cp:dataset', () => { loadAll(); loadInsights(); });
     document.addEventListener('cp:theme', () => { loadAll(); loadInsights(); });
-    window.addEventListener('resize', () => CP.$$('.chart').forEach(el => {
-        const i = CP.chart(el); if (i) i.resize();
-    }));
+    // 只 resize 已创建的图：以前这里对每个 .chart 调 CP.chart()，
+    // 等于把惰性初始化又全量触发了，一次窗口拖动就把 11 张图全建出来。
+    window.addEventListener('resize', () => CP.resizeCharts());
 })();

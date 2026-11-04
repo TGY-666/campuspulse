@@ -1,5 +1,10 @@
 /* ============================================================
    CampusPulse 前端共享运行时
+
+   类型说明：全局契约（CPDataset / CPFilters / CPState / CPError / CPChartSpec）
+   定义在 cp.d.ts，本文件的公共函数全部带 JSDoc 注解，
+   由 `npm run typecheck`（tsc --noEmit + checkJs）校验。
+   页面层的 DOM 操作不做强类型，重点管住"会流动的数据"。
    - 统一 API 信封处理与错误提示
    - 数据集 / 筛选条件跨页面保持（写入 URL，可直接分享）
    - ECharts 主题与「后端图表规格 → ECharts option」渲染器
@@ -21,15 +26,40 @@
     };
 
     /* ---------------- 基础工具 ---------------- */
+
+    /**
+     * 单元素查询。
+     * @param {string} sel CSS 选择器
+     * @param {ParentNode} [root] 查询根，默认 document
+     * @returns {any} 实际元素类型由调用点决定（input / div / canvas 都可能）
+     */
     function $(sel, root) { return (root || document).querySelector(sel); }
+
+    /**
+     * 多元素查询，返回真数组（可用 forEach / map / index）。
+     * @param {string} sel
+     * @param {ParentNode} [root]
+     * @returns {any[]}
+     */
     function $$(sel, root) { return Array.from((root || document).querySelectorAll(sel)); }
 
+    /**
+     * HTML 转义。所有拼进 innerHTML 的动态内容都必须过这一层——
+     * 评论原文来自公开平台，里面出现 <script> 并不稀奇。
+     * @param {any} s
+     * @returns {string}
+     */
     function esc(s) {
         return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
             { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
         ));
     }
 
+    /**
+     * 数字千分位；null/空返回 "—"（不把"没有数据"显示成 0）。
+     * @param {any} v
+     * @returns {string}
+     */
     function num(v) {
         if (v == null || v === '') return '—';
         const n = Number(v);
@@ -37,6 +67,11 @@
         return n.toLocaleString('zh-CN');
     }
 
+    /**
+     * 百分比，保留一位小数。
+     * @param {any} v
+     * @returns {string}
+     */
     function pct(v) {
         if (v == null || v === '') return '—';
         const n = Number(v);
@@ -45,6 +80,11 @@
 
     function dateShort(d) { return d ? String(d).slice(0, 10) : '—'; }
 
+    /**
+     * 右上角提示，3 秒后自动消失。
+     * @param {string} msg
+     * @param {'ok'|'err'} [kind]
+     */
     function toast(msg, kind) {
         const wrap = $('#toastWrap');
         if (!wrap) return;
@@ -57,6 +97,8 @@
     }
 
     /* ---------------- URL 状态 ---------------- */
+
+    /** 从地址栏恢复数据集与筛选条件（刷新、分享链接都靠它） */
     function readUrl() {
         const p = new URLSearchParams(location.search);
         state.dataset_id = p.get('dataset_id') || null;
@@ -68,6 +110,11 @@
         state.filters.keyword = p.get('keyword') || '';
     }
 
+    /**
+     * 拼当前状态的查询串。
+     * @param {Record<string, any>} [extra] 额外参数（证据页的分页、排序等）
+     * @returns {string}
+     */
     function qs(extra) {
         const p = new URLSearchParams();
         if (state.dataset_id) p.set('dataset_id', state.dataset_id);
@@ -92,6 +139,10 @@
         return p.toString();
     }
 
+    /**
+     * 把当前状态写回地址栏（replaceState，不产生历史记录）。
+     * @param {Record<string, any>} [extra]
+     */
     function syncUrl(extra) {
         // extra 是给单页自己的（如证据页的 offset / order）。
         // 以前这个函数不收参数，调用方传了也是白传——地址栏看着没坏，其实什么都没记下。
@@ -107,6 +158,19 @@
     }
 
     /* ---------------- API ---------------- */
+
+    /**
+     * 统一接口调用：拼参数 → fetch → 解信封。
+     *
+     * 后端所有接口都是 {"ok":true,"data":{...}} / {"ok":false,"error":{...}}，
+     * 这里把非 2xx 和 ok:false 统一转成异常，页面只需要 try/catch 一处。
+     *
+     * @param {string} path 例：/api/datasets
+     * @param {Record<string, any>|null} [params] 查询参数；数组会展开成重复 key
+     * @param {RequestInit} [opts]
+     * @returns {Promise<any>} 信封里的 data
+     * @throws {CPError} 带 detail（后端结构化细节）与 status（HTTP 状态码）
+     */
     async function api(path, params, opts) {
         const p = new URLSearchParams();
         Object.keys(params || {}).forEach(k => {
@@ -122,7 +186,9 @@
         try { body = await resp.json(); } catch (e) { body = null; }
         if (!resp.ok || !body || body.ok === false) {
             const msg = (body && body.error && body.error.message) || ('请求失败（HTTP ' + resp.status + '）');
-            const err = new Error(msg);
+            // 后端错误信封比 Error 多两个字段：detail（结构化细节）与 status。
+            // 断言成 CPError，调用方才敢直接读 e.detail —— 否则 checkJs 下到处都是报错。
+            const err = /** @type {CPError} */ (new Error(msg));
             err.detail = body && body.error ? body.error.detail : null;
             err.status = resp.status;
             throw err;
@@ -130,6 +196,11 @@
         return body.data;
     }
 
+    /**
+     * 当前筛选条件 + 数据集，作为查询参数对象。
+     * @param {Record<string, any>} [extra]
+     * @returns {Record<string, any>}
+     */
     function filterParams(extra) {
         return Object.assign({
             dataset_id: state.dataset_id,
@@ -143,6 +214,13 @@
     }
 
     /* ---------------- 三态 ---------------- */
+    /**
+     * 三态占位：加载中 / 空结果 / 失败重试。
+     * @param {HTMLElement|null} el
+     * @param {'loading'|'empty'|'error'} kind
+     * @param {string} [msg]
+     * @param {() => void} [onRetry]
+     */
     function setState(el, kind, msg, onRetry) {
         if (!el) return;
         if (kind === 'loading') {
@@ -173,6 +251,10 @@
     }
 
     /** 图表要用的颜色——统一从 CSS 变量读，深色模式下自动跟着变 */
+    /**
+     * 图表要用的颜色，统一从 CSS 变量读取。
+     * @returns {{ink:string, ink2:string, ink3:string, ink4:string, line:string, line2:string, surface:string, dark:boolean}}
+     */
     function themeColors() {
         return {
             ink: cssVar('--ink', '#0F172A'),
@@ -244,6 +326,79 @@
 
     /* ---------------- ECharts ---------------- */
     const charts = new WeakMap();
+    /**
+     * 已实例化的图表集合。
+     * WeakMap 不能遍历，而"窗口 resize / 主题切换时统一 resize"需要遍历——
+     * 只存 WeakMap 的话，那个场景就只能退化成"把所有 .chart 全 init 一遍"，
+     * 等于把惰性初始化又亲手废掉。
+     */
+    const liveCharts = new Set();
+
+    /* ---------------- 图表惰性初始化 ---------------- */
+    // 洞察页有 11 张图，ECharts 每张 init 约 30–80ms：全部在首屏建完 ≈ 半秒卡顿，
+    // 而其中 8 张根本不在第一屏。这里只把"可见"的图建出来，其余的等滚到附近再建。
+    // 用 __CP_NO_LAZY 可以在同一台机器上做 A/B 对比（性能数据就是这么测的）。
+    const LAZY_MARGIN = 160;              // 提前 160px 建图，滚到时已经画好了
+    const pendingOptions = new WeakMap(); // el -> option（等可见）
+    const pendingHooks = new WeakMap();   // el -> [(inst) => void]（等可见再绑交互）
+    const visibleCbs = new WeakMap();     // el -> [() => void]（可见时执行一次，与实例无关）
+    let lazyObserver = null;
+
+    function lazyEnabled() {
+        return typeof IntersectionObserver !== 'undefined' && !global.__CP_NO_LAZY;
+    }
+
+    function nearViewport(el) {
+        const r = el.getBoundingClientRect();
+        // 宽高为 0 说明容器被隐藏（如未激活的标签页），这种"看不见"也要延后
+        if (!r.width && !r.height) return false;
+        return r.top < window.innerHeight + LAZY_MARGIN && r.bottom > -LAZY_MARGIN;
+    }
+
+    function flushLazy(el) {
+        const opt = pendingOptions.get(el);
+        pendingOptions.delete(el);
+        if (opt !== undefined) applyOption(el, opt);
+        const hooks = pendingHooks.get(el) || [];
+        pendingHooks.delete(el);
+        if (hooks.length) {
+            const inst = charts.get(el);
+            if (inst) hooks.forEach(h => { try { h(inst); } catch (e) { /* 交互绑定失败不影响显示 */ } });
+        }
+        const cbs = visibleCbs.get(el) || [];
+        visibleCbs.delete(el);
+        cbs.forEach(cb => { try { cb(); } catch (e) { /* 回调失败不影响其它图表 */ } });
+    }
+
+    /**
+     * 元素进入视口附近时执行一次。用于"滚到才加载的资源"（如词云插件）——
+     * 这类资源没法挂在 setOption 上等，因为绘制它本身就需要资源先到位。
+     * @param {HTMLElement|null} el
+     * @param {() => void} cb
+     */
+    function whenVisible(el, cb) {
+        if (!el || typeof cb !== 'function') return;
+        if (!lazyEnabled() || nearViewport(el)) { cb(); return; }
+        const arr = visibleCbs.get(el) || [];
+        arr.push(cb);
+        visibleCbs.set(el, arr);
+        observeLazy(el);
+    }
+
+    function observeLazy(el) {
+        if (!lazyEnabled()) return false;
+        if (!lazyObserver) {
+            lazyObserver = new IntersectionObserver(entries => {
+                entries.forEach(en => {
+                    if (!en.isIntersecting) return;
+                    lazyObserver.unobserve(en.target);
+                    flushLazy(en.target);
+                });
+            }, { rootMargin: LAZY_MARGIN + 'px' });
+        }
+        lazyObserver.observe(el);
+        return true;
+    }
 
     function themeBase() {
         const c = themeColors();
@@ -278,12 +433,18 @@
         };
     }
 
+    /**
+     * 取（或惰性创建）ECharts 实例。按元素缓存，重复调用不会重复 init。
+     * @param {HTMLElement|null} el
+     * @returns {any} ECharts 实例；ECharts 未加载时返回 null
+     */
     function chart(el) {
         if (!el || typeof echarts === 'undefined') return null;
         let inst = charts.get(el);
         if (!inst) {
             inst = echarts.init(el, null, { renderer: 'canvas' });
             charts.set(el, inst);
+            liveCharts.add(inst);
             if (typeof ResizeObserver !== 'undefined') {
                 const ro = new ResizeObserver(() => { try { inst.resize(); } catch (e) {} });
                 ro.observe(el.parentElement || el);
@@ -294,7 +455,14 @@
         return inst;
     }
 
-    function setOption(el, option) {
+    /**
+     * 设置图表配置。notMerge=true：切筛选时整份替换，
+     * 否则上一次的 series 会残留在图里（最典型的"数据变了但柱子没少"）。
+     * @param {HTMLElement|null} el
+     * @param {any} option
+     * @returns {any}
+     */
+    function applyOption(el, option) {
         const inst = chart(el);
         if (!inst) return null;
         inst.setOption(option, true);
@@ -302,7 +470,43 @@
         return inst;
     }
 
-    /** 后端图表规格 → ECharts option（Agent 动态图表统一走这里） */
+    function setOption(el, option) {
+        if (!el) return null;
+        // 有实例就直接画；没有实例且还没滚到附近，就先存着，别为了"看不见的图"卡住首屏
+        if (!charts.has(el) && lazyEnabled() && !nearViewport(el)) {
+            pendingOptions.set(el, option);
+            observeLazy(el);
+            return null;
+        }
+        return applyOption(el, option);
+    }
+
+    /**
+     * 图表就绪回调。用于"渲染完要绑点击下钻"这类逻辑——
+     * 惰性初始化下实例可能还不存在，直接取只会拿到 null，下钻就静默失效了。
+     * @param {HTMLElement|null} el
+     * @param {(inst: any) => void} cb
+     */
+    function onChart(el, cb) {
+        if (!el || typeof cb !== 'function') return;
+        const inst = charts.get(el);
+        if (inst) { cb(inst); return; }
+        const arr = pendingHooks.get(el) || [];
+        arr.push(cb);
+        pendingHooks.set(el, arr);
+    }
+
+    /** 只 resize 已经建好的图表；绝不触发新的 init */
+    function resizeCharts() {
+        liveCharts.forEach(i => { try { i.resize(); } catch (e) { /* 已销毁的实例忽略 */ } });
+    }
+
+    /**
+     * 后端图表规格 → ECharts option。Agent 动态图表统一走这里，
+     * 前端不参与任何数值计算——数字算错这件事只允许有一个地方发生。
+     * @param {CPChartSpec} spec
+     * @returns {any}
+     */
     function specToOption(spec) {
         const base = themeBase();
         const unit = spec.unit || '';
@@ -358,6 +562,11 @@
         });
     }
 
+    /**
+     * 渲染后端图表规格。
+     * @param {HTMLElement|null} el
+     * @param {CPChartSpec} spec
+     */
     function renderSpec(el, spec) {
         if (!el || !spec) return;
         setOption(el, specToOption(spec));
@@ -367,6 +576,12 @@
     const DIMENSIONS = ['宿舍住宿', '食堂餐饮', '招生报考', '教学学业', '校园环境', '交通出行', '校园活动'];
     const PLATFORMS = ['抖音', '小红书'];
 
+    /**
+     * 渲染筛选栏并双向绑定 state.filters。
+     * @param {HTMLElement} container
+     * @param {{keyword?: boolean}} [opts] keyword=false 时不出关键词输入框
+     * @returns {{sync: () => void, apply: () => void}}
+     */
     function renderFilterBar(container, opts) {
         opts = opts || {};
         const withKeyword = opts.keyword !== false;
@@ -426,9 +641,10 @@
         }
 
         container.addEventListener('click', e => {
-            const chip = e.target.closest('.chip');
+            const el = /** @type {HTMLElement} */ (e.target);
+            const chip = /** @type {HTMLElement} */ (el.closest('.chip'));
             if (chip) {
-                const group = chip.closest('[data-group]');
+                const group = /** @type {HTMLElement} */ (chip.closest('[data-group]'));
                 const key = group ? group.dataset.group : 'platform';
                 if (!Array.isArray(state.filters[key])) state.filters[key] = [];
                 const arr = state.filters[key];
@@ -438,17 +654,18 @@
                 sync(); apply();
                 return;
             }
-            if (e.target.closest('[data-role="reset"]')) {
+            if (el.closest('[data-role="reset"]')) {
                 state.filters = { platform: [], dimension: [], sentiment: [], date_from: '', date_to: '', keyword: '' };
                 sync(); apply();
             }
         });
 
         container.addEventListener('change', e => {
-            const role = e.target.dataset.role;
-            if (role === 'dimension') state.filters.dimension = e.target.value ? [e.target.value] : [];
-            else if (role === 'date_from') state.filters.date_from = e.target.value;
-            else if (role === 'date_to') state.filters.date_to = e.target.value;
+            const el = /** @type {HTMLInputElement} */ (e.target);
+            const role = el.dataset.role;
+            if (role === 'dimension') state.filters.dimension = el.value ? [el.value] : [];
+            else if (role === 'date_from') state.filters.date_from = el.value;
+            else if (role === 'date_to') state.filters.date_to = el.value;
             else return;
             apply();
         });
@@ -472,6 +689,32 @@
     let filterBarApi = null;
 
     /* ---------------- 数据集选择 ---------------- */
+    /**
+     * 重建顶栏数据集下拉。
+     *
+     * 单独抽出来是因为"导入新数据集后立刻切过去"会把下拉卡住：
+     * 新数据集此刻还不在 option 列表里，sel.value = 新 id 会静默变成空值，
+     * 页面看着像没切换成功。凡是能改变数据集集合的操作，都要调这个。
+     */
+    function renderDatasetSelect() {
+        const sel = $('#dsSelect');
+        if (!sel) return;
+        sel.innerHTML = state.datasets.map(d =>
+            `<option value="${d.dataset_id}">${esc(d.name)} · ${num(d.valid_count)} 条</option>`).join('');
+        sel.value = state.dataset_id;
+        if (sel.__cpBound) return;
+        sel.__cpBound = true;
+        sel.addEventListener('change', () => {
+            state.dataset_id = sel.value;
+            state.datasetMeta = state.datasets.find(d => d.dataset_id === sel.value) || null;
+            syncUrl();
+            updateSnapshotBadge();
+            // 数据覆盖范围跟着换，否则筛选栏会和图表说的是两回事
+            if (filterBarApi) filterBarApi.sync();
+            document.dispatchEvent(new CustomEvent('cp:dataset', { detail: state.dataset_id }));
+        });
+    }
+
     async function loadDatasets() {
         const data = await api('/api/datasets');
         state.datasets = data.datasets;
@@ -480,26 +723,13 @@
         }
         state.datasetMeta = state.datasets.find(d => d.dataset_id === state.dataset_id) || null;
 
-        const sel = $('#dsSelect');
-        if (sel) {
-            sel.innerHTML = state.datasets.map(d =>
-                `<option value="${d.dataset_id}">${esc(d.name)} · ${num(d.valid_count)} 条</option>`).join('');
-            sel.value = state.dataset_id;
-            sel.addEventListener('change', () => {
-                state.dataset_id = sel.value;
-                state.datasetMeta = state.datasets.find(d => d.dataset_id === sel.value) || null;
-                syncUrl();
-                updateSnapshotBadge();
-                // 数据覆盖范围跟着换，否则筛选栏会和图表说的是两回事
-                if (filterBarApi) filterBarApi.sync();
-                document.dispatchEvent(new CustomEvent('cp:dataset', { detail: state.dataset_id }));
-            });
-        }
+        renderDatasetSelect();
         updateSnapshotBadge();
         syncUrl();
         return state.datasets;
     }
 
+    /** 顶栏"历史快照·数据截至 X"角标：把"这不是实时数据"写在用户一眼能看到的地方 */
     function updateSnapshotBadge() {
         const b = $('#snapshotBadge');
         const meta = state.datasetMeta;
@@ -554,6 +784,10 @@
         }
     }
 
+    /**
+     * 页面初始化：主题 → URL 状态 → 数据集 → 健康检查 → 筛选栏 → 触发 cp:ready。
+     * @param {{filterBar?: boolean, filterOptions?: any}} [opts]
+     */
     async function init(opts) {
         opts = opts || {};
         bindTheme();
@@ -576,8 +810,10 @@
 
     global.CP = {
         state, $, $$, esc, num, pct, dateShort, toast, api, qs, syncUrl, filterParams,
-        setState, chart, setOption, renderSpec, specToOption, themeBase, axisCommon,
+        setState, chart, setOption, onChart, resizeCharts, whenVisible, renderSpec, specToOption,
+        themeBase, axisCommon,
         renderFilterBar, init, loadHealth, loadTicketBadge, PALETTE, POS, NEU, NEG, SENTIMENT_COLOR, DIMENSIONS, PLATFORMS,
+        renderDatasetSelect, loadDatasets,
         getTheme, applyTheme, toggleTheme, themeColors
     };
 

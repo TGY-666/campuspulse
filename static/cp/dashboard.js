@@ -357,10 +357,5 @@
         loadAll();
     });
     $('#btnInsight').addEventListener('click', () => loadInsight(true));
-    window.addEventListener('resize', () => {
-        CP.$$('.chart').forEach(el => {
-            const inst = CP.chart(el);
-            if (inst) inst.resize();
-        });
-    });
+    window.addEventListener('resize', () => CP.resizeCharts());
 })();
