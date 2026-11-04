@@ -49,3 +49,6 @@ screenshots/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# ---- 前端工具链（TypeScript 只用于类型检查）----
+node_modules/
