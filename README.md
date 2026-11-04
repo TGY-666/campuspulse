@@ -13,6 +13,9 @@
 python -m venv .venv
 .venv/Scripts/pip install -r requirements.txt
 
+# 1.1) 可选：截图 OCR 与 MCP 官方 SDK 验证（不装也能跑，对应功能会自动降级）
+.venv/Scripts/pip install -r requirements-ext.txt
+
 # 2) 配置 DeepSeek Key（不配置也能跑，会自动降级为规则路由）
 #    复制模板后填入自己的 Key（.env 已被 .gitignore 排除，不会提交）
 cp .env.example .env
@@ -30,13 +33,17 @@ cp .env.example .env
 > 根目录的 `app.py` + `index.html` 是 V0 原型（早期单页大屏），保留下来只作迭代对照，
 > 它不含 CampusPulse 的清洗链路、RAG 检索、AI 工具调用与输入侧安全闸——
 > **答辩与演示一律用 `run.py`，不要用 `app.py`**。
+>
+> 生产部署用 `wsgi.py` + gunicorn（**必须单 worker + 多线程**，原因见文件头注释），
+> 或直接用 `Dockerfile` / `docker-compose.yml`，完整步骤见
+> [`docs/部署指南.md`](docs/部署指南.md)。
 
 配套文档：
 
 - [`docs/口径说明.md`](docs/口径说明.md)：25,699 / 1,823 / 99.6% 的核对结论、维度词典与归因修订记录
 - [`docs/技术说明.md`](docs/技术说明.md)：架构、AI 工具调用链、三层真实性保障、接口与安全
 - [`docs/演示脚本.md`](docs/演示脚本.md)：8 分钟 / 5 分钟演示流程、实测问题与口径、评委 Q&A
-- [`docs/git提交记录.md`](docs/git提交记录.md)：24 次提交分别改了什么、为什么这样切分、给评审的核查命令
+- [`docs/git提交记录.md`](docs/git提交记录.md)：36 次提交分别改了什么、为什么这样切分、给评审的核查命令
 - [`docs/传智杯参赛需求清单.md`](docs/传智杯参赛需求清单.md)：按赛项评分细则逐点对账、拿奖概率推算与 16 天排期
 - [`docs/省赛评分对标与优化建议.md`](docs/省赛评分对标与优化建议.md)：按评分细则逐条自评（≈60/100）与优化清单
 - [`docs/优化进度-2026-10-28.md`](docs/优化进度-2026-10-28.md)：已完成项实测数据、未完成清单与下一步排期
@@ -113,8 +120,20 @@ cp .env.example .env
 
 ```bash
 .venv/Scripts/python.exe tools/mcp_server.py --list   # 打印工具清单（人读）
-.venv/Scripts/python.exe tools/mcp_client.py          # 用真实 MCP 客户端跑完整握手（10 项校验）
+.venv/Scripts/python.exe tools/mcp_client.py          # 自研 MCP 客户端跑完整握手（10 项校验）
+.venv/Scripts/python.exe tools/mcp_official_check.py  # 官方 MCP SDK 交叉验证（14 项）
 ```
+
+**Agent 的工具层是双通道的**（`campuspulse/toolbus.py`），一个环境变量切换：
+
+```bash
+CP_TOOL_CHANNEL=local   # 进程内直调（默认，最快）
+CP_TOOL_CHANNEL=mcp     # 走 stdio 子进程 JSON-RPC（与外接客户端同一条路径）
+```
+
+两条通道返回结构完全相同，Agent 与前端不需要知道自己在走哪条。子进程崩溃会自动降级回本地，
+并在工具步骤里标 `channel=local`——**不静默降级**，否则"以为在用 MCP，其实一直在本地跑"。
+工具步骤卡片上也会显示通道角标，支持 MCP 这件事在界面上看得见。
 
 接入 Claude Desktop / 任意 MCP 客户端时，加一段配置即可：
 
@@ -130,13 +149,37 @@ cp .env.example .env
 }
 ```
 
-**为什么手写协议而不装 SDK**：MCP 的核心是 JSON-RPC 2.0 over stdio，`initialize` /
-`tools/list` / `tools/call` 三个方法足够把能力说清楚，用标准库约 200 行就能实现；
-而项目定位是「本地可离线运行」，每多一个传递依赖就多一个装不上的风险。不引入 SDK，
-`requirements.txt` 一行没加，`tools.py` 的权限校验、脱敏、口径披露全部自动继承。
+**服务端为什么不装 SDK、客户端却必须装**：MCP 的核心是 `initialize` / `tools/list` /
+`tools/call` 三个方法加 stdio 传输，标准库约 200 行能写清；而项目定位「本地可离线运行」，
+运行时依赖越少越好。但**自己写的客户端测自己写的服务端是循环论证**——两边可以对同一份
+错误理解达成一致。所以验证分两层：自研客户端测端到端链路，官方 `mcp` SDK 的 `ClientSession`
+测协议合规。后者 14/14 通过，其中「`required` 字段必须真实存在于 `properties`」这条
+是自研客户端想不到要测的——按 schema 组装参数的客户端会直接失败。
 
 **这层解耦意味着什么**：换个客户端，白名单校验、参数收敛、去标识化、分母披露都还在。
 安全不是界面的属性，是工具层的属性。
+
+---
+
+### 4.2 多模态：截图评论导入
+
+真实校园舆情里，**截图比 API 更常见**：招生办收到家长发来的截图、辅导员在群里看到学生
+转发的吐槽图——这些进不了任何爬虫。系统原来只吃 JSON，等于把最容易发生的那类舆情挡在门外。
+
+在「数据与报告」页点「上传截图」，流程是：
+
+```
+PNG/JPG ──OCR──► 文本行 ──分类与成组──► 草稿行 ──人工复核──► ETL 六步清洗 ──► 数据集
+```
+
+- **数据不出校**：默认用 RapidOCR 本地离线识别（PaddleOCR 同系列模型的 ONNX 版），
+  图片不发任何第三方；没装 onnxruntime 时才降级到视觉模型 API
+- **口径诚实**：OCR 一定会认错字，所以识别结果**一律先进草稿**，人工改过才入库；
+  每条记录带 `ocr_confidence` 与 `ocr_engine`，证据页查得到「这条来自截图、置信度多少」
+- **不假装成功**：没有任何可用引擎时明确报错 + 安装指引，而不是「导入成功，0 条」
+
+取不到发布时间的条目标 `time_inferred=1`，不拿采集时间冒充发布时间。草稿只保留 24 小时——
+截图里是别人的原话，不该长期躺在服务器磁盘上。
 
 ---
 
@@ -151,6 +194,8 @@ campuspulse/            # 参赛版后端包
 ├── analytics.py        # 统一统计层（唯一口径来源）
 ├── rag.py              # RAG 混合检索（BM25 + 同义词扩展 + 字符 n-gram 向量 + 融合重排 + 引用校验）
 ├── tools.py            # 6 个受控工具 + 参数校验
+├── toolbus.py          # 工具双通道（本地直调 / MCP stdio），失败自动降级
+├── vision.py           # 截图 OCR 导入（本地 RapidOCR / 视觉 API 降级 / 解析成评论草稿）
 ├── charts.py           # 确定性图表构建（后端出数值）
 ├── guard.py            # 输入侧安全闸（长度 / 频次 / 20 条意图规则 / 出口脱敏）
 ├── agent.py            # DeepSeek 工具调用编排、校验、降级、审计
@@ -177,8 +222,11 @@ tests/
 tools/shot.py           # 页面截图与控制台错误捕获（开发验收用）
 tools/shot_agent_rag.py # Agent 页 RAG 卡片截图（开发验收用）
 tools/value_metrics.py  # 社会价值指标复算（周级拐点 / 季节性 / 语料漏斗）
-tools/mcp_server.py     # MCP Server（stdio JSON-RPC，复用 TOOL_SPECS，零新增依赖）
+tools/mcp_server.py     # MCP Server（stdio JSON-RPC，复用 TOOL_SPECS，运行时零新增依赖）
 tools/mcp_client.py     # 最小 MCP 客户端（协议一致性自检，10 项）
+tools/mcp_official_check.py # 官方 mcp SDK 交叉验证（14 项，需 requirements-ext.txt）
+tools/typecheck.py      # 前端类型检查（tsc --noEmit + checkJs；未装 Node 时跳过）
+tools/perf_probe.py     # 前端性能 A/B 采集（同一浏览器、同一数据，只改 __CP_NO_LAZY）
 tools/verify_carry.py   # 对话即筛选闭环验证（Agent 口径 → 驾驶舱落地，含筛选交互回归）
 tools/verify_voice.py   # 语音输入验证（假识别器驱动真实页面，11 项集成契约）
 tools/verify_ui.py      # 前端工程质量验证（深色对比度 / 图表重建 / 390px 移动端，14 项）
@@ -190,8 +238,11 @@ tools/scan_tenant_leaks.py # 逐接口统计漏写 tenant_id 的 SQL（S1 改造
 tools/verify_ticket.py  # 工单全路径验收（四角色 × 状态机 × SLA × append-only，23 项，跑在库副本上）
 tools/seed_demo_tickets.py # 演示工单生成（默认只建工单；--with-accounts 才建角色账号）
 tools/verify_agent.py   # 引用核验验收（AC-M4-01..10，只替换模型与检索，其余走真实链路）
-docs/                   # 口径说明 / 技术说明 / 演示脚本 / 商业与社会价值 / 优化进度 / 架构一页纸 / 项目体检报告
+docs/                   # 口径说明 / 技术说明 / 演示脚本 / 商业与社会价值 / 优化进度 / 架构一页纸 / 项目体检报告 / 部署指南
 data/                   # campuspulse.db、上传文件、日志（运行时生成）
+Dockerfile              # 生产镜像（默认仅核心依赖；--build-arg WITH_EXT=1 启用 OCR/MCP）
+docker-compose.yml      # 一键部署（data 卷 + healthcheck + restart: unless-stopped）
+wsgi.py                 # 生产 WSGI 入口（gunicorn 单 worker 多线程 / waitress）
 ```
 
 ---
@@ -199,11 +250,14 @@ data/                   # campuspulse.db、上传文件、日志（运行时生�
 ## 6. 验收与自检
 
 ```bash
-.venv/Scripts/python.exe tests/acceptance.py    # 65 项自动验收
+.venv/Scripts/python.exe tests/acceptance.py    # 74 项自动验收
 .venv/Scripts/python.exe tests/rag_eval.py       # 检索质量评估（P@5 / MRR@10）
 .venv/Scripts/python.exe tests/legacy_check.py  # 复现 25,699 → 1,823
 .venv/Scripts/python.exe tools/value_metrics.py # 社会价值指标复算（文档数字的唯一来源）
 .venv/Scripts/python.exe tools/mcp_client.py    # MCP 协议一致性自检（10 项）
+.venv/Scripts/python.exe tools/mcp_official_check.py # 官方 SDK 交叉验证（14 项，需 ext 依赖）
+.venv/Scripts/python.exe tools/typecheck.py      # 前端类型检查（未装 Node 时自动跳过）
+.venv/Scripts/python.exe tools/perf_probe.py /insights  # 前端性能 A/B（需先启动服务）
 .venv/Scripts/python.exe tools/verify_carry.py   # 对话即筛选闭环（需先启动服务）
 .venv/Scripts/python.exe tools/verify_voice.py   # 语音输入集成契约（需先启动服务，用假识别器）
 .venv/Scripts/python.exe tools/verify_ui.py      # 深色模式 + 移动端（需先启动服务，含对比度计算）
@@ -235,13 +289,15 @@ CP_AUTH=1 CP_TICKETS=1 .venv/Scripts/python.exe tools/seed_demo_tickets.py  # �
 `acceptance.py` 覆盖文档第 15 章：5 页可访问、数据集切换、有效率自洽、三方口径一致、
 Agent 真实调用 6 个工具、3 类图表、证据可溯源、数值校验、引用校验、混合检索三路召回、MCP 协议一致性、Schema 类型校验、对话口径可携带且链接可达、情感筛选可见、语音不自动发送、深色模式对比度、移动端无横向溢出、空数据诚实说明、非法参数拦截、
 密钥不泄露、证据脱敏、报告来源完整、AI 不可用时的诚实降级、输入侧注入/越权拦截与零误杀、
-归一变体不可绕过、频次限制与拦截审计、预热命中缓存且不改口径、报告可导出 Markdown。
+归一变体不可绕过、频次限制与拦截审计、预热命中缓存且不改口径、报告可导出 Markdown、
+截图 OCR 全链路与来源可追溯、官方 MCP SDK 交叉验证、前端类型检查、
+静态资源强缓存、图表惰性初始化防回归。
 
-当前结果：**65/65 通过**（另有 health_check 77/77、site_audit 30/30、verify_security 9/9、verify_ui 14/14、
+当前结果：**74/74 通过**（另有 health_check 77/77、site_audit 30/30、verify_security 9/9、verify_ui 14/14、
 verify_carry 通过（闭环三对齐）、verify_voice 11/11、租户扫描 23 接口 0 漏写、
 多租户组 test_s0 40/40 + test_s0_auth 26/26 + test_s1 11/11 + 越权矩阵 32/32 拦截、
 工单组 test_s2 32/32 + verify_ticket 25/25、
-核验组 test_s3 23/23 + verify_agent 10/10）。
+核验组 test_s3 23/23 + verify_agent 10/10、MCP 双通道等价性与官方 SDK 14/14）。
 
 > **S4 收口已完成（2026-11-02）**：16 个脚本全绿；演示脚本按 6 页重录版更新；
 > 验收数字已同步。P2 三项（多租户 / 处置工单 / 引用核验）全部交付，
@@ -410,10 +466,23 @@ CP_AUTH=0 CP_TICKETS=1 CP_CITATION_GUARD=0 CP_DEV=1 PORT=8010 .venv/Scripts/pyth
 | 历史时期对比（I11） | ◐ 部分 | 可用日期区间做"同口径不同区间"，但没有并排双区间对比视图 |
 | 对话历史持久化（A14） | ❌ | 会话刷新即清空（避免误用旧数据的回答） |
 | 图表 PNG / CSV 导出（I12） | ❌ | 未做导出按钮；`output_excel/` 里的 xlsx 是旧脚本的历史产物，未接入新界面 |
-| CSV / Excel 导入（M08） | ❌ | 只接受原系统兼容的 JSON |
+| CSV / Excel 导入（M08） | ❌ | 只接受原系统兼容的 JSON；截图 PNG/JPG 走 OCR 导入（见 4.2） |
 | 导出清洗数据（M09） | ❌ | 未做导出接口 |
 | 事件自动聚类 / 主题命名（E08-E11） | ❌ | 只做维度与关键词，不做语义聚类，避免把"同主题"说成"同事件" |
 | 会话收藏（X12） | ❌ | 轻量多租户（S1）已提供用户体系，但收藏功能本身未做 |
+
+### 7.1 传智杯 P1 加分项（对应 `docs/传智杯参赛需求清单.md`）
+
+| 项 | 状态 | 落地证据 |
+|---|---|---|
+| P1-1 多模态：截图评论导入 | ✅ | `vision.py`（本地 RapidOCR + 24h 草稿 + 人工复核）、`comments` 表四字段、数据页上传入口、证据页来源标记；验收 4 条 |
+| P1-2 MCP Server 化 | ✅ | `toolbus.py` 双通道 + `toolbus` 崩溃降级；自研客户端 10 项 + **官方 SDK 14 项**校验；验收 2 条 |
+| P1-3 前端渐进式类型化 | ✅ | `jsconfig.json`（checkJs/noEmit）+ `cp.d.ts` 契约 + 公共层 JSDoc；`tools/typecheck.py` 接入验收；9 个文件通过 |
+| P1-4 前端性能三项 | ✅ | 强缓存 + 版本指纹、词云按需加载、`IntersectionObserver` 懒初始化；FCP 386→88ms（−77%）、首屏建图 11→5 |
+| P1-5 在线演示部署 | ◐ 工件就绪 | `Dockerfile` / `docker-compose.yml` / `wsgi.py` / `docs/部署指南.md` 均已就绪，**尚未租用服务器实际部署**——本机无 Docker 环境，镜像构建未实测 |
+
+> P1-5 的工件是完整可用的，但"部署"本身需要一台服务器。这一项在材料里如实写成
+> "部署就绪、按指南 15 分钟可上线"，不写成"已上线"。
 
 ---
 
