@@ -1,0 +1,13 @@
+{
+  "name": "campuspulse-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CampusPulse 前端静态资源（原生 JS + JSDoc 渐进式类型检查）",
+  "scripts": {
+    "typecheck": "tsc -p jsconfig.json",
+    "typecheck:watch": "tsc -p jsconfig.json --watch"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}

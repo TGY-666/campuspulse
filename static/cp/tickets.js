@@ -363,13 +363,13 @@
         document.body.appendChild(mask);
         const close = () => mask.remove();
         mask.addEventListener('click', e => { if (e.target === mask) close(); });
-        mask.querySelector('[data-cancel]').addEventListener('click', close);
-        mask.querySelector('[data-ok]').addEventListener('click', async () => {
+        /** @type {any} */ (mask.querySelector('[data-cancel]')).addEventListener('click', close);
+        /** @type {any} */ (mask.querySelector('[data-ok]')).addEventListener('click', async () => {
             const body = { action: act.action };
-            if (needsNote || needsRes) body.note = (mask.querySelector('#mNote').value || '').trim();
-            if (needsOwner) body.owner_id = mask.querySelector('#mOwner').value;
-            if (act.action === 'triage') body.priority = mask.querySelector('#mPriority').value;
-            const ok = mask.querySelector('[data-ok]');
+            if (needsNote || needsRes) body.note = (/** @type {any} */ (mask.querySelector('#mNote')).value || '').trim();
+            if (needsOwner) body.owner_id = /** @type {any} */ (mask.querySelector('#mOwner')).value;
+            if (act.action === 'triage') body.priority = /** @type {any} */ (mask.querySelector('#mPriority')).value;
+            const ok = /** @type {any} */ (mask.querySelector('[data-ok]'));
             ok.disabled = true;
             try {
                 const d = await api(`/api/tickets/${t.ticket_id}/transition`, null,
@@ -422,7 +422,7 @@
             </div>
         </div>`;
         document.body.appendChild(mask);
-        mask.querySelector('#cScope').textContent =
+        /** @type {any} */ (mask.querySelector('#cScope')).textContent =
             '当前口径：数据集 ' + (state.dataset_id || '默认') +
             (state.filters.dimension.length ? ' · 维度 ' + state.filters.dimension.join('、') : '') +
             (state.filters.sentiment.length ? ' · 情感 ' + state.filters.sentiment.join('、') : '') +
@@ -430,15 +430,15 @@
                 ? ` · 时间 ${state.filters.date_from || '起'}~${state.filters.date_to || '今'}` : '');
         const close = () => mask.remove();
         mask.addEventListener('click', e => { if (e.target === mask) close(); });
-        mask.querySelector('[data-cancel]').addEventListener('click', close);
-        mask.querySelector('[data-ok]').addEventListener('click', async () => {
-            const title = (mask.querySelector('#cTitle').value || '').trim();
+        /** @type {any} */ (mask.querySelector('[data-cancel]')).addEventListener('click', close);
+        /** @type {any} */ (mask.querySelector('[data-ok]')).addEventListener('click', async () => {
+            const title = (/** @type {any} */ (mask.querySelector('#cTitle')).value || '').trim();
             if (!title) { toast('请填写标题', 'err'); return; }
             const body = {
                 title,
-                summary: (mask.querySelector('#cSummary').value || '').trim(),
-                priority: mask.querySelector('#cPriority').value,
-                dimension: mask.querySelector('#cDim').value,
+                summary: (/** @type {any} */ (mask.querySelector('#cSummary')).value || '').trim(),
+                priority: /** @type {any} */ (mask.querySelector('#cPriority')).value,
+                dimension: /** @type {any} */ (mask.querySelector('#cDim')).value,
                 filters: Object.assign({ dataset_id: state.dataset_id }, {
                     platform: state.filters.platform,
                     dimension: state.filters.dimension,
@@ -448,7 +448,7 @@
                     keyword: state.filters.keyword
                 })
             };
-            const ok = mask.querySelector('[data-ok]');
+            const ok = /** @type {any} */ (mask.querySelector('[data-ok]'));
             ok.disabled = true;
             try {
                 const t = await api('/api/tickets', null,

@@ -6,10 +6,12 @@
 (function () {
     'use strict';
 
-    var form = document.getElementById('loginForm');
-    var btn = document.getElementById('loginBtn');
-    var errBox = document.getElementById('loginErr');
-    var nextInput = document.getElementById('nextPath');
+    /* 登录页就四个控件，类型在 HTML 里已经确定，一次性断言到具体元素类型，
+       后面 40 行就不用每行都写断言了。 */
+    var form = /** @type {HTMLFormElement|null} */ (document.getElementById('loginForm'));
+    var btn = /** @type {HTMLButtonElement} */ (document.getElementById('loginBtn'));
+    var errBox = /** @type {HTMLElement} */ (document.getElementById('loginErr'));
+    var nextInput = /** @type {HTMLInputElement} */ (document.getElementById('nextPath'));
     if (!form) return;
 
     function showError(msg) {
@@ -39,9 +41,9 @@
         e.preventDefault();
         clearError();
 
-        var username = (document.getElementById('username').value || '').trim();
-        var password = document.getElementById('password').value || '';
-        var remember = document.getElementById('remember').checked;
+        var username = (/** @type {HTMLInputElement} */ (document.getElementById('username')).value || '').trim();
+        var password = /** @type {HTMLInputElement} */ (document.getElementById('password')).value || '';
+        var remember = /** @type {HTMLInputElement} */ (document.getElementById('remember')).checked;
 
         if (!username) { showError('请输入账号'); return; }
         // 不校验密码长度：口令规则由后端决定，前端多说一句都可能泄露策略
@@ -69,7 +71,7 @@
             if (r.status === 429) msg = '尝试次数过多，请稍后再试';
             showError(msg);
             setBusy(false);
-            document.getElementById('password').select();
+            /** @type {HTMLInputElement} */ (document.getElementById('password')).select();
         }).catch(function () {
             // 网络层失败和"密码错了"要分开说，否则用户会一直重输密码
             showError('无法连接服务器，请检查网络或稍后重试');

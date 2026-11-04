@@ -41,7 +41,11 @@
         lastResult: null,
         lastError: null,
         stop: function () {},
-        mount: function () { return api; }
+        /** 未挂载前的占位实现：签名与真实 mount 一致，否则 checkJs 会报参数个数不符 */
+        mount: function (opt) {
+            void opt;
+            return api;
+        }
     };
 
     /**
