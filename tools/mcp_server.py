@@ -143,8 +143,36 @@ def _mcp_tool_def(spec):
     }
 
 
-def _text_result(text, is_error=False):
-    return {"content": [{"type": "text", "text": text}], "isError": bool(is_error)}
+def _text_result(text, is_error=False, structured=None):
+    out = {"content": [{"type": "text", "text": text}], "isError": bool(is_error)}
+    # structuredContent：给"程序化调用方"（本项目的 Agent 通道）一份原样结构，
+    # 免得它去解析给人看的文本。MCP 2025-06-18 起这是标准字段，
+    # 老客户端不认识会直接忽略，不影响 Claude Desktop 那种纯文本用法。
+    if structured is not None:
+        out["structuredContent"] = structured
+    return out
+
+
+# 结构化返回的体积上限：一次 retrieve_context 可能带 6 段原文，
+# 不设限的话 JSON-RPC 单行会到几百 KB，读一行就卡住。
+_MAX_STRUCT_CHARS = 400 * 1024
+
+
+def _to_structured(res):
+    """把 execute() 的结果裁到可控体积，保留全部字段名。"""
+    raw = json.dumps(res, ensure_ascii=False)
+    if len(raw) <= _MAX_STRUCT_CHARS:
+        return res
+    trimmed = dict(res)
+    data = dict(trimmed.get("data") or {})
+    for k, v in list(data.items()):
+        if isinstance(v, list) and len(v) > 40:
+            data[k] = v[:40]
+    trimmed["data"] = data
+    trimmed["truncated"] = True
+    if len(json.dumps(trimmed, ensure_ascii=False)) > _MAX_STRUCT_CHARS:
+        trimmed["data"] = {"truncated": True}
+    return trimmed
 
 
 def _format_tool_output(res):
@@ -233,7 +261,7 @@ def _call_tool(params):
     _log(f"tools/call {name} args={json.dumps(arguments, ensure_ascii=False)[:200]}")
     res = tools.execute(name, arguments, ctx)
     text, is_error = _format_tool_output(res)
-    return _text_result(text, is_error)
+    return _text_result(text, is_error, _to_structured(res))
 
 
 _HANDLERS = {}

@@ -1,4 +1,31 @@
 /* PAGE-02 AI 智能分析工作台 */
+/**
+ * 这个页面是整套前端里最复杂的一块：SSE 流式 + 工具步骤实时点亮 + 引用核验角标。
+ * 类型信息集中放在下面这几个 typedef 里，函数签名只引用名字，避免注释淹掉逻辑。
+ *
+ * @typedef {Object} RunEvent
+ * @property {'stage'|'plan'|'tool_start'|'tool_done'|'token'|'rag_done'|'verdict'|'answer_reset'|'done'|'error'} type
+ * @property {string} [stage]    stage 事件：parse / think / retrieve / compose / verify / guard
+ * @property {string} [label]    阶段或工具的人类可读名称
+ * @property {string} [detail]   阶段补充说明（耗时、次数等）
+ * @property {string} [tool]     工具名
+ * @property {bool} [ok]
+ * @property {number} [elapsed_ms]
+ * @property {string} [text]     token 事件：增量文本
+ * @property {Object} [payload]  done 事件：完整响应（结构同 renderResult 的入参）
+ * @property {string} [message]  error 事件：错误文案
+ *
+ * @typedef {Object} RunPanel
+ * @property {(ev: RunEvent) => void} stage
+ * @property {(ev: RunEvent) => void} plan
+ * @property {(ev: RunEvent) => void} toolStart
+ * @property {(ev: RunEvent) => void} toolDone
+ * @property {(ev: RunEvent) => void} token
+ * @property {(ev: RunEvent) => void} ragDone
+ * @property {(ev: RunEvent) => void} verdict
+ * @property {(ev: RunEvent) => void} answerReset
+ * @property {() => void} finish
+ */
 (function () {
     'use strict';
     const { $, $$, esc, num, api, state, toast, setState } = CP;
@@ -61,6 +88,12 @@
             </div>`).join('')}</div>`;
     }
 
+    /**
+     * 工具调用步骤卡片。steps 里带 channel 字段，
+     * 走 MCP 协议的那几步会多一个角标 —— 让"支持 MCP"在界面上可见。
+     * @param {CPToolStep[]} steps
+     * @returns {string}
+     */
     function stepsBlock(steps) {
         if (!steps || !steps.length) return '';
         return `<div class="card">
@@ -79,6 +112,9 @@
                         <span class="badge ${s.status === 'failed' ? 'badge-neg' : s.empty ? 'badge-warn' : 'badge-pos'}">
                             ${s.status === 'failed' ? '失败' : s.empty ? '无数据' : '完成'}
                         </span>
+                        ${s.channel === 'mcp'
+                            ? '<span class="badge badge-brand" title="本次调用经 MCP 协议（stdio）转发到工具服务端">MCP</span>'
+                            : ''}
                         <span class="step-tool">${s.elapsed_ms}ms</span>
                     </div>
                     <div class="step-summary">${esc(s.summary || '')}</div>
@@ -321,6 +357,10 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    /**
+     * 渲染一轮完整结果：回答正文 → 图表 → 证据 → 引用核验 → 检索与口径披露。
+     * @param {any} r 后端 /api/agent/chat 的响应体（见 docs/P2能力扩展需求规格说明书 第 7 章）
+     */
     function renderResult(r) {
         lastQuestion = r.question || lastQuestion;
         if (r.blocked) { renderBlocked(r); return; }
@@ -453,7 +493,8 @@
         document.body.appendChild(mask);
         const close = () => mask.remove();
         mask.addEventListener('click', e => {
-            if (e.target === mask || e.target.closest('[data-close]')) close();
+            const t = /** @type {Element} */ (e.target);
+            if (t === mask || t.closest('[data-close]')) close();
         });
         document.addEventListener('keydown', function onEsc(ev) {
             if (ev.key === 'Escape') { close(); document.removeEventListener('keydown', onEsc); }
@@ -644,6 +685,16 @@
     }
 
     /* ---------------- 消费 SSE ---------------- */
+    /**
+     * 读 SSE 流并驱动右侧"运行面板"。
+     *
+     * 这里刻意不用 EventSource：提问要 POST（问题在 body 里，不能进 URL），
+     * 而 EventSource 只支持 GET。于是手写 SSE 分帧——按空行切块、取 data: 行。
+     *
+     * @param {string} q 用户问题
+     * @param {RunPanel} run 面板控制器，事件到这里被翻译成界面变化
+     * @returns {Promise<any>} 流结束后拿到的完整结构化响应
+     */
     async function consumeStream(q, run) {
         const resp = await fetch('/api/agent/chat/stream', {
             method: 'POST',
@@ -685,6 +736,7 @@
     }
 
     /* ---------------- 发送 ---------------- */
+    /** 发送一轮提问：锁定输入、启动运行面板、消费流、渲染结果 */
     async function send() {
         if (busy) return;
         const input = $('#qInput');

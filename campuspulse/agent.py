@@ -17,8 +17,8 @@ import uuid
 
 import requests
 
-from . import (analytics, charts as chart_builder, config, db, guard, rag, tools,
-               veracity)
+from . import (analytics, charts as chart_builder, config, db, guard, rag, toolbus,
+               tools, veracity)
 
 ENGINE_AI = "deepseek"
 ENGINE_RULES = "rules"
@@ -88,6 +88,25 @@ ANSWER_SYSTEM_PROMPT = """你是 CampusPulse 的高校舆情分析助手。下�
 
 
 # ============================ DeepSeek 调用 ============================
+_TOOL_COUNT = None
+
+
+def _tool_count():
+    """界面上"可选工具 N 个"里的 N。
+
+    走 MCP 通道时这个数字来自 tools/list，而不是本地常量——
+    否则界面上写着 6 个工具，实际服务端只暴露了 4 个，谁也发现不了。
+    缓存是因为它只用于一句提示文案，不值得每次对话都问一遍服务端。
+    """
+    global _TOOL_COUNT
+    if _TOOL_COUNT is None:
+        try:
+            _TOOL_COUNT = len(toolbus.openai_tools())
+        except Exception:
+            _TOOL_COUNT = len(tools.TOOL_SPECS)
+    return _TOOL_COUNT
+
+
 def _call_llm(messages, timeout=None, max_tokens=900):
     if not config.DEEPSEEK_API_KEY:
         raise AgentError("missing_api_key")
@@ -95,7 +114,7 @@ def _call_llm(messages, timeout=None, max_tokens=900):
     payload = {
         "model": config.DEEPSEEK_MODEL,
         "messages": messages,
-        "tools": tools.openai_tools(),
+        "tools": toolbus.openai_tools(),
         "tool_choice": "auto",
         "temperature": 0.2,
         "max_tokens": max_tokens,
@@ -669,6 +688,9 @@ def _tool_steps_payload(tool_results):
             "elapsed_ms": r.get("elapsed_ms", 0),
             "summary": r.get("summary"),
             "empty": r.get("empty", False),
+            # 这次调用走的是哪条工具通道（local / mcp）。写进步骤而不是只写在日志里，
+            # 是因为"支持 MCP"这件事必须在界面上能被看见，否则没人会去翻环境变量。
+            "channel": r.get("channel"),
             "reason": r.get("reason") if not r.get("ok") else None,
         })
     return steps
@@ -806,7 +828,7 @@ def chat(question, dataset_id=None, history=None, emit=None, client_key=None):
                     notice = "本轮分析超过时间上限，已返回已完成部分的结果。"
                     break
                 _emit(emit, "stage", stage="think", label="模型正在判断需要哪几步",
-                      detail=f"可选工具 {len(tools.TOOL_SPECS)} 个 · 已执行 {len(tool_results)} 步")
+                      detail=f"可选工具 {_tool_count()} 个 · 已执行 {len(tool_results)} 步")
                 msg = _call_llm(messages, max_tokens=300)
                 engine = ENGINE_AI
                 calls = msg.get("tool_calls") or []
@@ -833,7 +855,7 @@ def chat(question, dataset_id=None, history=None, emit=None, client_key=None):
                         _emit(emit, "tool_start", tool=name,
                               label=_STEP_LABELS.get(name, name),
                               args=_safe_args(raw_args))
-                        result = tools.execute(name, raw_args, {"dataset_id": dataset_id})
+                        result = toolbus.execute(name, raw_args, {"dataset_id": dataset_id})
                         _seen_calls[key] = result
                         tool_results.append(result)
                         _emit(emit, "tool_done", tool=name,
@@ -867,7 +889,7 @@ def chat(question, dataset_id=None, history=None, emit=None, client_key=None):
         for step in plan:
             _emit(emit, "tool_start", tool=step["name"],
                   label=_STEP_LABELS.get(step["name"], step["name"]), args=_safe_args(step["args"]))
-            result = tools.execute(step["name"], step["args"], {"dataset_id": dataset_id})
+            result = toolbus.execute(step["name"], step["args"], {"dataset_id": dataset_id})
             tool_results.append(result)
             _emit(emit, "tool_done", tool=step["name"],
                   label=_STEP_LABELS.get(step["name"], step["name"]),
