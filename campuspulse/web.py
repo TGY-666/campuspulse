@@ -20,7 +20,7 @@ from flask import (Flask, Response, g, jsonify, redirect, render_template, reque
 from flask_cors import CORS
 
 from . import (agent, analytics, config, db, etl, guard, migrations, rag, reports,
-               taxonomy, tenancy, tickets, tools, warmup)
+               taxonomy, tenancy, tickets, toolbus, tools, vision, warmup)
 
 logger = logging.getLogger("campuspulse")
 
@@ -139,6 +139,16 @@ def create_app():
         resp = send_from_directory(os.path.join(base, "static"), filename,
                                    max_age=app.config["SEND_FILE_MAX_AGE_DEFAULT"],
                                    conditional=True)
+        # 带版本指纹（?v=文件 mtime）的请求，等价于"这个 URL 的内容永不改变"，
+        # 可以吃满一年的强缓存 + immutable，浏览器连 304 都不用问。
+        # 不带指纹的（外部直链、手工调试）仍只缓存 1 小时——
+        # 不然改完 CSS 看不到变化，会让人怀疑是代码没生效。
+        if request.args.get("v"):
+            resp.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+        else:
+            resp.headers["Cache-Control"] = \
+                f"public, max-age={app.config['SEND_FILE_MAX_AGE_DEFAULT']}"
+        resp.headers.pop("Expires", None)
         if resp.is_streamed:
             try:
                 resp.set_data(b"".join(resp.response))
@@ -417,6 +427,11 @@ def create_app():
                 "enabled": bool(config.CP_CITATION_GUARD),
                 "mode": "enforce" if config.CP_CITATION_GUARD else "record_only",
             },
+            # 工具通道：local / mcp。mcp 模式下把失败与降级次数也报出来——
+            # "支持 MCP"和"这一轮实际走的是 MCP"是两件事，health 里必须能分辨。
+            "tool_channel": toolbus.stats(),
+            "vision": {"enabled": bool(config.CP_VISION),
+                       "engine": vision.engine_status().get("active")},
         })
 
     # ---------------- 元数据 ----------------
@@ -589,6 +604,157 @@ def create_app():
     def restore_demo():
         imported = etl.bootstrap_presets(force=True)
         return _ok({"restored": imported, "datasets": len(db.list_datasets())})
+
+    # ---------------- 截图评论导入（多模态 · P1-1）----------------
+    # 两步走：先识别成草稿，人工复核后再入库。
+    # 为什么不合并成一个接口：OCR 一定会认错字，让识别结果直接进分析，
+    # 等于把"AI 说的话可被证伪"这个卖点亲手拆掉。复核这一步是功能的一部分，
+    # 不是交互上的客套。
+    @app.route("/api/vision/status")
+    def vision_status():
+        st = vision.engine_status()
+        st["max_files"] = config.VISION_MAX_FILES
+        st["max_bytes"] = config.VISION_MAX_BYTES
+        st["min_score"] = config.VISION_MIN_SCORE
+        st["definition"] = config.DEFINITIONS["screenshot"]
+        return _ok(st)
+
+    @app.route("/api/vision/recognize", methods=["POST"])
+    def vision_recognize():
+        if not config.CP_VISION:
+            return _err("截图识别未启用（CP_VISION=0）", 400, error_code="vision_disabled")
+        files = request.files.getlist("files") or request.files.getlist("file")
+        files = [f for f in files if f and f.filename]
+        if not files:
+            return _err("未接收到图片，请选择抖音/小红书的评论截图", 400)
+        if len(files) > config.VISION_MAX_FILES:
+            return _err(f"一次最多识别 {config.VISION_MAX_FILES} 张截图", 400)
+
+        accepted, rejected = [], []
+        for f in files:
+            name = os.path.basename(f.filename)
+            if not name.lower().endswith(vision.ALLOWED_IMAGE_EXT):
+                rejected.append({"file": name, "reason": "只支持 PNG/JPG/WEBP/BMP"})
+                continue
+            blob = f.read()
+            if not blob:
+                rejected.append({"file": name, "reason": "文件为空"})
+                continue
+            if len(blob) > config.VISION_MAX_BYTES:
+                rejected.append({"file": name,
+                                 "reason": f"超过 {config.VISION_MAX_BYTES // 1024 // 1024}MB 限制"})
+                continue
+            accepted.append((name, blob))
+
+        if not accepted:
+            return _err("没有可识别的图片", 400, detail=rejected, error_code="invalid_file")
+
+        try:
+            payload = vision.recognize(accepted)
+        except vision.VisionError as e:
+            return _err(e.reason, 400, detail=e.detail, error_code="vision_unavailable")
+        except Exception as e:
+            logger.exception("截图识别失败")
+            return _err(f"截图识别失败：{e}", 500, error_code="vision_failed")
+
+        payload["rejected"] = rejected
+        payload["session_id"] = vision.save_draft(payload)
+        return _ok(payload)
+
+    @app.route("/api/vision/commit", methods=["POST"])
+    def vision_commit():
+        """把复核后的草稿写入数据集。
+
+        只接受 content / create_time / platform 三个可编辑字段——
+        置信度、引擎、是否推断时间一律以草稿为准。让前端能改置信度，
+        这个字段就再也证明不了任何事情了。
+        """
+        if not config.CP_VISION:
+            return _err("截图识别未启用（CP_VISION=0）", 400, error_code="vision_disabled")
+        body = request.get_json(silent=True) or {}
+        try:
+            draft = vision.load_draft(body.get("session_id"))
+        except vision.VisionError as e:
+            return _err(e.reason, 410, detail=e.detail, error_code="draft_expired")
+
+        by_rid, by_text = {}, {}
+        for r in draft.get("rows") or []:
+            if r.get("rid"):
+                by_rid[r["rid"]] = r
+            by_text[(r.get("file"), str(r.get("content") or "").strip())] = r
+
+        submitted = body.get("rows")
+        if not isinstance(submitted, list) or not submitted:
+            return _err("没有可导入的记录：请至少保留一条复核通过的评论", 400)
+
+        rows, dropped = [], []
+        for item in submitted[:config.VISION_MAX_ROWS * config.VISION_MAX_FILES]:
+            if not isinstance(item, dict):
+                continue
+            content = str(item.get("content") or "").strip()
+            if len(content) < vision.MIN_TEXT_LEN:
+                dropped.append({"content": content, "reason": "内容过短，已跳过"})
+                continue
+            origin = (by_rid.get(item.get("rid"))
+                      or by_text.get((item.get("file"), content)) or {})
+            rows.append({
+                "content": content[:vision.MAX_TEXT_LEN],
+                "create_time": str(item.get("create_time") or origin.get("create_time") or ""),
+                "platform": item.get("platform") or origin.get("platform") or "未知",
+                "confidence": origin.get("confidence"),
+                "engine": origin.get("engine"),
+                "time_inferred": origin.get("time_inferred"),
+                "file": item.get("file") or origin.get("file") or "",
+            })
+
+        if not rows:
+            return _err("没有可导入的记录：全部内容不足 5 个字", 400, detail=dropped)
+
+        stamp = time.strftime("%Y%m%d_%H%M%S")
+        dataset_id = f"ds_shot_{stamp}_{uuid.uuid4().hex[:4]}"
+        target = os.path.join(config.UPLOAD_DIR, dataset_id)
+        os.makedirs(target, exist_ok=True)
+
+        def _drop():
+            shutil.rmtree(target, ignore_errors=True)
+
+        source_rows = vision.to_source_rows(rows)
+        path = os.path.join(target, "screenshots.json")
+        try:
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(source_rows, f, ensure_ascii=False, indent=2)
+            platforms = {r["platform"] for r in source_rows}
+            meta, quality = etl.build_dataset(
+                dataset_id, f"截图导入 · {time.strftime('%m-%d %H:%M')}", [path],
+                source_label="抖音 / 小红书评论截图（OCR 识别 + 人工复核）",
+                note=(f"共 {len(source_rows)} 条由截图识别并经人工复核的评论，"
+                      f"识别引擎：{vision._engine_label(draft.get('engine'))}；"
+                      f"平台：{'、'.join(sorted(platforms))}。"
+                      "截图未包含发布时间的记录按导入日期计入，需结合原始截图核对。"),
+                is_demo=False,
+            )
+        except Exception as e:
+            logger.exception("截图导入写库失败")
+            _drop()
+            return _err(f"截图导入失败：{e}", 500, error_code="etl_failed")
+
+        if not meta["valid_count"]:
+            db.delete_dataset(dataset_id)
+            _drop()
+            return _err("识别出的内容清洗后没有有效评论：多为界面噪声或未命中校园维度。",
+                        400, detail=quality.get("stages"), error_code="empty_dataset")
+
+        vision.drop_draft(body.get("session_id"))
+        return _ok({
+            "dataset_id": dataset_id, "name": meta["name"],
+            "raw_count": meta["raw_count"], "valid_count": meta["valid_count"],
+            "effective_rate": quality["effective_rate"],
+            "time_span": [meta["time_start"], meta["time_end"]],
+            "platforms": meta["platforms"], "quality": quality,
+            "submitted": len(rows), "dropped": dropped,
+            "screenshot_count": quality.get("screenshot_count", 0),
+            "time_inferred": quality.get("time_inferred", 0),
+        })
 
     # ---------------- 驾驶舱 ----------------
     @app.route("/api/dashboard/summary")

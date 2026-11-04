@@ -92,6 +92,27 @@ CP_TICKETS = (os.environ.get("CP_TICKETS", "1" if CP_AUTH else "0").strip() == "
 # 出问题时置 0 即可回到 v1.0 路径（只记录、不拦截、不重答）。
 CP_CITATION_GUARD = (os.environ.get("CP_CITATION_GUARD", "1").strip() == "1")
 
+# ---------- P1 能力开关 ----------
+# 截图评论导入（多模态）。默认**开启**：入口只出现在数据页，没有 OCR 环境时
+# 接口会明确报错并给出安装指引，而不是静默降级成"上传成功但没有数据"。
+CP_VISION = (os.environ.get("CP_VISION", "1").strip() == "1")
+VISION_MAX_FILES = 6                       # 一次最多 6 张截图（一张约 1 秒，再多用户等不住）
+VISION_MAX_BYTES = 8 * 1024 * 1024         # 单张 8MB；手机截图通常 0.3–2MB
+VISION_MAX_ROWS = 80                       # 单张图最多解析 80 条，防止一张长图刷爆复核表
+VISION_MIN_SCORE = float(os.environ.get("VISION_MIN_SCORE", "0.55") or 0.55)
+# 视觉模型兜底（OpenAI 兼容接口）。不配置也能用：本地 OCR 才是首选路径，
+# 只有在没装 onnxruntime 的机器上才需要它。
+VISION_API_KEY = os.environ.get("VISION_API_KEY", "").strip()
+VISION_BASE_URL = os.environ.get(
+    "VISION_BASE_URL", "https://dashscope.aliyuncs.com/compatible-mode/v1").rstrip("/")
+VISION_MODEL = os.environ.get("VISION_MODEL", "qwen-vl-plus")
+VISION_TIMEOUT = int(os.environ.get("VISION_TIMEOUT", "60"))
+
+# Agent 工具通道：local = 进程内直调；mcp = 走 MCP stdio 客户端。
+# 两条通道调用的是**同一份 TOOL_SPECS 与同一个 execute()**，切换只影响传输层，
+# 参数校验、白名单、脱敏、口径披露完全一致——这正是"工具层与界面解耦"的证据。
+TOOL_CHANNEL = (os.environ.get("CP_TOOL_CHANNEL", "local").strip() or "local").lower()
+
 # 租户隔离的"闸门"与"体检"分开：
 #   CP_TENANT_ENFORCE=1 -> 漏写 tenant_id 直接抛异常
 #   CP_TENANT_ENFORCE=0 -> 只累计计数，不阻断
@@ -216,4 +237,6 @@ DEFINITIONS = {
     "dimension": "维度为多标签计数：一条评论可同时命中多个维度，因此七维度合计大于评论总数，属正常现象。",
     "time": "时间口径按评论发布时间筛选，不使用数据导入时间。",
     "snapshot": "本系统展示的是历史采集快照，不是全网实时监测；数据更新以页面标注的分析时间为准。",
+    "screenshot": "截图识别：由 OCR 从上传截图提取的评论文本，置信度由逐字识别分数得出；"
+                  "识别结果须人工复核后才计入分析，未包含发布时间的记录按导入日期计入并单独标注。",
 }

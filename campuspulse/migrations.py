@@ -41,6 +41,16 @@ BACKUP_DIR = os.path.join(config.DATA_DIR, "backups")
 # 需要租户隔离的业务表（v1.0 已有的 + M3 会新增的）
 TENANT_TABLES = ["datasets", "comments", "reports", "agent_runs", "guard_events"]
 
+# 只增列、不删列。全新库由 db.SCHEMA 直接建好，老库靠这里补。
+# 每一列都必须自带默认值或允许 NULL：SQLite 的 ADD COLUMN 在已有 1800 行数据的表上
+# 不接受"NOT NULL 但没有默认值"，直接报错。
+NEW_COLUMNS = [
+    ("comments", "source_type", "TEXT DEFAULT 'crawler'"),
+    ("comments", "ocr_confidence", "REAL"),
+    ("comments", "ocr_engine", "TEXT"),
+    ("comments", "time_inferred", "INTEGER NOT NULL DEFAULT 0"),
+]
+
 NEW_TABLES = {
     "tenants": """
         CREATE TABLE IF NOT EXISTS tenants (
@@ -226,6 +236,14 @@ def plan(conn):
         if "tenant_id" not in _columns(conn, t):
             acts.append(("column", f"{t} 增加 tenant_id",
                          f"ALTER TABLE {t} ADD COLUMN tenant_id TEXT NOT NULL DEFAULT '{config.DEFAULT_TENANT_ID}'"))
+
+    # P1 新增列：评论来源（爬虫 / 截图）与 OCR 元数据。
+    # 老库升级必须走这里，否则 ETL 写库时会报 "no such column: source_type"。
+    for tbl, col, ddl in NEW_COLUMNS:
+        if tbl not in tables:
+            continue
+        if col not in _columns(conn, tbl):
+            acts.append(("column", f"{tbl} 增加 {col}", f"ALTER TABLE {tbl} ADD COLUMN {col} {ddl}"))
 
     for name, tbl, cols in TENANT_INDEXES:
         if tbl not in tables and f"{tbl}" not in NEW_TABLES:

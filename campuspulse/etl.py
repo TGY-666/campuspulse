@@ -137,6 +137,8 @@ def normalize_records(dataset_id, file_paths):
         "valid_count": 0,
         "missing_like": 0,
         "effective_rate": 0.0,
+        "screenshot_count": 0,          # 本批次里来自截图识别的记录数
+        "time_inferred": 0,             # 其中"截图没写发布时间、按导入日期计入"的条数
         "platform_raw": {},
         "platform_valid": {},
         "stages": [],
@@ -164,13 +166,16 @@ def normalize_records(dataset_id, file_paths):
                 continue
             source_id = str(row.get("comment_id") or row.get("id") or f"{filename}#{idx}")
             raw_content = str(row.get("content") or row.get("text") or "").strip()
+            # 来源标记：截图导入的记录由 vision.to_source_rows 带 _ 前缀字段进来，
+            # 爬虫导出的 JSON 没有这些字段，落库为 crawler / NULL，两条路互不影响。
+            source_type = str(row.get("_source_type") or "crawler")
             base = {
                 "comment_ref": make_comment_ref(dataset_id, platform, source_id),
                 "dataset_id": dataset_id,
                 "platform": platform,
                 "content": raw_content,
                 "content_masked": mask_text(raw_content),
-                "source_file": filename,
+                "source_file": row.get("_source_file") or filename,
                 "source_record": f"{filename}#{idx}",
                 "like_count": parse_like(row.get("like_count")),
                 "comment_time": None,
@@ -186,7 +191,15 @@ def normalize_records(dataset_id, file_paths):
                 "content_len": len(raw_content),
                 "cleaning_status": "kept",
                 "filter_reason": "",
+                "source_type": source_type,
+                "ocr_confidence": row.get("_ocr_confidence"),
+                "ocr_engine": row.get("_ocr_engine") or None,
+                "time_inferred": 1 if row.get("_time_inferred") else 0,
             }
+            if source_type == "screenshot":
+                quality["screenshot_count"] += 1
+                if base["time_inferred"]:
+                    quality["time_inferred"] += 1
 
             # 1) 去重
             key = source_id if row.get("comment_id") else raw_content
@@ -268,6 +281,13 @@ def normalize_records(dataset_id, file_paths):
         {"stage": "校园主题匹配", "note": "需命中宿舍/食堂/招生/教学/环境/交通/活动之一",
          "count": -quality["irrelevant"]},
     ]
+    # 只有真的混入截图记录时才多一行；纯爬虫批次保持原来的五段，口径不变
+    if quality["screenshot_count"]:
+        quality["stages"].append({
+            "stage": "来源标记",
+            "note": f"截图识别 {quality['screenshot_count']} 条（无发布时间按导入日期计入 "
+                    f"{quality['time_inferred']} 条）",
+            "count": quality["screenshot_count"]})
     return records, quality
 
 

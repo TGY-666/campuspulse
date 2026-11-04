@@ -89,6 +89,9 @@
                         <span class="badge badge-${it.sentiment === 'positive' ? 'pos' : it.sentiment === 'negative' ? 'neg' : 'neu'}">${esc(it.sentiment_label)}</span>
                         <span>${esc(it.platform)}</span><span>${esc(it.date)}</span>
                         ${it.dimension ? `<span>${esc(it.dimension)}</span>` : ''}
+                        ${it.source_type === 'screenshot'
+                            ? `<span class="badge badge-brand" title="由截图 OCR 识别并经人工复核">截图识别${it.ocr_confidence != null ? ' · ' + Math.round(it.ocr_confidence * 100) + '%' : ''}</span>`
+                            : ''}
                         ${it.like_count != null ? `<span>${num(it.like_count)} 赞</span>` : '<span>点赞未提供</span>'}
                         <span class="ev-ref" style="margin-left:auto;">${esc(it.comment_ref)}</span>
                     </div>
@@ -170,6 +173,13 @@
                 <dt>情感标签</dt><dd>${esc(d.sentiment_label)}</dd>
                 <dt>业务维度</dt><dd>${esc((d.dimensions || []).join(' / ') || d.dimension || '—')}</dd>
                 <dt>点赞数</dt><dd>${d.like_count == null ? '未提供（不按 0 处理）' : num(d.like_count)}</dd>
+                <dt>数据来源</dt><dd>${esc(d.source_label || '爬虫导出')}${
+                    d.source_type === 'screenshot'
+                        ? `　<span class="badge badge-brand">OCR 置信度 ${
+                            d.ocr_confidence != null ? Math.round(d.ocr_confidence * 100) + '%' : '未提供'}</span>`
+                          + (d.ocr_engine ? `　<span style="font-size:11px;color:var(--ink-4);">引擎 ${esc(d.ocr_engine)}</span>` : '')
+                        : ''}</dd>
+                ${d.time_inferred ? '<dt>时间口径</dt><dd>截图内未包含发布时间，按导入日期计入（需结合原图核对）</dd>' : ''}
                 ${d.negative_reason ? `<dt>负面原因</dt><dd>${esc(d.negative_reason)}</dd>` : ''}
             </dl>
             <div class="note note-muted" style="margin-top:12px;">${esc(d.privacy_note || '')}</div>
@@ -181,8 +191,9 @@
         document.body.appendChild(mask);
         const close = () => mask.remove();
         mask.addEventListener('click', async e => {
-            if (e.target.closest('[data-ticket]')) {
-                const btn = e.target.closest('[data-ticket]');
+            const target = /** @type {Element} */ (e.target);
+            if (target.closest('[data-ticket]')) {
+                const btn = /** @type {HTMLButtonElement} */ (target.closest('[data-ticket]'));
                 btn.disabled = true;
                 btn.textContent = '建单中…';
                 try {
@@ -207,7 +218,7 @@
                 }
                 return;
             }
-            if (e.target === mask || e.target.closest('[data-close]')) close();
+            if (target === mask || target.closest('[data-close]')) close();
         });
         document.addEventListener('keydown', function onEsc(ev) {
             if (ev.key === 'Escape') { close(); document.removeEventListener('keydown', onEsc); }

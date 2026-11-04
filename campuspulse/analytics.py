@@ -562,7 +562,8 @@ def search_comments(f, limit=config.DEFAULT_COMMENT_LIMIT, offset=0,
     total = db.scalar(f"SELECT COUNT(*) FROM comments c WHERE {where}", params) or 0
     rows = db.query_all(
         f"""SELECT c.comment_ref, c.platform, c.comment_date, c.sentiment,
-                   c.dimension, c.dimensions, c.like_count, c.content_masked, c.negative_reason
+                   c.dimension, c.dimensions, c.like_count, c.content_masked, c.negative_reason,
+                   c.source_type, c.ocr_confidence, c.time_inferred
             FROM comments c WHERE {where} ORDER BY {order_sql} LIMIT ? OFFSET ?""",
         params + [limit, offset],
     )
@@ -583,6 +584,9 @@ def search_comments(f, limit=config.DEFAULT_COMMENT_LIMIT, offset=0,
             "snippet": snippet,
             "matched_keyword": kw,
             "negative_reason": r["negative_reason"] or "",
+            "source_type": r["source_type"] or "crawler",
+            "ocr_confidence": r["ocr_confidence"],
+            "time_inferred": bool(r["time_inferred"]),
         })
 
     span = _time_span(f)
@@ -602,7 +606,8 @@ def get_comment(dataset_id, comment_ref):
     row = db.query_one(
         """SELECT comment_ref, dataset_id, platform, comment_date, comment_time, sentiment,
                   dimension, dimensions, negative_reason, positive_point, like_count,
-                  content_masked, content_len, source_file
+                  content_masked, content_len, source_file,
+                  source_type, ocr_confidence, ocr_engine, time_inferred
            FROM comments
            WHERE tenant_id = ? AND dataset_id = ? AND comment_ref = ? AND cleaning_status='kept'""",
         (db.tid(), dataset_id, comment_ref),
@@ -611,6 +616,9 @@ def get_comment(dataset_id, comment_ref):
         return None
     row["dimensions"] = json.loads(row["dimensions"] or "[]")
     row["sentiment_label"] = config.SENTIMENT_LABELS.get(row["sentiment"], "未知")
+    row["source_type"] = row["source_type"] or "crawler"
+    row["source_label"] = "截图识别" if row["source_type"] == "screenshot" else "爬虫导出"
+    row["time_inferred"] = bool(row["time_inferred"])
     row["privacy_note"] = ("证据仅保留脱敏后的评论文本与内部引用 ID，"
                            "不展示用户昵称、主页、IP 属地等可识别信息。")
     row.pop("source_file", None)

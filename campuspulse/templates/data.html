@@ -30,6 +30,27 @@
     </div>
 </div>
 
+<div class="card" style="margin-top:14px;" id="visionCard">
+    <div class="card-head">
+        <div><div class="card-title">截图评论导入 <span class="badge badge-brand" style="margin-left:4px;">多模态 · OCR</span></div>
+            <div class="card-sub">抖音 / 小红书评论截图 → 本地 OCR 识别 → 人工复核 → 走同一条清洗管线入库</div></div>
+        <div class="card-tools"><span class="badge" id="visionEngine">检测中</span></div>
+    </div>
+
+    <div id="visionIntro" class="note note-muted" style="margin-bottom:10px;">
+        为什么要有这个入口：招生办收到的家长截图、群里转发的吐槽图，爬虫抓不到，但真实舆情里最常见。
+        图片只在本机做识别（不上传第三方），识别结果**必须先复核**才会计入分析。
+    </div>
+
+    <div id="visionDrop" style="border:1.5px dashed #D8E4FF;border-radius:12px;padding:20px 14px;text-align:center;background:#FBFDFF;cursor:pointer;transition:.15s;">
+        <div style="font-size:13px;color:#334155;font-weight:600;">点击选择或拖拽评论截图到此处</div>
+        <div style="font-size:11.5px;color:#94A3B8;margin-top:4px;">支持 PNG / JPG / WEBP，单张 ≤ 8MB、一次最多 6 张</div>
+        <input type="file" id="visionInput" accept="image/png,image/jpeg,image/webp,image/bmp" multiple style="display:none;">
+    </div>
+    <div id="visionStatus" style="margin-top:10px;"></div>
+    <div id="visionReview" style="margin-top:12px;"></div>
+</div>
+
 <div class="card" style="margin-top:14px;">
     <div class="card-head">
         <div><div class="card-title">数据质量与清洗链路</div>

@@ -169,7 +169,14 @@ CREATE TABLE IF NOT EXISTS comments (
     filter_reason   TEXT,
     content_len     INTEGER,
     source_file     TEXT,
-    source_record   TEXT
+    source_record   TEXT,
+    -- 来源标记（P1 多模态）：爬虫导出为 crawler，截图识别为 screenshot。
+    -- 单独存列而不是塞进 source_file 字符串，是为了让"只看截图来源"这种筛选
+    -- 不必做 LIKE '%截图%' —— 那既慢，又会在文件名恰好含"截图"时误判。
+    source_type     TEXT DEFAULT 'crawler',
+    ocr_confidence  REAL,
+    ocr_engine      TEXT,
+    time_inferred   INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE INDEX IF NOT EXISTS idx_comments_ds_status
@@ -403,7 +410,8 @@ def insert_comments(rows, tenant=None):
             "comment_time", "comment_date", "comment_month", "comment_hour",
             "comment_weekday", "like_count", "dimension", "dimensions", "sentiment",
             "negative_reason", "positive_point", "cleaning_status", "filter_reason",
-            "content_len", "source_file", "source_record"]
+            "content_len", "source_file", "source_record",
+            "source_type", "ocr_confidence", "ocr_engine", "time_inferred"]
     sql = (f"INSERT OR REPLACE INTO comments ({','.join(cols)}, tenant_id) "
            f"VALUES ({','.join('?' * len(cols))}, ?)")
     conn = get_conn()
