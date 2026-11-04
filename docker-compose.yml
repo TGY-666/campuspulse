@@ -1,0 +1,29 @@
+services:
+  campuspulse:
+    build:
+      context: .
+      args:
+        # 想启用截图 OCR + MCP 通道就改成 "1"（镜像会大到 1.2GB）
+        WITH_EXT: "1"
+    image: campuspulse:1.0
+    container_name: campuspulse
+    ports:
+      - "8000:8000"
+    environment:
+      # 开了登录才有四角色权限矩阵可演示，评审账号见 docs/部署指南.md
+      CP_AUTH: "1"
+      # 工单跟随 CP_AUTH 自动开启，这里显式写出来便于阅读
+      CP_TICKETS: "1"
+      CP_HOST: "0.0.0.0"
+      # 关闭启动预热可以更快就绪；开着则首次提问不用等冷启动
+      CP_WARMUP: "1"
+    volumes:
+      # 必须挂出来：库、上传的截图、日志、会话密钥都在这
+      - ./data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8000/api/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 90s
+      retries: 3

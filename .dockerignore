@@ -1,0 +1,39 @@
+# 构建上下文裁剪。
+#
+# 不写这个文件，`docker build .` 会把 .venv（约 400MB）、
+# node_modules（约 60MB）、data/ 里的 SQLite 和上传截图、
+# screenshots/ 的 81 张 PNG 一起塞进镜像——构建慢十倍，
+# 而且会把本地数据库打进公开镜像（里面有账号哈希）。
+
+# ---- 虚拟环境与依赖缓存 ----
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+node_modules/
+.npm-cache/
+
+# ---- 运行时数据：绝不能进镜像 ----
+# data/ 由 config.py 启动时自动创建，内容随卷挂载
+data/
+raw_data/
+output/
+output_excel/
+cleaned_data/
+*.log
+flask.log
+
+# ---- 素材与文档产物 ----
+screenshots/
+docs/*.pdf
+
+# ---- 本地工具与版本控制 ----
+.git/
+.gitignore
+.workbuddy/
+.idea/
+.vscode/
+*.bat
+
+# ---- 类型检查缓存 ----
+tsconfig.tsbuildinfo

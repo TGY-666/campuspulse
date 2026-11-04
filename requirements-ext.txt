@@ -1,0 +1,25 @@
+# CampusPulse 可选扩展依赖（P1 加分项）
+#
+# 安装：pip install -r requirements-ext.txt
+#
+# 分开放的原因：这两组依赖体积都不小（onnxruntime 约 200MB），
+# 但都不是"能不能启动"的前提。核心功能全都不依赖它们，
+# 装了才有对应能力，没装对应功能会自己降级并在界面上说明——
+# 而不是假装成功（例如截图导入会说"未检测到 OCR 引擎"，
+# 工具通道会在步骤里标 local 而不是静默切换）。
+
+# ---- 多模态：截图评论导入（本地离线 OCR）----
+# 选 rapidocr_onnxruntime 而不是 PaddleOCR：纯 onnxruntime 推理，
+# 不需要 paddle 全套框架，Windows/Linux 都能直接 pip 装，
+# 首次运行自动下载约 15MB 的检测+识别模型，之后完全离线。
+rapidocr_onnxruntime>=1.3
+
+# 图片解码（PIL 会在 rapidocr 里被带入，这里显式声明，
+# 因为 vision.py 直接用它做尺寸校验与 EXIF 方向纠正）
+pillow>=9.0
+
+# ---- MCP 协议通道 ----
+# 仅 toolbus 走 mcp 通道时需要；本地通道不需要。
+# 版本上限锁 <2 是因为 v2 的 API 有不兼容改动，而本项目只用
+# stdio 客户端的 initialize / tools/list / tools/call 三件事。
+mcp>=1.9,<2
