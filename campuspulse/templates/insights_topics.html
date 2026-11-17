@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}主题热度分析{% endblock %}
+{% block page_title %}主题热度分析{% endblock %}
+{% block page_sub %}这页能回答：主题热度从哪来、被哪些话题撑起来、在哪个平台更热{% endblock %}
+
+{% block head_extra %}
+<style>
+    /* 宽屏让「AI 结论」与「图表」并排，窄屏回到单列；DOM 顺序不变。
+       右列必须和左列等高：AI 卡内容长，右列按内容高度收缩时，
+       下半屏会留出一块没有边框的白，看起来像图表没加载完。 */
+    @media (min-width: 1100px) {
+        .content { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 14px; align-items: stretch; }
+        .content > * { grid-column: 1 / -1; margin-top: 0 !important; margin-bottom: 0 !important; }
+        .content > .ai-lead { grid-column: 1; }
+        .content > .chart-lead { grid-column: 2; }
+        /* 右列两张图各占一半时只有约 240px，中文 x 轴标签会粘成一团；
+           纵向堆叠后宽度翻倍、高度补到与左列齐平（core.js 的 ResizeObserver 自动重绘）。 */
+        .content > .chart-lead.g-2 { grid-template-columns: minmax(0, 1fr); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="crumb" aria-label="当前位置">
+    <a href="/insights{{ nav_query }}">数据洞察中心</a><span aria-hidden="true"> / </span><span>主题热度分析</span>
+</nav>
+<div id="filterBar"></div>
+
+{# 这一页只回答一个问题：谁是第一，以及为什么。所以 AI 卡放在最前面给结论，
+   下面两张图负责让人能自己核对结论是怎么来的。 #}<div class="card ai-lead" style="margin-bottom:14px;">
+    <div class="card-head">
+        <div>
+            <h2 class="card-title">AI 热度分析</h2>
+        </div>
+        <div class="card-tools"><span class="badge badge-brand" id="piBadge">生成中</span></div>
+    </div>
+    <div class="ai-basis-slot" id="piBasis"></div>
+    <div id="pageInsight">
+        <div class="skeleton" style="height:64px"></div>
+    </div>
+    <div id="piNotice" class="note note-muted is-hidden" style="margin-top:10px;"></div>
+</div>
+
+<div class="grid g-2 chart-lead">
+    <div class="card">
+        <div class="card-head"><div><h2 class="card-title">八主题评论量排行</h2>
+            {# 这两句都不能藏：一句说"柱子能点"，一句解释"合计 2,502 为什么大于 1,969"。
+               藏起来的结果是柱子没人点、数字看着像算错。 #}
+            <div class="card-sub">点击柱条进入证据中心 · 一条评论可命中多个主题，故合计大于评论总数</div></div></div>
+        <div class="chart chart-lg" id="chartDims"></div>
+    </div>
+    <div class="card">
+        <div class="card-head"><div><h2 class="card-title">双平台主题对比</h2>
+            <div class="card-sub">同一主题下两个平台的评论量</div></div></div>
+        <div class="chart chart-lg" id="chartPlatDim"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block vendor %}
+<script src="{{ static_url('vendor/echarts.min.js') }}"></script>
+<script>
+    if (typeof window.echarts === 'undefined') {
+        document.currentScript.insertAdjacentHTML('afterend',
+            '<p class="note note-muted" style="margin:12px 0;padding:10px;"><span>图表组件未加载，请确认本地静态资源完整</span></p>');
+    }
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ static_url('cp/insights.js') }}"></script>
+{% endblock %}

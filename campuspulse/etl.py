@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """ETL：把爬虫导出的原始 JSON 清洗成统一评论表。
 
-复用原系统 data_processor.py 的清洗规则（维度关键词、情感词、无效评论判定、
+复用原系统 legacy/data_processor.py 的清洗规则（主题关键词、情感词、无效评论判定、
 时间解析、点赞数解析），保证与历史结果口径一致；在此基础上补齐本次参赛版要求的
 可追溯字段：comment_ref（脱敏引用）、cleaning_status（清洗结论）、source_record（内部溯源）。
 
@@ -16,7 +16,7 @@ from . import config, db, taxonomy
 from .taxonomy import DIMENSION_KEYWORDS, matched_dimensions, primary_dimension
 
 # ---- 复用原系统的清洗工具函数（时间解析 / 文本清洗 / 无效评论判定）----
-from data_processor import (  # noqa: E402
+from legacy.data_processor import (  # noqa: E402
     clean_text,
     is_valid_comment,
     timestamp_to_datetime,
@@ -29,7 +29,7 @@ POSITIVE_WORDS = ["好", "棒", "优秀", "舒服", "满意", "推荐", "不错"
                   "完美", "贴心", "赞", "强", "绝了"]
 NEGATIVE_WORDS = ["差", "坑", "避雷", "烂", "贵", "吐槽", "不好", "垃圾", "劝退", "难吃", "吵", "远",
                   "偏僻", "慢", "卡", "无语", "后悔", "不值", "敷衍", "烂透", "恶心", "坑爹", "骗人",
-                  "差劲", "难受", "麻烦", "严格"]
+                  "差劲", "难受", "麻烦", "严格", "崩溃", "踩雷"]
 
 # 脱敏：手机号、QQ/微信号、邮箱、链接、@用户、长串数字
 _MASK_PATTERNS = [
@@ -82,9 +82,44 @@ def parse_like(value):
         return None
 
 
+# 单字情感词（差/卡/慢/远/好）会被常用词误伤，而且误伤出来的结果最扎眼——
+# 「我分数都差不多」里的"差"、「每日打卡」里的"卡"、「好心累」里的"好"，
+# 都不是在评价。判定前先把这些**明确不带情绪**的词换成不含关键词的说法，
+# 词表本身不动，这样"太远""很差""卡顿"这类真抱怨照样能命中。
+_FALSE_HIT = [
+    ("差不多", "大致相同"), ("打卡", "签到"), ("慢慢", "渐渐"),
+    ("永远", "始终"), ("最远", "最里面"), ("好久", "很长时间"),
+    ("好像", "似乎"), ("好不容易", "费了很大劲"),
+    ("好多", "很多"), ("好几个", "几个"), ("好几年", "几年"),
+    ("好心累", "挺累"), ("好难", "很难"), ("好想", "一直想"),
+]
+
+
+def _is_asking(t):
+    """是不是在问，而不是在评价。
+
+    「大三可以去实习？」「学校可以报吗」里的"可以"是**询问许可**，不是夸它好；
+    「宿舍好不好啊」里的"好"同理。这类句子如果按词表硬算，会被判成正面，
+    然后出现在「正面评价样本」里，读起来完全对不上。
+    """
+    s = t.rstrip("！!～~ ")
+    return "？" in s or "?" in s or s.endswith(("吗", "呢"))
+
+
 def judge_sentiment(text):
-    pos = sum(1 for w in POSITIVE_WORDS if w in text)
-    neg = sum(1 for w in NEGATIVE_WORDS if w in text)
+    t = str(text or "")
+    for src, dst in _FALSE_HIT:
+        t = t.replace(src, dst)
+    ask = _is_asking(t)
+    pos = 0
+    for w in POSITIVE_WORDS:
+        if w not in t:
+            continue
+        # 疑问句里"可以"和单字"好"多半是询问，不计入正面
+        if ask and w in ("可以", "好"):
+            continue
+        pos += 1
+    neg = sum(1 for w in NEGATIVE_WORDS if w in t)
     if pos > neg:
         return "positive"
     if neg > pos:
@@ -122,8 +157,52 @@ def load_source_file(path):
         return _extract_rows(json.load(f))
 
 
-def normalize_records(dataset_id, file_paths):
+def _in_window(row, date_from=None, date_to=None):
+    """判断一条原始记录是否落在给定的评论日期窗口内。
+
+    时间解析不出来的记录**放行**：交给后面的「时间解析」一步去计数。
+    否则同一批文件，只因导入了哪段时间，无效时间的条数也会跟着变，
+    质量页的分母就对不上原始文件了。
+    """
+    if not date_from and not date_to:
+        return True
+    ts = row.get("create_time") or row.get("time") or row.get("publish_time")
+    dt = timestamp_to_datetime(ts)
+    if dt is None or str(dt) == "NaT":
+        return True
+    day = dt.strftime("%Y-%m-%d")
+    if date_from and day < date_from:
+        return False
+    if date_to and day > date_to:
+        return False
+    return True
+
+
+def normalize_records(dataset_id, file_paths, date_from=None, date_to=None):
     """把一个批次的原始文件清洗成评论记录（含被过滤记录，便于解释质量）。
+
+    文件只是「一组记录」的一种包装：实时采集拿到的也是一组记录。
+    所以真正的清洗在 normalize_groups 里，这里只负责读盘——
+    两条路各写一遍清洗规则的话，同一句话在导入页和采集页会得到两种结论。
+
+    date_from / date_to 限定**评论发生时间**（不是采集时间）。限定在读取之后、
+    去重之前生效：窗口外的记录根本不进入质量链路，原始条数也只统计窗口内的。
+    这样"原始 N 条 → 有效 M 条"的分母与数据集名字里的年份是同一件事。
+    """
+    groups = []
+    for path in file_paths:
+        filename = os.path.basename(path)
+        try:
+            rows = load_source_file(path)
+        except Exception as e:
+            groups.append((filename, None, None, e))
+            continue
+        groups.append((filename, _detect_platform(filename, rows[0] if rows else {}), rows, None))
+    return normalize_groups(dataset_id, groups, date_from=date_from, date_to=date_to)
+
+
+def normalize_groups(dataset_id, groups, date_from=None, date_to=None):
+    """groups: [(文件/来源名, 平台或 None, 原始行或 None, 读取异常或 None)]
 
     返回 (records, quality)。
     """
@@ -145,24 +224,40 @@ def normalize_records(dataset_id, file_paths):
     }
     records = []
     seen = set()
+    dropped_window = 0
 
-    for path in file_paths:
-        filename = os.path.basename(path)
-        try:
-            rows = load_source_file(path)
-        except Exception as e:
-            quality["stages"].append({"stage": "读取文件", "file": filename,
-                                      "note": f"读取失败：{e}", "count": 0})
+    for filename, platform, rows, read_err in groups:
+        if read_err is not None:
+            quality["stages"].append({"stage": "读取数据", "file": filename,
+                                      "note": f"读取失败：{read_err}", "count": 0})
             continue
-        platform = _detect_platform(filename, rows[0] if rows else {})
-        quality["platform_raw"][platform] = quality["platform_raw"].get(platform, 0) + len(rows)
-        quality["raw_count"] += len(rows)
-        quality["stages"].append({"stage": "读取文件", "file": filename,
-                                  "note": f"识别平台：{platform}", "count": len(rows)})
+        rows = rows or []
+        platform = platform or _detect_platform(filename, rows[0] if rows else {})
+        read_count = len(rows)
+        file_dropped = 0
+        if date_from or date_to:
+            in_window = [r for r in rows if not isinstance(r, dict)
+                         or _in_window(r, date_from, date_to)]
+            file_dropped = read_count - len(in_window)
+            dropped_window += file_dropped
+            rows = in_window
+        malformed = sum(1 for r in rows if not isinstance(r, dict))
+        row_count = len(rows) - malformed
+        quality["platform_raw"][platform] = quality["platform_raw"].get(platform, 0) + row_count
+        quality["raw_count"] += row_count
+        note = f"识别平台：{platform}"
+        if file_dropped:
+            note += f"；窗口内 {row_count} / 读取 {read_count}"
+        if malformed:
+            note += f"；跳过 {malformed} 条非对象记录"
+        # count 与 raw_count 必须是同一个口径（窗口内、可解析的对象行），
+        # 否则漏斗各段相加会和有效数对不上。非对象行保留在原位只跳过，
+        # 这样后面记录的 #idx 仍是文件里的真实下标（source_record 可回溯）。
+        quality["stages"].append({"stage": "读取数据", "file": filename,
+                                  "note": note, "count": row_count})
 
         for idx, row in enumerate(rows):
             if not isinstance(row, dict):
-                quality["raw_count"] -= 1
                 continue
             source_id = str(row.get("comment_id") or row.get("id") or f"{filename}#{idx}")
             raw_content = str(row.get("content") or row.get("text") or "").strip()
@@ -238,12 +333,12 @@ def normalize_records(dataset_id, file_paths):
                 records.append(base)
                 continue
 
-            # 5) 校园主题匹配（七大维度）
+            # 5) 校园主题匹配（按主题词典，八类）
             text = clean_text(raw_content)
             dims = matched_dimensions(text)
             if not dims:
                 quality["irrelevant"] += 1
-                base.update(cleaning_status="irrelevant", filter_reason="未命中任何校园业务维度")
+                base.update(cleaning_status="irrelevant", filter_reason="未命中任何校园业务主题")
                 records.append(base)
                 continue
 
@@ -265,6 +360,15 @@ def normalize_records(dataset_id, file_paths):
                 quality["missing_like"] += 1
             records.append(base)
 
+    # 时间窗口剔除的行单独记一档：不写这一行，读者会以为"文件里本来就只有这么多"。
+    # count 记 0：这些行从未进入 raw_count，若再记负数和漏斗会重复扣减。
+    if dropped_window:
+        quality["stages"].append({
+            "stage": "时间范围",
+            "note": (f"只保留评论时间在 {date_from or '最早'} ~ {date_to or '至今'} 的记录，"
+                     f"剔除 {dropped_window} 条更早/更晚的评论（不计入原始条数）"),
+            "count": 0})
+
     # 同一 comment_ref 可能因重复来自不同文件，主键冲突时保留首条
     dedup = {}
     for r in records:
@@ -278,7 +382,7 @@ def normalize_records(dataset_id, file_paths):
         {"stage": "空内容剔除", "note": "content 为空", "count": -quality["empty_content"]},
         {"stage": "时间解析", "note": "无法解析发布时间的记录剔除", "count": -quality["invalid_time"]},
         {"stage": "无效短评过滤", "note": "长度 < 5 或仅含符号表情", "count": -quality["too_short"]},
-        {"stage": "校园主题匹配", "note": "需命中宿舍/食堂/招生/教学/环境/交通/活动之一",
+        {"stage": "校园主题匹配", "note": "需命中宿舍/食堂/招生/教学/实习就业/环境/交通/活动之一",
          "count": -quality["irrelevant"]},
     ]
     # 只有真的混入截图记录时才多一行；纯爬虫批次保持原来的五段，口径不变
@@ -292,9 +396,31 @@ def normalize_records(dataset_id, file_paths):
 
 
 def build_dataset(dataset_id, name, file_paths, source_label="", note="",
-                  is_demo=True, data_version=None):
+                  is_demo=True, data_version=None, date_from=None, date_to=None):
     """重建一个数据集：先清空旧记录，再写入新清洗结果。"""
-    records, quality = normalize_records(dataset_id, file_paths)
+    records, quality = normalize_records(dataset_id, file_paths,
+                                        date_from=date_from, date_to=date_to)
+    return write_dataset(dataset_id, name, records, quality, source_label, note,
+                         is_demo, data_version)
+
+
+def build_dataset_from_records(dataset_id, name, records, quality, source_label="",
+                               note="", is_demo=False):
+    """把已经清洗好的记录直接落库（实时采集走的这条路）。
+
+    没有「文件」这一步，但清洗结果的结构与导入完全一致——
+    否则质量页的分子分母、证据页的可追溯字段都会有一种来源对不上。
+    """
+    return write_dataset(dataset_id, name, records, quality, source_label, note, is_demo, None)
+
+
+def write_dataset(dataset_id, name, records, quality, source_label="", note="",
+                  is_demo=True, data_version=None):
+    """落库并写数据集元信息（清空旧记录 → 插入 → 汇总口径）。
+
+    导入（文件）与采集（实时）共用这一步，保证两条路产出的数据集
+    在列表、质量页、证据页里长得一模一样。
+    """
     db.cleanup_dataset_rows(dataset_id)
     db.insert_comments(records)
 
@@ -358,6 +484,7 @@ def bootstrap_presets(force=False):
         meta, _ = build_dataset(
             preset["dataset_id"], preset["name"], paths,
             source_label=preset["source_label"], note=preset["note"], is_demo=True,
+            date_from=preset.get("date_from"), date_to=preset.get("date_to"),
         )
         ms = int((_t.time() - started) * 1000)
         print(f"  [{i}/{len(todo)}] 导入 {meta['name']}："

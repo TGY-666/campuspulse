@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% block chain %}{% endblock %}
+{% block title %}数据采集与导入{% endblock %}
+{% block page_title %}数据采集与导入{% endblock %}
+{% block page_sub %}三条来路：实时采集 / 公开平台导出文件 / 评论截图 · 清洗后由你确认才入库{% endblock %}
+
+{% block content %}
+<nav class="crumb" aria-label="当前位置">
+    <a href="/data{{ nav_query }}">数据中心</a><span aria-hidden="true"> / </span><span>采集与导入</span>
+</nav>
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+    <div class="seg" id="intakeSeg">
+        <button type="button" data-tab="live" class="on">实时采集</button>
+        <button type="button" data-tab="file">文件导入</button>
+        <button type="button" data-tab="vision">截图识别</button>
+    </div>
+</div>
+
+<!-- ==================== 实时采集 ==================== -->
+<div data-panel="live">
+    <div class="card" id="loginCard">
+        <div class="card-head">
+            <div><h2 class="card-title">平台登录态 <span class="badge badge-warn" style="margin-left:4px;">采集前置</span></h2>
+                <div class="card-sub">抖音 / 小红书对未登录访问只给页面、不给数据；没有登录态采集必然为空</div></div>
+            <div class="card-tools"><span class="badge" id="loginBadge">检测中</span></div>
+        </div>
+        <div id="loginBody"><div class="skeleton" style="height:80px"></div></div>
+        <details style="margin-top:10px;">
+            <summary style="font-size:var(--fs-xs);color:var(--ink-3);cursor:pointer;">怎么完成登录态（约 30 秒）</summary>
+            <div class="note note-muted" style="margin-top:8px;">
+                {# 文字必须包在 span 里：.note 是 flex 容器，裸文本会变成一个"匿名 flex 项"，
+                   手机窄屏下它会缩到最小内容宽（一个字一行），里面的 <code> 又顶出去被裁。
+                   有真实子元素当 flex 项才会按容器宽换行。 #}
+                <span>① 在「平台登录态」卡片点「打开登录窗口」（登录过则点「重新登录」）→ ② 在弹出的登录窗口里登录对应平台，登录态会自动保存 → ③ 窗口打不开时，展开卡片里的「手工粘贴 cookie」，把登录态粘进输入框后点「保存」。过期失效时再点一次「重新登录」即可。<br/>
+                <b>账号风险请自行评估：采集会以你的账号身份访问公开页面。</b></span>
+            </div>
+        </details>
+        <details style="margin-top:8px;">
+            <summary style="font-size:var(--fs-xs);color:var(--ink-3);cursor:pointer;">技术细节（管理员）</summary>
+            <div class="note note-muted" style="margin-top:8px;">
+                <span>登录态以 <code>sessionid</code> 等 Cookie 值保存在本机 <code>data/crawl_auth.json</code>（权限 0600），页面不回显具体值。</span>
+            </div>
+        </details>
+    </div>
+
+    <div class="card" style="margin-top:14px;">
+        <div class="card-head">
+            <div><h2 class="card-title">实时采集任务</h2>
+                <div class="card-sub">真浏览器进搜索页 → 详情页 → 拦评论接口取正文；采满目标条数自动结束，也可以随时点「停止」</div></div>
+            <div class="card-tools"><span class="badge" id="crawlEngineBadge">检测中</span></div>
+        </div>
+
+        <div id="crawlEnv"></div>
+
+        <div class="crawl-form">
+            <label>
+                <span class="form-cap">平台</span>
+                <span id="crawlPlatforms"></span>
+            </label>
+            <label>
+                <span class="form-cap">关键词</span>
+                <input class="input" id="crawlKeyword" maxlength="60"
+                       placeholder="例如：广东东软学院 宿舍 / 东软 食堂" autocomplete="off">
+            </label>
+            <label>
+                <span class="form-cap">目标条数</span>
+                <input class="input" id="crawlTarget" type="number" min="10" max="300" step="10" value="60">
+            </label>
+            <button class="btn btn-primary" id="btnCrawlStart">开始采集</button>
+            <button class="btn is-hidden" id="btnCrawlStop">停止</button>
+        </div>
+
+        <div class="crawl-form-time">
+            <label>
+                <span class="form-cap">时间范围</span>
+                <select class="select" id="crawlDateQuick" aria-label="采集时间范围">
+                    <option value="0" data-days="0">不限时间</option>
+                    <option value="7" data-days="7">近 7 天</option>
+                    <option value="30" data-days="30">近 30 天</option>
+                    <option value="365" data-days="365">近一年</option>
+                    <option value="custom" data-days="custom">自定义</option>
+                </select>
+            </label>
+            <div id="crawlDateCustom" hidden>
+                <span class="form-cap">自定义时间段：留空表示不限，按评论发布时间筛选（选「自定义」后出现）</span>
+                <span style="display:flex;align-items:center;gap:6px;">
+                    <label style="display:flex;align-items:center;gap:4px;"><span>开始日期</span>
+                        <input class="input" id="crawlDateFrom" type="date" style="width:150px;"></label>
+                    <span style="color:var(--ink-4);">至</span>
+                    <label style="display:flex;align-items:center;gap:4px;"><span>结束日期</span>
+                        <input class="input" id="crawlDateTo" type="date" style="width:150px;" aria-label="采集截止日期"></label>
+                </span>
+            </div>
+        </div>
+        <div class="note note-muted" style="margin-top:8px;">
+            <div style="line-height:1.8;">
+                平台搜索<b>不支持按时间检索</b>：这里做的是"按评论发布时间筛"——范围外的评论在入候选集前就被跳过，
+                所以候选集里不会有区间外的记录。评论按时间倒序返回，<b>越久远的时间段需要往下翻得越深</b>，
+                可能采不满目标条数；翻到的评论全都落在区间外时，系统会明确告诉你，而不是给一个空结果。
+            </div>
+        </div>
+
+        <div id="liveState" style="margin-top:12px;"></div>
+        <div id="crawlFeed" style="margin-top:12px;"></div>
+    </div>
+</div>
+
+<!-- ==================== 文件导入 ==================== -->
+<div data-panel="file" hidden>
+    <div class="card">
+        <div class="card-head">
+            <div><h2 class="card-title">导入评论数据</h2>
+                <div class="card-sub">支持抖音 / 小红书导出的 JSON，单文件 ≤ 20MB，一次最多 4 个</div></div>
+        </div>
+        <div id="dropZone" class="drop-zone" role="button" tabindex="0"
+             aria-label="选择 JSON 文件导入，也可以把文件拖到这里">
+            <div class="drop-zone-title">点击选择或拖拽 JSON 文件到此处</div>
+            <div class="drop-zone-sub">清洗后先给你看清洗漏斗与逐条结果，确认了才生成数据集</div>
+            <input type="file" id="fileInput" class="is-hidden" accept=".json" multiple aria-label="选择要导入的 JSON 评论文件">
+        </div>
+        <div id="importStatus" style="margin-top:10px;"></div>
+        <div id="importReview" style="margin-top:12px;" hidden></div>
+        <div class="note note-muted" style="margin-top:10px;">
+            <span>文件里的评论会走与实时采集完全相同的清洗：去重 → 空内容 → 时间解析 →
+            无效短评 → 校园主题匹配。被剔除的记录也留在数据集里并标注原因，可在
+            <a href="/data{{ nav_query }}">数据与报告中心</a> 的质量链路里看到每一步掉了多少。</span>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== 截图识别 ==================== -->
+<div data-panel="vision" hidden>
+    <div class="card" id="visionCard">
+        <div class="card-head">
+            <div><h2 class="card-title">截图评论导入 <span class="badge badge-brand" style="margin-left:4px;">多模态 · OCR</span></h2>
+                <div class="card-sub" data-hint>抖音 / 小红书评论截图 → 本地 OCR 识别 → 人工复核 → 走同一条清洗管线入库</div></div>
+            <div class="card-tools"><span class="badge" id="visionEngine">检测中</span></div>
+        </div>
+
+        <div id="visionDrop" class="drop-zone" role="button" tabindex="0"
+             aria-label="选择评论截图导入，也可以把图片拖到这里">
+            <div class="drop-zone-title">点击选择或拖拽评论截图到此处</div>
+            <div class="drop-zone-sub">支持 PNG / JPG / WEBP，单张 ≤ 8MB、一次最多 6 张</div>
+            <input type="file" id="visionInput" class="is-hidden" accept="image/png,image/jpeg,image/webp,image/bmp" multiple aria-label="选择要识别的评论截图">
+        </div>
+        <div id="visionStatus" style="margin-top:10px;"></div>
+        <div id="visionReview" style="margin-top:12px;"></div>
+        <div id="visionIntake" style="margin-top:12px;" hidden></div>
+    </div>
+</div>
+
+<!-- 登录弹窗：点「开始采集」时若平台未登录，先在这里等用户完成登录。
+     登录窗口本身是服务端开的有头浏览器——这里不收集账号密码，
+     只负责"告诉用户窗口在哪"和"登录完自动继续"。 -->
+<div class="modal-mask" id="crawlLoginModal" hidden>
+    <div class="modal login-modal" role="dialog" aria-modal="true" aria-labelledby="clmTitle">
+        <div class="modal-title" id="clmTitle">登录平台</div>
+        <p class="pwd-sub" id="clmSub">登录成功后会自动开始采集，不用再点一次。</p>
+        <div id="clmBody"></div>
+        <p class="pwd-err" id="clmErr" hidden></p>
+        <div class="pwd-acts">
+            <button type="button" class="btn" id="clmCancel">取消</button>
+            <button type="button" class="btn" id="clmFocus">把窗口拉到前面</button>
+            <button type="button" class="btn btn-primary" id="clmRetry" hidden>重新打开登录窗口</button>
+        </div>
+        <div style="margin-top:12px;border-top:1px dashed var(--line);padding-top:10px;">
+            <details>
+                <summary class="scope-line" style="cursor:pointer;">登录窗口无法打开时的备用方式</summary>
+                <div style="display:flex;gap:6px;margin-top:8px;">
+                    <input class="input" id="clmCookie" style="flex:1;min-width:0;font-size:var(--fs-xs);"
+                           placeholder="把复制到的登录态粘贴到这里" autocomplete="off" spellcheck="false"
+                           aria-label="粘贴登录态">
+                    <button class="btn btn-sm" id="clmCookieSave">保存并继续</button>
+                </div>
+            </details>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ static_url('cp/data_collect.js') }}"></script>
+{% endblock %}

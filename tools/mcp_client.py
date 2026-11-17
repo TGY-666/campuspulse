@@ -14,6 +14,7 @@
 """
 import argparse
 import json
+import re
 import os
 import subprocess
 import sys
@@ -163,10 +164,15 @@ def run(verbose=False):
             res = r.get("result") or {}
             assert res.get("isError") is False, f"调用返回错误：{res}"
             text = res["content"][0]["text"]
-            assert "1,803" in text or "1803" in text, f"结果里没有真实分母：{text[:200]}"
+            # 分母会随维度词典修订变化（1,803 → 1,775 → 1,969…），
+            # 所以只断言"带分母且量级合理"，不绑定某个具体数字——
+            # 写死数字的断言在每次改口径后都会假报警，逼人改测试而不是查问题。
+            mm = re.search(r"共\s*([\d,]+)\s*条有效评论", text)
+            assert mm and int(mm.group(1).replace(",", "")) >= 1000, \
+                f"结果里没有真实分母：{text[:200]}"
             assert "指标" in text, "结果结构不对（缺少指标段）"
             state["stats_text"] = text
-            return f"{len(text)} 字符，含真实分母 1,803"
+            return f"{len(text)} 字符，含真实分母"
 
         check("tools/call 统计工具返回真实数据", t_call_stats)
 

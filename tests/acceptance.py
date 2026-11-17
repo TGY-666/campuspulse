@@ -14,6 +14,12 @@ import re
 import sys
 import time
 
+try:
+    sys.stdout.reconfigure(errors="replace")
+    sys.stderr.reconfigure(errors="replace")
+except Exception:
+    pass
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from campuspulse import (agent, analytics, config, db, guard, reports, toolbus,  # noqa: E402
@@ -48,11 +54,16 @@ def group(title):
 
 # ============================ 页面 ============================
 PAGES = [
-    ("/", "智能驾驶舱"),
-    ("/agent", "AI 智能分析工作台"),
+    ("/", "舆情总览"),
+    ("/agent", "AI 舆情助手"),
     ("/insights", "数据洞察中心"),
+    ("/insights/topics", "主题热度分析"),
+    ("/insights/sentiment", "情感分析"),
+    ("/insights/timeline", "时间趋势分析"),
     ("/evidence", "热点与证据中心"),
     ("/data", "数据与报告中心"),
+    ("/data/collect", "数据采集与导入"),
+    ("/data/reports", "AI 分析报告"),
 ]
 
 
@@ -63,7 +74,7 @@ def t_pages():
         html = r.get_data(as_text=True)
         assert title in html, f"{path} 未包含标题「{title}」"
         assert "CampusPulse" in html, f"{path} 缺少品牌标识"
-    return "5 个页面均可打开且标题正确"
+    return f"{len(PAGES)} 个页面均可打开且标题正确"
 
 
 def t_nav():
@@ -112,7 +123,9 @@ def t_quality_math():
     calc = round(d["valid_count"] / d["raw_count"] * 100, 2)
     assert abs(calc - d["effective_rate"]) < 0.02, f"有效率不自洽：{calc} vs {d['effective_rate']}"
     stages = {s["stage"]: s["count"] for s in d["quality"]["stages"]}
-    removed = -sum(v for k, v in stages.items() if k != "读取文件")
+    # 只累计扣减项：第一阶段是"读入 N 条"的正数，且它的名字会随来源变化
+    # （文件导入 / 实时采集都走同一条链路），用名字排除迟早会失配。
+    removed = -sum(v for k, v in stages.items() if v < 0)
     assert d["raw_count"] - removed >= d["valid_count"], "清洗阶段扣减与有效数矛盾"
     return f"原始 {d['raw_count']} → 有效 {d['valid_count']}（{d['effective_rate']}%），分子分母可复算"
 
@@ -474,7 +487,7 @@ def t_carry_no_filter_no_button():
 
 
 def t_sentiment_filter_visible():
-    """情感筛选必须在驾驶舱「看得见」：控件存在 + 选中态跟随 URL。
+    """情感筛选必须在舆情总览「看得见」：控件存在 + 选中态跟随 URL。
 
     这是 S7 暴露出来的老问题——readUrl 早就认识 sentiment，API 也一直在传，
     但筛选栏从来没有这个控件。结果是数据被悄悄筛成负面，用户既不知道也取消不掉。
@@ -576,7 +589,15 @@ def t_keyword_cloud_clean():
 
     noise = {"偷笑", "捂脸", "流泪", "微笑", "害羞", "doge", "人间", "用户", "学校", "学院",
              "老师", "专业", "今年", "一年", "一样", "校内", "校区", "校园", "同学", "新生"}
-    leaked = sorted(noise & set(words))
+    # 词性合格但零信息的泛化动作 / 空壳词 / 无主语比较碎片。
+    # 这批词是最容易漏的一类：jieba 把它们标成 v / a / n，词性白名单拦不住，
+    # 只能靠「泛化动作与泛评」词表，而且必须固定成断言，否则词表一改就悄悄回潮。
+    generic = {"看看", "看着", "选择", "考虑", "接受", "获得", "起来", "出去", "只能",
+               "最远", "最差", "最好", "挺好", "个人", "结果", "信息", "朋友", "空间",
+               "原因", "生活", "评论", "不同", "孩子", "家庭",
+               "深大", "清远", "中山市", "东区", "城院", "大学城",
+               "垃圾", "要死", "累死", "无敌"}
+    leaked = sorted((noise | generic) & set(words))
     assert not leaked, f"词云仍含无用语：{leaked}"
 
     assert all(len(w) >= 2 and not w.isdigit() for w in words), "词云含单字或纯数字"
@@ -587,6 +608,71 @@ def t_keyword_cloud_clean():
     assert kf["base_neg_rate"] is not None, "未给出负面占比基线，着色规则无法复算"
     return (f"{len(words)} 个实词，已剔除 {kf['stopwords_total']} 个停用词；"
             f"剔除最多：{kf['dropped_top'][0]['name']}({kf['dropped_top'][0]['value']})")
+
+
+def t_polarity_cloud_clean():
+    """情感页两朵词云同样不能出现泛化词——它们承载的是"在骂什么/在夸什么"。"""
+    d = CLIENT.get("/api/analytics/polarity-words?top_n=30").get_json()["data"]
+    generic = {"看看", "看着", "选择", "考虑", "接受", "获得", "起来", "出去", "只能",
+               "最远", "最差", "最好", "挺好", "个人", "结果", "信息", "朋友", "空间",
+               "原因", "生活", "评论", "不同", "孩子", "家庭", "学校", "同学", "老师",
+               # 专名（在聊哪个学校/哪个市，不是聊什么）与程度补语（情绪有多强，
+               # 不是为什么），这两类都不能出现在词云上。
+               "深大", "清远", "中山市", "东区", "城院", "大学城",
+               "垃圾", "要死", "累死", "无敌"}
+    bad = {}
+    for label in ("positive", "negative"):
+        words = [w["name"] for w in d[label]]
+        assert words, f"{label} 词云为空"
+        hit = sorted(generic & set(words))
+        if hit:
+            bad[label] = hit
+    assert not bad, f"情感词云仍含无用语：{bad}"
+
+    # 两朵云必须各自按自己的分母取词，不能是同一份混合词表涂两种颜色
+    pos = {w["name"] for w in d["positive"]}
+    neg = {w["name"] for w in d["negative"]}
+    assert pos != neg, "正负词云完全一致，说明没有按情感桶分别统计"
+    return (f"正面 {len(d['positive'])} 词 / 负面 {len(d['negative'])} 词，"
+            f"均来自各自情感桶（{d['positive_total']} / {d['negative_total']} 条）")
+
+
+def t_page_insight_material():
+    """三页 AI 分析要讲「为什么」，后端必须给得出讲得动的素材。
+
+    这条**不依赖模型**，只校验事实底稿里有没有解释成因所必需的那几块：
+    峰值时段的评论、最热主题内部的高频词与时间集中度、各平台负面率。
+    一旦有人为了省一次查询把它们删掉，模型就会退回「可能与校园作息有关」
+    这种正确的废话，而页面上看不出任何异常——所以必须在这里卡住。
+    """
+    f = analytics.build_filters(dataset_id="ds_hist_all")
+
+    tp = analytics.timing_profile(f)
+    assert tp["各平台活跃时段"], "时间页缺少各平台活跃时段，无法判断峰值是否由单一平台推动"
+    assert tp["峰值时段评论"], "时间页缺少峰值时段评论，模型只能空泛归因"
+    assert len(tp["时段分布"]) == 5, "时间页缺少时段分布形态"
+    assert tp["工作日"]["条数"] and tp["周末"]["条数"], "时间页缺少工作日/周末对比"
+
+    ft = reports._page_facts(f, "topics")
+    inner = ft.get("最热主题内部") or {}
+    assert inner.get("高频词"), "主题页缺少最热主题的高频词"
+    assert inner.get("评论最集中的时段"), "主题页缺少最热主题的时间集中度"
+    assert inner.get("平台构成"), "主题页缺少最热主题的平台构成"
+    assert ft.get("负面率偏高的主题"), "主题页缺少主题间负面率对照"
+    assert len(ft.get("最热主题代表性评论") or []) >= 4, "主题页样本评论过少，归纳不出成因"
+
+    fs = reports._page_facts(f, "sentiment")
+    assert fs.get("各平台负面率"), "情感页缺少各平台负面率"
+    assert fs.get("负面率最高的主题"), "情感页缺少主题负面率"
+    assert len(fs.get("负面评论样本") or []) >= 4, "情感页负面样本过少"
+
+    # 规则兜底必须与 AI 版同构，否则前端要维护两套渲染
+    for page in ("topics", "sentiment", "timeline"):
+        r = reports._rule_page_insight(reports._page_facts(f, page), page)
+        assert {"headline", "summary", "reasons", "next"} <= set(r), f"{page} 兜底结构不完整"
+        assert r["summary"], f"{page} 兜底没有正文"
+    return (f"时间页 {len(tp['峰值时段评论'])} 条峰值样本、{len(tp['各平台活跃时段'])} 个平台活跃时段；"
+            f"主题页 {len(ft.get('最热主题代表性评论') or [])} 条样本；三页兜底同构")
 
 
 def t_keyword_tone_recomputable():
@@ -613,9 +699,16 @@ def t_report():
     assert r["dataset"]["time_span"][0] and r["dataset"]["time_span"][1], "报告缺少时间范围"
     assert r["generated_at"] and r["engine_label"], "报告缺少生成时间/引擎标识"
     assert len(r["content"]["suggestions"]) >= 3, "报告建议过少"
+    findings = r["content"].get("findings") or []
+    assert 2 <= len(findings) <= 3, f"关键发现应为 2-3 条，实际 {len(findings)}"
+    refs = {e["comment_ref"] for e in r["evidence"]}
+    cited = [x for f in findings for x in (f.get("evidence_refs") or [])]
+    assert cited, "关键发现没有引用任何证据"
+    assert all(x in refs for x in cited), "关键发现引用了证据池之外的编号"
     summary = CLIENT.get("/api/dashboard/summary?dataset_id=ds_hist_all").get_json()["data"]
     assert r["kpi"]["total"] == summary["total"], "报告总量与统计接口不一致"
-    return f"报告引擎={r['engine']}，总量 {r['kpi']['total']} 与统计接口一致"
+    return (f"报告引擎={r['engine']}，{len(findings)} 条关键发现引用 {len(set(cited))} 条证据，"
+            f"总量 {r['kpi']['total']} 与统计接口一致")
 
 
 def t_report_fallback():
@@ -666,6 +759,39 @@ def t_upload_validation():
                      content_type="multipart/form-data")
     assert r3.status_code == 400, "非 .json 文件未拒绝"
     return "空文件/坏 JSON/错误后缀均被拒绝"
+
+
+def t_import_preview_flow():
+    """文件导入要和实时采集同一个流程：先清洗给人看，再由人决定入库。
+
+    以前上传就直接建数据集并切过去——用户看不到清洗剔了谁，也没有"这批不要"的选项。
+    这条用例把三个不变量钉住：预览阶段库内没有数据集、明细能查到剔除项、放弃后无残留。
+    """
+    import io
+    payload = [        {"comment_id": "t1", "content": "宿舍空调不制冷，报修三天都没人来",
+         "create_time": "2026-09-10 12:00:00", "platform": "douyin"},
+        {"comment_id": "t2", "content": "食堂饭菜有点贵，分量还算可以",
+         "create_time": "2026-09-11 12:00:00", "platform": "xhs"},
+        {"comment_id": "t3", "content": "顶",
+         "create_time": "2026-09-11 12:00:00", "platform": "xhs"},
+    ]
+    blob = json.dumps(payload, ensure_ascii=False).encode()
+    r = CLIENT.post("/api/datasets/import",
+                    data={"files": (io.BytesIO(blob), "douyin_campus.json")},
+                    content_type="multipart/form-data")
+    assert r.status_code == 200, r.get_data(as_text=True)[:200]
+    d = r.get_json()["data"]
+    assert d.get("session_id"), "没有返回待确认批次"
+    assert d["raw_count"] == 3 and d["valid_count"] == 2, f"{d['raw_count']}/{d['valid_count']}"
+    assert db.get_dataset(d["dataset_id"]) is None, "预览阶段就把数据集建出来了"
+    assert d["stages"], "没有清洗漏斗"
+
+    view = CLIENT.get(f"/api/import/{d['session_id']}/rows?status=rejected").get_json()["data"]
+    assert view["total"] == 1, f"剔除明细应有 1 条，实际 {view['total']}"
+    assert CLIENT.post(f"/api/import/{d['session_id']}/discard").status_code == 200
+    assert db.get_dataset(d["dataset_id"]) is None, "放弃之后数据集还在"
+    assert CLIENT.get(f"/api/import/{d['session_id']}/rows").status_code >= 400, "放弃后会话还活着"
+    return "预览不建库、可查剔除项、放弃后无残留"
 
 
 def t_secrets_not_leaked():
@@ -1153,7 +1279,7 @@ def t_report_markdown_export():
     assert r.status_code == 200, f"导出失败 HTTP {r.status_code}"
     assert "attachment" in (r.headers.get("Content-Disposition") or ""), "没有按附件下载"
     md = r.get_data(as_text=True)
-    for must in ("# 校园舆情分析报告", "数据来源", "筛选口径", "有效评论", "## 二、结论"):
+    for must in ("# 校园舆情分析报告", "数据来源", "筛选口径", "有效评论", "## 二、结论", "关键发现", "> 证据 `"):
         assert must in md, f"导出内容缺少「{must}」"
     assert str(rep["dataset"]["valid_count"]) in md, "导出的样本量与报告不一致"
     assert str(rep["generated_at"]) in md, "导出的生成时间与报告不一致"
@@ -1303,6 +1429,35 @@ def t_fix_url_keeps_paging():
     return "qs 保留页面参数 · 翻页与排序都能从 URL 恢复"
 
 
+def t_dining_words_classified():
+    """校门口吃什么归食堂餐饮——这是学生最常聊的场景之一，改词表时别丢掉。
+
+    同时锁住三个"故意不收"的词：早晚午三个作息词会把"晚饭后散步半小时"
+    这类与校园无关的日常句吸进来；「便利店」命中的几乎都是模板句。
+    「小吃」也不收——它是「小吃街」的子串，会让同一句话把命中数算两次。
+    """
+    from legacy.data_processor import clean_text
+    from campuspulse.taxonomy import matched_dimensions, DIMENSION_KEYWORDS
+
+    should_hit = [
+        "东软大学门口摆摊这么多，你们最喜欢吃的是哪种",
+        "校门口的小吃街有人去过吗",
+        "晚上有夜宵摊吗，宿舍楼下烧烤好香",
+    ]
+    for q in should_hit:
+        dims = matched_dimensions(clean_text(q))
+        assert "食堂餐饮" in dims, f"未命中食堂餐饮：{q} → {dims}"
+
+    must_miss = ["晚饭后散步半小时", "楼下便利店的关东煮，你们呢"]
+    for q in must_miss:
+        dims = matched_dimensions(clean_text(q))
+        assert not dims, f"不该命中任何维度：{q} → {dims}"
+
+    words = DIMENSION_KEYWORDS["食堂餐饮"]
+    assert "小吃" not in words, "「小吃」是「小吃街」的子串，会把命中数算两次"
+    return f"摆摊/小吃街/夜宵归食堂餐饮；作息词与便利店不收（词表 {len(words)} 词）"
+
+
 def main():
     global APP, CLIENT
     print("=" * 66)
@@ -1322,6 +1477,7 @@ def main():
     check("数据集列表与字段完整", t_datasets, "数据")
     check("切换数据集后指标变化", t_switch_changes_numbers, "数据")
     check("有效率分子分母自洽", t_quality_math, "数据")
+    check("校门口餐饮词归口正确", t_dining_words_classified, "数据")
 
     group("3. 统计口径一致性（P0 X05）")
     check("接口与统计层一致", t_consistency_api_vs_core, "一致性")
@@ -1342,6 +1498,8 @@ def main():
 
     group("5. 数据洞察（P0 I01-I10）")
     check("词云已剔除无用语", t_keyword_cloud_clean, "洞察")
+    check("情感词云已剔除无用语", t_polarity_cloud_clean, "洞察")
+    check("三页分析素材齐全", t_page_insight_material, "洞察")
     check("词云着色可复算", t_keyword_tone_recomputable, "洞察")
 
     group("6. 综合报告（P0 R01-R05）")
@@ -1352,6 +1510,7 @@ def main():
     check("非法参数返回可读错误", t_bad_params, "安全")
     check("空数据不报错", t_empty_response, "安全")
     check("上传校验", t_upload_validation, "安全")
+    check("导入两步流程（清洗预览→确认入库）", t_import_preview_flow, "安全")
     check("密钥不泄露", t_secrets_not_leaked, "安全")
     check("证据脱敏", t_privacy, "安全")
     check("Agent 审计日志", t_agent_audit, "安全")
@@ -1373,7 +1532,7 @@ def main():
     check("口径挑最具体的一份", t_carry_picks_richest, "筛选")
     check("跳转链接可达且参数一致", t_carry_links_reachable, "筛选")
     check("全量问题不给假按钮", t_carry_no_filter_no_button, "筛选")
-    check("情感筛选在驾驶舱可见", t_sentiment_filter_visible, "筛选")
+    check("情感筛选在舆情总览可见", t_sentiment_filter_visible, "筛选")
 
     group("16. 体检修复回归（2026-10-30）")
     check("筛选报错文案无多余空格", t_fix_date_error_no_space, "修复")

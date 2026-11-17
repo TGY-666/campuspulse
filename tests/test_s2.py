@@ -48,7 +48,7 @@ os.environ["CP_TICKETS"] = "1"
 os.environ.pop("CP_HOLIDAYS", None)   # 节假日用例自己临时注入，不污染别的断言
 sys.path.insert(0, ROOT)
 
-from campuspulse import config, db, tenancy, tickets  # noqa: E402
+from campuspulse import config, db, departments, tenancy, tickets  # noqa: E402
 from campuspulse.web import create_app  # noqa: E402
 
 PASS = FAIL = 0
@@ -419,6 +419,104 @@ def t_code_format():
 
 
 # ============================ 六、接口最小集 ============================
+# 部门研判跑在八维度数据集上：历史样本只有 7 个维度有量，
+# 用它测归口会漏掉「实习就业」，报出来的失败原因与真实原因无关。
+DS = "ds_2020_2026"
+
+
+def _system():
+    return tenancy.set_context(tenancy.system_context())
+
+
+def t_dept_seed():
+    """示例部门按演示口径只留三个，且归口必须"谁认领谁负责"。
+
+    后勤合并成一个部门后要同时认领宿舍住宿与校园环境——少一个维度，
+    出负面时那张风险行就没有归口，页面上是一行"未匹配到部门"。
+    没配主责部门的维度由 assess() 的 uncovered 如实报出来，
+    不允许被"顺带提到某个关键词"的部门抢走（教学学业归后勤这种）。
+    """
+    token = _system()
+    try:
+        depts = departments.list_all()
+        names = sorted(d["name"] for d in depts)
+        assert names == sorted(["后勤保障处", "饮食服务中心", "招生就业处（招生办）"]), names
+        hq = next(d for d in depts if d["name"] == "后勤保障处")
+        assert {"宿舍住宿", "校园环境"} <= set(hq["dimensions"]), hq["dimensions"]
+
+        d = departments.assess(DS, use_ai=False)
+        by_id = {x["dept_id"]: x for x in depts}
+        for t in d["topics"]:
+            dep = t["department"]
+            if not dep:
+                continue
+            assert t["dimension"] in by_id[dep["dept_id"]]["dimensions"], (
+                f"{t['dimension']} 归到了不认领它的 {dep['name']}")
+        covered = {x for dept in depts for x in dept["dimensions"]}
+        assert set(d["uncovered"]) == set(config.DIMENSIONS) - covered, d["uncovered"]
+        return f"{len(depts)} 个部门，覆盖 {len(covered)}/8 个维度（其余如实标记未认领）"
+    finally:
+        tenancy.reset_context(token)
+
+
+def t_risk_formula():
+    """风险百分比必须能被页面上的四项原样算出来。
+
+    这是"数字可解释"的底线：页面上写着权重和分子分母，读者照着乘一遍
+    应当得到同一个分数。算不出来就说明中间偷偷换了口径。
+    """
+    token = _system()
+    try:
+        d = departments.assess(DS, use_ai=False)
+        assert d["topics"], "没有可研判主题"
+        checked = 0
+        for t in d["topics"]:
+            used = [(p["weight"], p["value"]) for p in t["parts"] if p["value"] is not None]
+            w = sum(x[0] for x in used)
+            raw = sum(a * b for a, b in used) / w
+            expect = round(100 * raw * (0.55 + 0.45 * t["confidence"]))
+            assert abs(expect - t["risk"]) <= 1, (
+                f"{t['dimension']} 复算 {expect} 与返回 {t['risk']} 不一致")
+            checked += 1
+        return f"{checked} 个主题均可复算"
+    finally:
+        tenancy.reset_context(token)
+
+
+def t_assign_correct():
+    """归口不能靠猜：后勤合并后，宿舍与环境两个维度都要落到同一个后勤保障处。"""
+    token = _system()
+    try:
+        d = departments.assess(DS, use_ai=False)
+        by = {t["dimension"]: t for t in d["topics"]}
+        for dim in ("宿舍住宿", "校园环境"):
+            assert dim in by, f"缺少{dim}主题"
+            dept = by[dim]["department"]
+            assert dept, f"{dim}没有归口部门"
+            assert dept["name"] == "后勤保障处", f"{dim} 归口错到 {dept['name']}"
+        return "宿舍住宿 / 校园环境 → 后勤保障处"
+    finally:
+        tenancy.reset_context(token)
+
+
+def t_ticket_department():
+    """按建议建单要把归口写进工单，否则分派人还得自己再判断一次。"""
+    token = _system()
+    try:
+        tk = departments.create_ticket({"dimension": "食堂餐饮", "dataset_id": DS})
+        assert tk.get("department_name"), "工单没有归口部门名"
+        assert tk.get("department_id"), "工单没有归口部门 id"
+        assert tk["department_name"] == "饮食服务中心", tk["department_name"]
+        assert tk["status"] == "draft", tk["status"]
+        # 建单落了库才算数：内存里返回对了、库里没写，是最难发现的一类错
+        row = db.query_one("SELECT department_name FROM tickets WHERE tenant_id = ? AND code = ?",
+                           (TENANT, tk["code"]))
+        assert row and row["department_name"] == "饮食服务中心", "库里没写归口"
+        return f"{tk['code']} → {tk['department_name']}"
+    finally:
+        tenancy.reset_context(token)
+
+
 def t_api_flow():
     """接口级只跑最短一条链：建单→确认→驳回，验证 403/409 与事件条数。"""
     app = create_app()
@@ -542,6 +640,16 @@ def main():
     print("\n== 接口最小集 ==")
     setup()
     check("建单/跳步/驳回 全链路", t_api_flow)
+
+    print("\n== 部门归口与风险研判 ==")
+    setup()
+    for n, f in [
+        ("示例部门与归口口径", t_dept_seed),
+        ("风险百分比可按公式复算", t_risk_formula),
+        ("归口落到正确部门", t_assign_correct),
+        ("建单带上归口部门", t_ticket_department),
+    ]:
+        check(n, f)
 
     print("\n" + "=" * 68)
     print(f"结果：{PASS}/{PASS + FAIL} 项通过" + (f"，失败 {FAIL} 项" if FAIL else ""))

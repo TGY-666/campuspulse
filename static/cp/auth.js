@@ -64,7 +64,13 @@
         }).then(function (r) {
             if (r.body && r.body.ok) {
                 // 首登未改密：S1 会在这里跳改密页，S0 先直接进站
-                location.replace(safeNext(nextInput ? nextInput.value : '/'));
+                var dest = safeNext(nextInput ? nextInput.value : '/');
+                /* 部门账号没有驾驶舱权限，落地页是工单页。
+                   不处理的话它会落在 '/' 上——那是 404，人看到的第一屏就是
+                   "页面不存在"，还以为账号没建对。 */
+                var user = (r.body.data && r.body.data.user) || {};
+                if (dest === '/' && user.role === 'dept') dest = '/tickets';
+                location.replace(dest);
                 return;
             }
             var msg = (r.body && r.body.error && r.body.error.message) || '登录失败，请稍后重试';

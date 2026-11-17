@@ -22,8 +22,15 @@
 import argparse
 import asyncio
 import json
+import re
 import os
 import sys
+
+try:
+    sys.stdout.reconfigure(errors="replace")
+    sys.stderr.reconfigure(errors="replace")
+except Exception:
+    pass
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if ROOT not in sys.path:
@@ -105,7 +112,11 @@ async def run(verbose=False):
                                          {"dataset_id": "ds_hist_all"})
             txt1 = _text_of(r1)
             check("统计工具返回成功", not r1.isError, txt1[:60].replace("\n", " "))
-            check("结果里带真实分母 1,803", "1,803" in txt1 or "1803" in txt1,
+            # 不绑死具体数字：分母随维度词典修订变化（1,803 → 1,775 → 1,969），
+            # 断言"带分母且量级合理"即可，改口径不会假报警。
+            m1 = re.search(r"共\s*([\d,]+)\s*条有效评论", txt1)
+            check("结果里带真实分母",
+                  bool(m1) and int(m1.group(1).replace(",", "")) >= 1000,
                   txt1[:80].replace("\n", " "))
 
             r2 = await session.call_tool("retrieve_context",

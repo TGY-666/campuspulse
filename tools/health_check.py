@@ -33,8 +33,12 @@ def post(path, **kw):
 
 
 # ---------------- 1. 页面 ----------------
-PAGES = [("/", "驾驶舱"), ("/insights", "洞察"), ("/agent", "AI 工作台"),
-         ("/data", "数据管理"), ("/evidence", "证据检索")]
+PAGES = [("/", "舆情总览"), ("/insights", "洞察"), ("/agent", "AI 舆情助手"),
+         ("/insights/topics", "主题热度"), ("/insights/sentiment", "情感"),
+         ("/insights/timeline", "时间趋势"),
+         ("/data", "数据管理"),
+         ("/data/collect", "数据采集"), ("/data/reports", "分析报告"),
+         ("/evidence", "证据检索")]
 
 
 def tickets_on():

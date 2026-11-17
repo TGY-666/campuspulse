@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}情感分析{% endblock %}
+{% block page_title %}情感分析{% endblock %}
+{% block page_sub %}这页能回答：情绪整体偏正面还是负面、负面集中在哪个主题、具体在夸什么又在抱怨什么{% endblock %}
+
+{% block head_extra %}
+<style>
+    /* 宽屏让「AI 结论」与「图表」并排，窄屏回到单列；DOM 顺序不变。
+       本页右列「情感总览」只有饼图、指标与一句口径，与左列 AI 卡等高（stretch）
+       会被拉出一大片空白，看起来像图表没加载完；因此右列按内容高度收缩（start）。
+       时间趋势页校历带精简后同样会留出卡内空白，也改用 start；
+       主题页两图纵向堆叠本就等高，仍保留 stretch。 */
+    @media (min-width: 1100px) {
+        .content { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 14px; align-items: start; }
+        .content > * { grid-column: 1 / -1; margin-top: 0 !important; margin-bottom: 0 !important; }
+        .content > .ai-lead { grid-column: 1; }
+        .content > .chart-lead { grid-column: 2; align-self: start; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="crumb" aria-label="当前位置">
+    <a href="/insights{{ nav_query }}">数据洞察中心</a><span aria-hidden="true"> / </span><span>情感分析</span>
+</nav>
+<div id="filterBar"></div>
+
+{# 整页的结论先行：情绪结构是什么样、为什么会这样、下一步看哪儿。
+   词云只负责"具体在夸什么 / 骂什么"，两者分工不同，所以这张卡留在最上面。 #}
+<div class="card ai-lead" style="margin-bottom:14px;">
+    <div class="card-head">
+        <div>
+            <h2 class="card-title">AI 痛点分析</h2>
+        </div>
+        <div class="card-tools"><span class="badge badge-brand" id="piBadge">生成中</span></div>
+    </div>
+    <div class="ai-basis-slot" id="piBasis"></div>
+    <div id="pageInsight">
+        <div class="skeleton" style="height:64px"></div>
+    </div>
+    <div id="piNotice" class="note note-muted is-hidden" style="margin-top:10px;"></div>
+</div>
+
+{# 先进结论，再看细节：环形图给结构，右侧四个数字给可引用的具体值。 #}
+<div class="card chart-lead" style="margin-bottom:14px;">
+    <div class="card-head">
+        <div><h2 class="card-title">情感总览</h2>
+            <div class="card-sub scope-line" id="sentSub">分母：当前筛选范围内已标注情感的有效评论</div></div>
+        <div class="card-tools"><span class="badge badge-brand" id="sentBadge">—</span></div>
+    </div>
+    <div class="grid g-1-2" style="align-items:center;">
+        <div class="chart chart-sm" id="chartSentOverview"></div>
+        <div class="grid g-2" id="sentMetrics">
+            <div class="skeleton" style="height:60px"></div>
+            <div class="skeleton" style="height:60px"></div>
+            <div class="skeleton" style="height:60px"></div>
+            <div class="skeleton" style="height:60px"></div>
+        </div>
+    </div>
+</div>
+
+{# 两朵云各用各的分母：正面词只从正面评论里数，负面词只从负面评论里数。
+   混在一起按总词频取前 30 的话，负面那一侧的词会被中性评论挤下去。 #}
+<div class="grid g-2" style="margin-bottom:14px;">
+    <div class="card">
+        <div class="card-head">
+            <div><h2 class="card-title">正面词云</h2>
+                <div class="card-sub" id="posWordSub">字号越大出现越多 · 具体次数见下方解读</div></div>
+            <div class="card-tools"><span class="badge badge-pos" id="posWordBadge">—</span></div>
+        </div>
+        <div class="chart" id="chartWordPos"></div>
+    </div>
+    <div class="card">
+        <div class="card-head">
+            <div><h2 class="card-title">负面词云</h2>
+                <div class="card-sub" id="negWordSub">字号越大出现越多 · 具体次数见下方解读</div></div>
+            <div class="card-tools"><span class="badge badge-neg" id="negWordBadge">—</span></div>
+        </div>
+        <div class="chart" id="chartWordNeg"></div>
+    </div>
+</div>
+
+{# 两朵云各一份解读：左边只谈正面那朵，右边只谈负面那朵。
+   和上面的痛点分析分工不同——这里解释"云里这些词说了什么"，
+   上面解释"为什么会有这种情绪"。合成一段就会变成第二篇痛点分析。 #}
+<div class="card" style="margin-bottom:14px;">
+    <div class="card-head">
+        <div>
+            <h2 class="card-title">词云解读</h2>
+            <div class="card-sub" data-hint>正负两朵云分别说了什么 · 每条结论都能在云里找到对应的词</div>
+        </div>
+        <div class="card-tools"><span class="badge badge-brand" id="wiBadge">生成中</span></div>
+    </div>
+    <div class="ai-basis-slot" id="wiBasis"></div>
+    <div class="grid g-2" id="wordInsight">
+        <div class="skeleton" style="height:96px"></div>
+        <div class="skeleton" style="height:96px"></div>
+    </div>
+    <div id="wiNotice" class="note note-muted is-hidden" style="margin-top:10px;"></div>
+</div>
+
+<div class="grid g-2">
+    <div class="card">
+        <div class="card-head"><div><h2 class="card-title">主题情感结构</h2>
+            <div class="card-sub">每个主题内部的正/中/负占比，看负面是被哪个主题拖下去的</div></div></div>
+        <div class="chart" id="chartDimSent"></div>
+    </div>
+    <div class="card">
+        <div class="card-head"><div><h2 class="card-title">负面原因帕累托</h2>
+            <div class="card-sub">柱：提及次数；线：累计占比（帕累托：按量排序后累计到 80% 的那几项就是主因）</div></div></div>
+        <div class="chart" id="chartPareto"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block vendor %}
+<script src="{{ static_url('vendor/echarts.min.js') }}"></script>
+<script>
+    if (typeof window.echarts === 'undefined') {
+        document.currentScript.insertAdjacentHTML('afterend',
+            '<p class="note note-muted" style="margin:12px 0;padding:10px;"><span>图表组件未加载，请确认本地静态资源完整</span></p>');
+    }
+</script>
+{% endblock %}
+
+{% block scripts %}
+{# 词云插件仍由 insights.js 的 ensureWordCloud() 在滚到该图时动态注入，
+   16KB 的扩展不参与首屏加载。 #}
+<script src="{{ static_url('cp/insights.js') }}"></script>
+{% endblock %}

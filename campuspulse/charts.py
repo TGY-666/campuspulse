@@ -44,12 +44,12 @@ def _topic_chart(data):
         return None
     return {
         "type": "bar",
-        "title": "七大维度评论量排行",
+        "title": "业务主题评论量排行",
         "unit": "条",
         "horizontal": True,
         "categories": [r["dimension"] for r in ranking][::-1],
         "series": [{"name": "评论量", "data": [r["count"] for r in ranking][::-1]}],
-        "caption": "多标签计数：一条评论可命中多个维度",
+        "caption": "多标签计数：一条评论可命中多个主题",
     }
 
 

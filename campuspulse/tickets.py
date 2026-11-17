@@ -46,19 +46,25 @@ TRANSITIONS = [
     ("reject",   "draft",          "rejected",       ("analyst", "admin"), ("note",)),
     ("assign",   "triaged",        "assigned",       ("admin",),           ("owner",)),
     ("reject",   "triaged",        "rejected",       ("admin",),           ("note",)),
-    ("start",    "assigned",       "processing",     ("handler", "admin"), ()),
+    # dept（部门账号）能做的只有"干活"这三步：开始处理、提交复核、被退回后重新处理。
+    # 确认有效 / 分派 / 复核归档都是学校层面的判断，留在 admin/analyst 手里——
+    # 部门自己既能定性又能归档，"闭环"就成了自己给自己结案。
+    ("start",    "assigned",       "processing",     ("handler", "dept", "admin"), ()),
     ("return",   "assigned",       "triaged",        ("admin",),           ("note",)),
-    ("respond",  "processing",     "pending_review", ("handler", "admin"), ("resolution",)),
+    ("respond",  "processing",     "pending_review", ("handler", "dept", "admin"),
+     ("resolution",)),
     ("approve",  "pending_review", "closed",         ("admin",),           ("note",)),
     ("reject_review", "pending_review", "reopened",  ("admin",),           ("note",)),
     ("reopen",   "closed",         "reopened",       ("admin",),           ("note",)),
-    ("restart",  "reopened",       "processing",     ("handler", "admin"), ()),
+    ("restart",  "reopened",       "processing",     ("handler", "dept", "admin"), ()),
 ]
 
 ACTION_LABELS = {
     "triage": "确认有效", "reject": "驳回", "assign": "分派", "start": "开始处理",
     "return": "退回重分", "respond": "提交复核", "approve": "复核通过",
     "reject_review": "复核不通过", "reopen": "重新打开", "restart": "重新处理",
+    # delete 不是状态迁移，但审计事件类型要有人话名字，否则时间线上显示原始英文
+    "delete": "删除工单",
 }
 
 _RESOLUTION_MIN = 10          # 处理记录下限，写在文档 3.4 里
@@ -195,38 +201,58 @@ def sla_due_for(priority, start):
 
 
 def sla_state(ticket, now=None):
-    """剩余/超期文案。**不实时重算 sla_due**，只拿库里那个值与现在比。"""
+    """剩余/超期文案。**不实时重算 sla_due**，只拿库里那个值与现在比。
+
+    text 给人读（"已超期 8.4 个工作日"，单一单位），label/amount 给列表右侧那窄窄一格：
+    一整句话塞进 84px 会在"已超期 8 个 / 工作日 4 小时"中间断开，读起来像两个数。
+    """
     now = now or datetime.now()
     due = _parse(ticket.get("sla_due"))
     if not due:
-        return {"due": None, "remaining_minutes": None, "overdue": False, "text": "未起算"}
+        return {"due": None, "remaining_minutes": None, "overdue": False,
+                "text": "未起算", "label": "", "amount": ""}
     if ticket.get("status") in ("closed", "rejected"):
         ended = _parse(ticket.get("closed_at")) or now
-        return {"due": _fmt(due), "remaining_minutes": 0, "overdue": ended > due,
-                "text": "已归档" if ended <= due else "超出时限归档"}
+        ok = ended <= due
+        return {"due": _fmt(due), "remaining_minutes": 0, "overdue": not ok,
+                "text": "已归档" if ok else "超出时限归档",
+                "label": "归档", "amount": "按时" if ok else "超时"}
     if now > due:
         mins = work_minutes_between(due, now)
         return {"due": _fmt(due), "remaining_minutes": -round(mins), "overdue": True,
-                "text": "已超期" + _human_minutes(mins)}
+                # 空格不是排版洁癖：「已超期9 个工作日」会被读成一个数粘了个后缀
+                "text": "已超期 " + _human_minutes(mins),
+                "label": "超期", "amount": _human_minutes(mins)}
     mins = work_minutes_between(now, due)
     return {"due": _fmt(due), "remaining_minutes": round(mins), "overdue": False,
-            "text": "剩余 " + _human_minutes(mins)}
+            "text": "剩余 " + _human_minutes(mins),
+            "label": "剩余", "amount": _human_minutes(mins)}
 
 
 def _human_minutes(mins):
+    """工作分钟 → 人话。**单位是工作小时**，所以「小时」前面必须带「工作」：
+    裸写「剩余 4 小时」会让周五下午的人以为今晚截止，而它其实是下周一。
+
+    第 19 轮：**一个量只给一个单位**。原来是「1 个工作日 6 工作小时」——
+    两个单位粘在一起，读者要么把 6 当成另一件事，要么在 86px 的列表格里
+    被切成两行当成两个数。现在按量级选一档，永不并存：
+        不足 1 工作小时 → "34 分钟"
+        不足 1 工作日   → "6.4 工作小时"
+        1 个工作日及以上 → "1.9 个工作日"
+    精度取 1 位小数：SLA 场景够用，也不会让人误读成自然日/自然周。
+    """
     mins = max(0, int(round(mins)))
     if mins < 60:
         return f"{mins} 分钟"
-    days, rest = divmod(mins, config.WORKDAY_HOURS * 60)
-    hours, minutes = divmod(rest, 60)
-    parts = []
-    if days:
-        parts.append(f"{days} 个工作日")
-    if hours:
-        parts.append(f"{hours} 小时")
-    if minutes and not days:
-        parts.append(f"{minutes} 分")
-    return " ".join(parts) or "0 分钟"
+    per_day = config.WORKDAY_HOURS * 60
+    if mins < per_day:
+        return f"{_trim1(mins / 60)} 工作小时"
+    return f"{_trim1(mins / per_day)} 个工作日"
+
+
+def _trim1(v):
+    """1 位小数，去掉无意义的 ".0"（7.0 → 7），保持中文里数字的干净写法。"""
+    return (f"{v:.1f}").rstrip("0").rstrip(".")
 
 
 # ============================ 权限 ============================
@@ -243,6 +269,11 @@ def _uid():
 
 
 def can_create():
+    # 先看模块开关，再看角色。以前只看角色，于是演示态（CP_TICKETS=0）页面上
+    # 照样亮着 8 颗「建单」按钮，点下去 POST 404——等于承诺了一个不存在的动作。
+    # 能不能建单是两件事的乘积：这个部署开放了工单，且这个角色有建单权。
+    if not config.CP_TICKETS:
+        return False
     return tenancy.has_perm(_role(), "ticket_create") or tenancy.has_perm(_role(), "ticket_manage")
 
 
@@ -257,6 +288,48 @@ def can_manage():
 def can_view_any():
     """能看全部工单的角色（admin/analyst）。处置员只能看自己名下。"""
     return can_manage() or tenancy.has_perm(_role(), "ticket_create")
+
+
+def dept_scope():
+    """部门账号的归口部门 id。
+
+    返回 **None 与 "" 是两件不同的事**，这个区分是本模块所有范围判断的基础：
+      None —— 不是部门账号，不设范围（admin/analyst 看全部，handler 按 owner 过滤）
+      ""   —— 是部门账号但没绑定部门，**什么都看不到**（而不是"看到全部"）
+    把后者当"不限"会在账号配置漏填时把全公司的工单摊给一个新账号，
+    而且页面上看起来一切正常。
+    """
+    ctx = _ctx()
+    if (ctx.get("role") or "") != "dept":
+        return None
+    return str(ctx.get("department_id") or "")
+
+
+def _scope_where(clauses, args, alias="t"):
+    """把部门范围追加进 where 片段。
+
+    没绑定部门时直接加一条恒假条件：调用方不必为"范围为空"写分支，
+    列表、计数、导出都自动是空的——漏掉一处就会把全量摊出去。
+
+    alias 要跟着查询走：列表查询是 `tickets t`，单表统计是 `tickets`，
+    写死成 `t.department_id` 会让后者直接报 "no such column: t"。
+    """
+    dept = dept_scope()
+    if dept is None:
+        return True
+    if not dept:
+        clauses.append("0 = 1")
+        return False
+    clauses.append(f"{alias + '.' if alias else ''}department_id = ?")
+    args.append(dept)
+    return True
+
+
+def _in_scope(ticket):
+    dept = dept_scope()
+    if dept is None:
+        return True
+    return bool(dept) and ticket.get("department_id") == dept
 
 
 def ensure_can_view():
@@ -317,7 +390,7 @@ def filters_to_kwargs(f):
 
 
 def normalize_filters(raw):
-    """入参 → 规范化口径（顺带校验，非法维度/平台在这里就被挡掉）。"""
+    """入参 → 规范化口径（顺带校验，非法主题/平台在这里就被挡掉）。"""
     if not raw:
         f = analytics.build_filters()
     else:
@@ -332,7 +405,12 @@ def replay_filters(stored):
 
 
 def pick_evidence(filters, limit=None, only_negative=True):
-    """按口径取代表证据：负面优先、点赞高的在前。**只取脱敏文本**。"""
+    """按口径取代表证据：负面优先、点赞高的在前。**只取脱敏文本**。
+
+    多取几倍再去重：同一条评论可能被两个平台各采到一次（comment_ref 不同、
+    正文一字不差）。「代表证据」里出现两段一模一样的字，读者第一反应是
+    "去重没做"，而不是相信这条证据——所以宁可少给，也不重复。
+    """
     limit = limit or config.TICKET_MAX_EVIDENCE
     g = dict(filters)
     if only_negative:
@@ -343,12 +421,22 @@ def pick_evidence(filters, limit=None, only_negative=True):
                    c.dimension, c.like_count, c.sentiment
             FROM comments c WHERE {where}
             ORDER BY (c.like_count IS NULL), c.like_count DESC, c.comment_date DESC
-            LIMIT ?""", params + [limit])
-    return [{"comment_ref": r["comment_ref"],
-             "snippet": (r["content_masked"] or r["comment_ref"])[:120],
-             "date": r["comment_date"], "platform": r["platform"],
-             "dimension": r["dimension"], "like_count": r["like_count"],
-             "sentiment": r["sentiment"]} for r in rows]
+            LIMIT ?""", params + [limit * 6])
+    out, seen = [], set()
+    for r in rows:
+        snippet = (r["content_masked"] or "").strip()
+        key = "".join(snippet.split())
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        out.append({"comment_ref": r["comment_ref"],
+                    "snippet": snippet[:120],
+                    "date": r["comment_date"], "platform": r["platform"],
+                    "dimension": r["dimension"], "like_count": r["like_count"],
+                    "sentiment": r["sentiment"]})
+        if len(out) >= limit:
+            break
+    return out
 
 
 # ============================ 建单 ============================
@@ -393,7 +481,7 @@ def create(body):
     if not dimension and filters.get("dimensions"):
         dimension = filters["dimensions"][0]
     if dimension and dimension not in config.DIMENSIONS:
-        raise TicketError(f"未知维度「{dimension}」", 400, "invalid_dimension")
+        raise TicketError(f"未知主题「{dimension}」", 400, "invalid_dimension")
 
     # 从单条证据发起时，把它的正文第一句也塞进摘要（人来点，人来改）
     comment_ref = str(body.get("comment_ref") or "").strip()[:80]
@@ -425,6 +513,15 @@ def create(body):
 
     now = datetime.now()
 
+    # 归口部门：存 id + 名称快照。部门后续改名或归档，历史工单上
+    # 仍要能读出"当初派给了谁"——只存 id 会在部门被删除后变成一个悬空串。
+    department_id = str(body.get("department_id") or "").strip()[:64] or None
+    department_name = str(body.get("department_name") or "").strip()[:60] or None
+    if department_id and not department_name:
+        row = db.query_one("SELECT name FROM departments WHERE tenant_id = ? AND dept_id = ?",
+                           (tenant, department_id))
+        department_name = (row or {}).get("name")
+
     ticket_id = "tk_" + secrets.token_hex(8)
     conn = db.get_conn()
     code = None
@@ -436,12 +533,13 @@ def create(body):
                                         status, dimension, dataset_id, filters, reporter_id,
                                         owner_id, rule_id, sla_due, first_response_at,
                                         closed_at, resolution, review_note, reopen_count,
+                                        department_id, department_name,
                                         created_at, updated_at)
-                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 (ticket_id, tenant, code, title, summary, priority, "draft", dimension or "",
                  filters["dataset_id"], json.dumps(filters, ensure_ascii=False), _uid(),
                  None, rule_id or None, None, None, None,
-                 None, None, 0, _fmt(now), _fmt(now)))
+                 None, None, 0, department_id, department_name, _fmt(now), _fmt(now)))
             conn.commit()
             break
         except Exception:
@@ -503,8 +601,45 @@ def _event(ticket_id, type_, from_status, to_status, note="", actor_id=None, cre
 # 等于把"打开列表"变成 20 次全量聚合。详情才需要口径复现。
 LIST_COLS = ("t.ticket_id, t.code, t.title, t.summary, t.priority, t.status, t.dimension, "
              "t.dataset_id, t.reporter_id, t.owner_id, t.rule_id, t.sla_due, "
+             "t.department_id, t.department_name, "
              "t.first_response_at, t.closed_at, t.reopen_count, t.created_at, t.updated_at")
 SELECT_COLS = LIST_COLS + ", t.filters, t.resolution, t.review_note"
+
+
+def clocks(t, now=None):
+    """详情面板的三把尺子：本单的两把（首次响应 / 归档）＋ 部门期望值（不计本单）。
+
+    used 一律由后端算工作小时：前端只有周末概念，配置里的节假日它不知道，
+    自己算会在节前节后差出一两天——而这一格正是用来判断"还剩多少"的。
+    部门那一把只给出数值，不参与本单计时：它讲的是"交给这个部门一般多久有人接"，
+    从研判页的交接算起，和这张单的创建时刻无关。
+    """
+    now = now or datetime.now()
+    created = _parse(t.get("created_at"))
+    if not created:
+        return None
+    closed = _parse(t.get("closed_at"))
+    first_at = _parse(t.get("first_response_at"))
+    out = {
+        "first": {
+            "budget": config.SLA_FIRST_HOURS.get(t["priority"]),
+            "used": round(work_minutes_between(created, first_at or now) / 60.0, 1),
+            "at": _fmt(first_at),
+        },
+        "archive": {
+            "budget": config.SLA_ARCHIVE_HOURS.get(t["priority"]),
+            "used": round(work_minutes_between(created, closed or now) / 60.0, 1),
+            "at": _fmt(closed),
+        },
+        "department": None,
+    }
+    if t.get("department_id"):
+        dep = db.query_one(
+            "SELECT name, sla_hours FROM departments WHERE tenant_id = ? AND dept_id = ?",
+            (db.tid(), t["department_id"]))
+        if dep:
+            out["department"] = {"name": dep["name"], "hours": dep["sla_hours"]}
+    return out
 
 
 def _row_to_ticket(row, detail=False):
@@ -518,6 +653,7 @@ def _row_to_ticket(row, detail=False):
     t["first_response_hours"] = config.SLA_FIRST_HOURS.get(t["priority"])
     if not detail:
         return t
+    t["clocks"] = clocks(t)
     raw = t.get("filters")
     try:
         t["filters"] = json.loads(raw) if raw else {}
@@ -546,8 +682,11 @@ def get(ticket_id, _skip_guard=False):
     t = _fetch(ticket_id)
     if not t:
         raise NotFound()
+    # 归口范围先于 owner 判断：部门账号看不到别部门的单，处置员看不到别人名下的单，
+    # 两种情况对外都是 404——403 等于告诉他"这个编号是存在的"。
+    if not _in_scope(t):
+        raise NotFound()
     if _role() == "handler" and not _is_owner(t) and not _skip_guard:
-        # 处置员看别人的工单一律 404：403 会告诉他"这个编号存在"
         raise NotFound()
     data = _row_to_ticket(t, detail=True)
     comments, datasets = _links(ticket_id)
@@ -561,12 +700,20 @@ def get(ticket_id, _skip_guard=False):
 def _evidence_items(dataset_id, refs):
     if not refs:
         return []
-    out = []
+    out, seen = [], set()
     for ref in refs[:config.TICKET_MAX_EVIDENCE]:
         row = analytics.get_comment(dataset_id, ref) if dataset_id else None
         if row:
+            snippet = (row.get("content_masked") or "")
+            key = "".join(snippet.split())
+            # 历史工单可能在去重之前就收进了同文异源的两条：显示层再挡一次。
+            # 失联证据（原文已不在数据集内）不参与判重——它们各自是一条断链，要逐条看见。
+            if key and key in seen:
+                continue
+            if key:
+                seen.add(key)
             out.append({"comment_ref": row["comment_ref"],
-                        "snippet": (row.get("content_masked") or "")[:160],
+                        "snippet": snippet[:160],
                         "date": row.get("comment_date"), "platform": row.get("platform"),
                         "dimension": row.get("dimension"), "like_count": row.get("like_count"),
                         "sentiment": row.get("sentiment")})
@@ -622,6 +769,7 @@ def search(params):
     ensure_can_view()
     clauses = ["t.tenant_id = ?"]
     args = [db.tid()]
+    _scope_where(clauses, args)
     status = [s for s in (params.get("status") or []) if s in ALL_STATUSES]
     if params.get("status_group") == "open":
         clauses.append(f"t.status IN ({','.join('?' * len(OPEN_STATUSES))})")
@@ -631,6 +779,10 @@ def search(params):
         clauses.append(f"t.status IN ({','.join('?' * len(OPEN_STATUSES))})")
         args.append(_fmt(datetime.now()))
         args += list(OPEN_STATUSES)
+    elif params.get("status_group") == "closed":
+        # 「已完成」只认已归档。驳回不是完成——被驳回的单意味着"这张单不成立"，
+        # 把它算进完成量会让处置量虚高，也会让人以为那个主题已经处理过了。
+        clauses.append("t.status = 'closed'")
     elif status:
         clauses.append(f"t.status IN ({','.join('?' * len(status))})")
         args += status
@@ -676,6 +828,47 @@ def search(params):
             "disclaimer": DISCLAIMER, "now": _fmt(datetime.now())}
 
 
+def readonly_badge():
+    """演示态的角标与"工单闭环"条：只给三个数，一个动作都不给。
+
+    形状对齐 dashboard_badge()，前端不用写第二套解析。多带一个 readonly=True，
+    就是要它别再去请求 /api/tickets/stats——那个接口在模块关闭时是 404，
+    前端验证脚本按"零控制台报错"判定，一次注定失败的请求会被当成页面故障。
+    """
+    open_clause = f"status IN ({','.join('?' * len(OPEN_STATUSES))})"
+    total = db.scalar("SELECT COUNT(*) FROM tickets WHERE tenant_id = ?", (db.tid(),)) or 0
+    open_n = db.scalar(f"SELECT COUNT(*) FROM tickets WHERE tenant_id = ? AND {open_clause}",
+                       (db.tid(), *OPEN_STATUSES)) or 0
+    overdue = db.scalar(
+        f"SELECT COUNT(*) FROM tickets WHERE tenant_id = ? AND {open_clause} "
+        f"AND sla_due IS NOT NULL AND sla_due < ?",
+        (db.tid(), *OPEN_STATUSES, _fmt(datetime.now()))) or 0
+    return {"enabled": False, "can_view": True, "readonly": True, "scope": "all", "mine": 0,
+            "pending": open_n, "overdue": overdue, "total": total,
+            "label": str(open_n or ""), "overdue_label": str(overdue or "")}
+
+
+# ============================ 演示模式只读列表 ============================
+def readonly_list(limit=30):
+    """工单模块关掉时给人看的那一版：只读、无筛选、无动作。
+
+    CP_TICKETS=0 的语义是"这个演示态不开放写操作"，不是"假装系统里没有工单"。
+    研判页副标题承诺"下一步在子页『处置工单』里闭环"，这里就必须真有东西可看，
+    否则那条链在最后一格断成 404，读者得到的只是一句"地址输入有误"。
+
+    不查任何权限是有意的：走到这里的人本来就没有工单权限，查一次只会 403。
+    返回的字段也刻意不含身份信息，只有"哪件事、谁在办、什么时候到期"。
+    """
+    rows = db.query_all(
+        f"SELECT {LIST_COLS} FROM tickets t WHERE t.tenant_id = ? "
+        # 办理中的排最前（那才是"现在要有人管"的），已结案的沉底
+        f"ORDER BY CASE t.status WHEN 'processing' THEN 0 WHEN 'pending_review' THEN 1 "
+        f"WHEN 'closed' THEN 3 WHEN 'rejected' THEN 4 ELSE 2 END, "
+        f"COALESCE(t.sla_due, t.created_at) ASC LIMIT ?",
+        (db.tid(), max(1, min(int(limit), 100))))
+    return [_row_to_ticket(r, detail=False) for r in rows]
+
+
 # ============================ 状态迁移 ============================
 def transition(ticket_id, body):
     ensure_can_view()
@@ -685,6 +878,8 @@ def transition(ticket_id, body):
 
     t = _fetch(ticket_id)
     if not t:
+        raise NotFound()
+    if not _in_scope(t):
         raise NotFound()
 
     rule = next((r for r in TRANSITIONS if r[0] == action and r[1] == t["status"]), None)
@@ -718,7 +913,7 @@ def transition(ticket_id, body):
             raise TicketError("优先级不合法", 400, "invalid_priority")
         dimension = str(body.get("dimension") or t["dimension"] or "").strip()
         if dimension and dimension not in config.DIMENSIONS:
-            raise TicketError(f"未知维度「{dimension}」", 400, "invalid_dimension")
+            raise TicketError(f"未知主题「{dimension}」", 400, "invalid_dimension")
         due = sla_due_for(priority, now)
         fields.update({"priority": priority, "sla_due": _fmt(due), "dimension": dimension})
         extra_note = (f"优先级 {priority}（{config.SLA_LABELS[priority]}），"
@@ -777,8 +972,11 @@ def _resolve_owner(owner_id):
     u = tenancy.get_user_by_id(owner_id, db.tid())
     if not u or u.get("status") != "active":
         raise TicketError("处置人不存在或已停用", 400, "invalid_owner")
-    if u["role"] not in ("handler", "admin"):
-        raise TicketError("只能派给处置员或管理员", 400, "invalid_owner")
+    if u["role"] not in ("handler", "dept", "admin"):
+        raise TicketError("只能派给处置员、部门账号或管理员", 400, "invalid_owner")
+    if u["role"] == "dept" and not u.get("department_id"):
+        # 没绑定部门的部门账号什么都看不到，派过去等于把单扔进黑洞
+        raise TicketError("该部门账号未绑定部门，无法分派", 400, "invalid_owner")
     return u
 
 
@@ -799,6 +997,51 @@ def _say_next(action, ticket, extra):
     return nxt.get(action, "状态已更新")
 
 
+def delete(ticket_id, reason=""):
+    """删除一张工单（不可逆）。
+
+    **为什么是物理删除，而不是再加一个 `deleted` 状态**：软删要在列表、统计、趋势、
+    顶栏角标、部门范围、建单去重、研判快照回挂……每一处查询里补一句
+    `deleted_at IS NULL`。这类"漏一处"的后果是"删掉的单还在统计里"，
+    而且页面上根本看不出来——比删错一张单更难发现。物理删除之后，
+    所有已有查询自动是对的口径。
+
+    审计怎么办：`ticket_events` 是 append-only，这里先写一条 `delete` 事件
+    （带工单号、标题快照、删除原因），再删主体。事件行删不掉，
+    所以"哪张单在什么时候被谁删了、为什么"仍然查得到，只是页面上没有入口了。
+
+    权限只给管理员：分析师能建单、能驳回，但"让一张单从系统里消失"是运维动作，
+    不该和业务判断混在同一个角色里。
+    """
+    if not can_manage():
+        raise Forbidden("只有管理员可以删除工单")
+    reason = str(reason or "").strip()
+    if len(reason) < 4:
+        raise TicketError("请填写删除原因（至少 4 个字），它会记入审计日志",
+                          400, "note_required")
+    t = _fetch(ticket_id)
+    if not t:
+        raise NotFound()
+    if not _in_scope(t):
+        raise NotFound()
+
+    conn = db.get_conn()
+    # 事件与删除放进同一个事务：先提交事件再删，一旦删除失败就会留下一条
+    # "已删除"的假记录，而单还在——那比没有记录更糟。
+    _event(ticket_id, "delete", t["status"], t["status"],
+           note=f"删除工单 {t['code']}《{t['title']}》· 原因：{reason}",
+           commit=False)
+    # 证据关联跟着主体一起删：留着孤儿 link 会让"同一条证据不能重复建单"
+    # 这条去重规则在 JOIN 失败时失去依据，也没人再去清理它们。
+    conn.execute("DELETE FROM ticket_links WHERE tenant_id = ? AND ticket_id = ?",
+                 (db.tid(), ticket_id))
+    conn.execute("DELETE FROM tickets WHERE tenant_id = ? AND ticket_id = ?",
+                 (db.tid(), ticket_id))
+    conn.commit()
+    return {"deleted": True, "ticket_id": ticket_id, "code": t["code"],
+            "message": f"{t['code']} 已删除（审计日志保留删除记录）"}
+
+
 def comment(ticket_id, body):
     ensure_can_view()
     note = str(body.get("note") or "").strip()[:_NOTE_MAX]
@@ -806,6 +1049,8 @@ def comment(ticket_id, body):
         raise TicketError("评论内容不能为空", 400, "empty_comment")
     t = _fetch(ticket_id)
     if not t:
+        raise NotFound()
+    if not _in_scope(t):
         raise NotFound()
     if _role() == "handler" and not _is_owner(t):
         raise NotFound()
@@ -825,9 +1070,13 @@ def comment(ticket_id, body):
 # ============================ 指标 ============================
 def stats():
     ensure_can_view()
+    # 指标必须和列表是同一个范围：部门账号看到"在办 8 单"、列表里只有 2 单，
+    # 这个页面的所有数字立刻失去意义。
+    clauses, args = ["tenant_id = ?"], [db.tid()]
+    _scope_where(clauses, args, alias="")
     rows = db.query_all(
         "SELECT status, priority, sla_due, closed_at, first_response_at, created_at, "
-        "reopen_count FROM tickets WHERE tenant_id = ?", (db.tid(),))
+        f"reopen_count FROM tickets WHERE {' AND '.join(clauses)}", args)
     now = datetime.now()
     by_status = {s: 0 for s in ALL_STATUSES}
     overdue = 0
@@ -880,6 +1129,7 @@ def stats():
         "sla_policy": {
             "unit": "工作小时",
             "work_hours": "周一至周五 09:00-12:00、14:00-18:00",
+            "workday_hours": config.WORKDAY_HOURS,
             "archive": config.SLA_ARCHIVE_HOURS,
             "first_response": config.SLA_FIRST_HOURS,
             "holidays": sorted(config.HOLIDAYS),
@@ -892,8 +1142,8 @@ def stats():
 RULES = [
     {"rule_id": "R1", "name": "负面率突增", "priority": "P0",
      "condition": "近 1 天负面率 > 前 30 天基线 × 2（近 1 天样本 < 5 条时不评估）"},
-    {"rule_id": "R2", "name": "单维度负面集中", "priority": "P1",
-     "condition": "单维度负面 ≥ 20 条且占该维度 ≥ 25%（窗口 = 当前筛选范围）"},
+    {"rule_id": "R2", "name": "单主题负面集中", "priority": "P1",
+     "condition": "单主题负面 ≥ 20 条且占该主题 ≥ 25%（窗口 = 当前筛选范围）"},
     {"rule_id": "R3", "name": "归因词突增", "priority": "P1",
      "condition": "某归因词近 7 天提及量 > 前 7 天 × 3（近 7 天 < 3 条时不评估）"},
     {"rule_id": "R4", "name": "高互动负面", "priority": "P2",
@@ -973,7 +1223,7 @@ def suggestions(dataset_id=None):
                 "evidence": pick_evidence({**f, "date_from": day_from, "date_to": day_to}, 3),
             })
 
-    # ---- R2 单维度负面集中：窗口 = 当前筛选范围 ----
+    # ---- R2 单主题负面集中：窗口 = 当前筛选范围 ----
     where, params = analytics._where(f)
     rows = db.query_all(
         f"""SELECT j.value dim, COUNT(*) n,
@@ -985,18 +1235,18 @@ def suggestions(dataset_id=None):
     if hit:
         share = round(hit["neg"] / hit["n"] * 100, 1)
         out.append({
-            "rule_id": "R2", "rule_name": "单维度负面集中", "priority": "P1",
-            "dimension": hit["dim"], "title": f"「{hit['dim']}」负面 {hit['neg']} 条，占该维度 {share}%",
-            "detail": f"当前筛选范围内，该维度共 {hit['n']} 条，其中负面 {hit['neg']} 条（{share}%），"
+            "rule_id": "R2", "rule_name": "单主题负面集中", "priority": "P1",
+            "dimension": hit["dim"], "title": f"「{hit['dim']}」负面 {hit['neg']} 条，占该主题 {share}%",
+            "detail": f"当前筛选范围内，该主题共 {hit['n']} 条，其中负面 {hit['neg']} 条（{share}%），"
                       "满足「≥ 20 条且占比 ≥ 25%」。属常规集中吐槽，建议按议题处理，"
                       "不必上升到事件定性。",
-            "basis": {"负面": hit["neg"], "该维度总数": hit["n"], "占比": f"{share}%"},
+            "basis": {"负面": hit["neg"], "该主题总数": hit["n"], "占比": f"{share}%"},
             "filters": {**span, "dimensions": [hit["dim"]]},
             "evidence": pick_evidence({**f, "dimensions": [hit["dim"]]}, 3),
         })
     else:
         skipped.append({"rule_id": "R2",
-                        "reason": "没有维度同时满足「负面 ≥ 20 条」与「占比 ≥ 25%」"})
+                        "reason": "没有主题同时满足「负面 ≥ 20 条」与「占比 ≥ 25%」"})
 
     # ---- R3 归因词突增：近 7 天 vs 前 7 天，**口径同长**
     # 早期写成"7 天总量 > 日均 × 3"，那个比较天生成立（7 天总量约为日均的 7 倍），
@@ -1115,13 +1365,23 @@ def from_suggestion(body):
 
 
 def assignable_users():
+    """可被分派的人。部门账号也在里面：单归口到某个部门后，
+    admin 可以把单直接派给这个部门的账号，而不是先找一个人。"""
     rows = db.query_all(
-        "SELECT user_id, username, display_name, role FROM users "
-        "WHERE tenant_id = ? AND status = 'active' AND role IN ('handler', 'admin') "
-        "ORDER BY role DESC, username ASC", (db.tid(),))
-    return [{"user_id": r["user_id"], "name": r["display_name"] or r["username"],
-             "role": r["role"], "role_label": config.ROLE_LABELS.get(r["role"], r["role"])}
-            for r in rows]
+        "SELECT u.user_id, u.username, u.display_name, u.role, u.department_id, "
+        "d.name AS dept_name FROM users u "
+        "LEFT JOIN departments d ON d.dept_id = u.department_id AND d.tenant_id = u.tenant_id "
+        "WHERE u.tenant_id = ? AND u.status = 'active' AND u.role IN ('handler', 'dept', 'admin') "
+        "ORDER BY CASE u.role WHEN 'admin' THEN 1 WHEN 'handler' THEN 2 ELSE 0 END, u.username ASC",
+        (db.tid(),))
+    out = []
+    for r in rows:
+        label = config.ROLE_LABELS.get(r["role"], r["role"])
+        if r["role"] == "dept" and r["dept_name"]:
+            label = f"{r['dept_name']} · 部门账号"
+        out.append({"user_id": r["user_id"], "name": r["display_name"] or r["username"],
+                    "role": r["role"], "role_label": label})
+    return out
 
 
 def dashboard_badge():
@@ -1130,41 +1390,58 @@ def dashboard_badge():
         return {"enabled": True, "can_view": False, "mine": 0, "pending": 0, "overdue": 0}
     ensure_can_view()
     now = _fmt(datetime.now())
+    # 角标必须跟着可见范围走：部门账号看到"待处置 9"、点进去只有 2 单，
+    # 这个数字就变成了误导。范围口径与列表一致（dept_scope）。
+    dept = dept_scope()
+    base, base_args = "tenant_id = ?", [db.tid()]
+    if dept is not None:
+        base += " AND department_id = ?"
+        base_args.append(dept)
     if _role() == "handler":
-        mine = db.scalar(
-            "SELECT COUNT(*) FROM tickets WHERE tenant_id = ? AND owner_id = ? AND status IN "
-            "('assigned','processing','reopened')", (db.tid(), _uid())) or 0
-        overdue = db.scalar(
-            "SELECT COUNT(*) FROM tickets WHERE tenant_id = ? AND owner_id = ? AND sla_due < ? "
-            "AND status IN ('assigned','processing','pending_review','reopened')",
-            (db.tid(), _uid(), now)) or 0
+        scope_sql, scope_args = base + " AND owner_id = ?", base_args + [_uid()]
+        mine_status = "('assigned','processing','reopened')"
+    elif dept is not None:
+        # 部门账号的"待办"= 本部门还没办完的单，不按 owner 分——
+        # 部门是责任主体，工单没分到具体人时也该有人看得见。
+        scope_sql, scope_args = base, base_args
+        mine_status = "('assigned','processing','reopened')"
     else:
-        mine = db.scalar(
-            "SELECT COUNT(*) FROM tickets WHERE tenant_id = ? AND status IN "
-            "('draft','triaged','pending_review')", (db.tid(),)) or 0
-        overdue = db.scalar(
-            "SELECT COUNT(*) FROM tickets WHERE tenant_id = ? AND sla_due < ? "
-            "AND status IN ('assigned','processing','pending_review','reopened')",
-            (db.tid(), now)) or 0
+        scope_sql, scope_args = base, base_args
+        mine_status = "('draft','triaged','pending_review')"
+    mine = db.scalar(
+        f"SELECT COUNT(*) FROM tickets WHERE {scope_sql} AND status IN {mine_status}",
+        scope_args) or 0
+    overdue = db.scalar(
+        f"SELECT COUNT(*) FROM tickets WHERE {scope_sql} AND sla_due < ? "
+        "AND status IN ('assigned','processing','pending_review','reopened')",
+        scope_args + [now]) or 0
     pending = db.scalar(
-        "SELECT COUNT(*) FROM tickets WHERE tenant_id = ? AND status IN "
+        f"SELECT COUNT(*) FROM tickets WHERE {scope_sql} AND status IN "
         "('draft','triaged','assigned','processing','pending_review','reopened')",
-        (db.tid(),)) or 0
-    return {"enabled": True, "can_view": True, "mine": mine, "pending": pending,
-            "overdue": overdue, "label": f"待处置 {pending}", "overdue_label": f"超期 {overdue}"}
+        scope_args) or 0
+    # scope 决定顶栏角标该显示哪个数：处置员看"我的"，管理员/分析员看"全校未结"。
+    # 以前前端只取 mine，管理员 mine=0 时整枚角标消失——3 张超期单在顶栏上一个提示都没有。
+    scope = "mine" if _role() == "handler" else ("dept" if dept is not None else "all")
+    return {"enabled": True, "can_view": True, "scope": scope,
+            "mine": mine, "pending": pending, "overdue": overdue,
+            "label": f"未结 {pending}", "overdue_label": f"超期 {overdue}"}
 
 
 def trend(days=14):
     """近 N 天建单/归档数——驾驶舱一格用，口径简单（按创建时间/归档时间落在哪一天）。"""
     ensure_can_view()
     start = (datetime.now() - timedelta(days=days - 1)).strftime("%Y-%m-%d")
+    clauses, args = ["tenant_id = ?", "created_at >= ?"], [db.tid(), start + " 00:00:00"]
+    _scope_where(clauses, args, alias="")
     created = db.query_all(
-        "SELECT substr(created_at, 1, 10) d, COUNT(*) n FROM tickets "
-        "WHERE tenant_id = ? AND created_at >= ? GROUP BY d", (db.tid(), start + " 00:00:00"))
+        f"SELECT substr(created_at, 1, 10) d, COUNT(*) n FROM tickets "
+        f"WHERE {' AND '.join(clauses)} GROUP BY d", args)
+    closed_clauses, closed_args = (["tenant_id = ?", "closed_at IS NOT NULL", "closed_at >= ?"],
+                                   [db.tid(), start + " 00:00:00"])
+    _scope_where(closed_clauses, closed_args, alias="")
     closed = db.query_all(
-        "SELECT substr(closed_at, 1, 10) d, COUNT(*) n FROM tickets "
-        "WHERE tenant_id = ? AND closed_at IS NOT NULL AND closed_at >= ? GROUP BY d",
-        (db.tid(), start + " 00:00:00"))
+        f"SELECT substr(closed_at, 1, 10) d, COUNT(*) n FROM tickets "
+        f"WHERE {' AND '.join(closed_clauses)} GROUP BY d", closed_args)
     cmap = {r["d"]: r["n"] for r in created}
     kmap = {r["d"]: r["n"] for r in closed}
     out = []

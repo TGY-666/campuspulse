@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}风险研判总览{% endblock %}
+{% block page_title %}风险研判总览{% endblock %}
+{% block page_sub %}{% if tk_readonly %}这一页只回答两件事：这事归谁、有多急；工单在子页「处置工单」里只读可查{% else %}这一页只回答两件事：这事归谁、有多急；看完点「按建议建单」，下一步在子页「处置工单」里闭环{% endif %}{% endblock %}
+
+{% block content %}
+{# 研判到处置：一句话说清"这一步在整条链的什么位置"。以前这里是四条 <span> 的
+   <nav> 流程条——不可聚焦、aria-current 无效、还排在面包屑之前。现在它退回
+   普通段落，只出现在真正走这条链的两页（本页与「处置工单」）。 #}
+<p class="cp-chain-note">研判到处置：<span class="cp-chain-step">风险指数</span> →
+    <strong>归口部门</strong>（当前） → <span class="cp-chain-step">部门响应 48 / 24 工作小时</span> →
+    <span class="cp-chain-step">处置工单</span></p>
+
+{# 整页动态区一次成型。
+   周带、闭环条、KPI、风险表的高度都由数据决定（周带 1280 下 569px、390 下 914px），
+   先画骨架再换内容，等于把整页往下推一次——实测 CLS 0.57 / 0.69，手机上就是"打开后
+   内容自己跳了一屏"。这里让这一块在首次研判渲染完成前保持原布局但不可见，
+   渲染完只做 visibility 切换：几何位置一次到位，读屏通过 aria-busy 知道还在读。
+   兜底：2.5 秒后无论请求是否回来都显示，避免接口挂起时整页空白。 #}
+<div id="dpBoot" class="dp-boot" aria-busy="true">
+
+{# 周带：把「部门响应 48 / 24 工作小时」从一句换算题变成"钉在哪一天"。
+   内容全部由 departments.js 的 renderWeek() 写入；研判未回来、或切到自选时段时整块隐藏
+   （自选时段讲的是过去某一段，把它钉到未来两周等于给历史加了一个假 deadline）。 #}
+<div class="card wk" id="dpWeek" hidden></div>
+
+{# 研判 → 建单 → 闭环，这条链断在哪一环是这一屏最该回答的问题。
+   单独拉一条而不是塞进 KPI：四张 KPI 讲的是"研判本身"，这四格讲的是"研判之后"。
+   无工单权限的角色请求会 403，整条隐藏（不显示"0 单"冒充没待办）。 #}
+<div class="card dp-todo" id="dpTodo" hidden>
+    <div class="dp-todo-head">
+        <div>
+            <h2 class="card-title">工单闭环</h2>
+            <div class="card-sub" data-hint>研判只是判断，落到工单才算有人管</div>
+        </div>
+        <a class="btn btn-sm" href="/tickets">去处置工单 →</a>
+    </div>
+    <div class="dp-todo-metrics" id="dpTodoMetrics"></div>
+</div>
+
+<div class="grid g-3k" id="dpKpi"></div>
+
+{# 一张表，两个时间窗。
+   以前是两张并排的表：左边「定期研判·自选时段」有优先级列、右边「实时研判·近 30 天」
+   没有，同一个主题左右给出 31% 与 9%——读者只能得出"其中一张是错的"。
+   现在合成一张：切换窗口就换一份数据，屏幕上永远只有一个答案，
+   百分比右上方那行小字始终写着它属于哪一段。 #}
+<div class="card" id="dpRiskCard">
+    <div class="card-head">
+        <div>
+            <h2 class="card-title">风险研判</h2>
+            <div class="card-sub" id="dpRiskSub">主题越高，越该先有人回应</div>
+        </div>
+        <div class="card-tools">
+            <div class="chip-group" id="dpWinTabs" role="group" aria-label="研判时间窗">
+                <button class="chip on" data-win="live" type="button">近 30 天</button>
+                <button class="chip" data-win="custom" type="button">自选时段</button>
+            </div>
+            <span class="tools-sep" aria-hidden="true"></span>
+            <span class="badge" id="dpEngine">研判中</span>
+            {# 018 两颗研判按钮按窗口二选一：初始都不露出，由 departments.js 的
+               renderShell() 依据 view.win（近 30 天 / 自选时段）点亮其中一颗，
+               避免首屏闪一下两颗并列、也避免卡头再多堆一层控件。 #}
+            <button class="btn btn-sm" id="dpRefresh" type="button" hidden>重新研判</button>
+            <button class="btn btn-sm btn-primary" id="dpMonthlyRun" type="button" hidden>立即研判</button>
+        </div>
+    </div>
+
+    {# 自选时段才需要这段控件：近 30 天的窗口是"数据最后一天往回 30 天"，没有可选项。 #}
+    <div class="dp-range" id="dpRange" hidden>
+        <label class="dp-range-field">从
+            <input class="input" type="date" id="dpRangeFrom" aria-label="开始日期">
+        </label>
+        <span class="dp-range-sep">至</span>
+        <label class="dp-range-field">
+            <input class="input" type="date" id="dpRangeTo" aria-label="结束日期">
+        </label>
+        <div class="dp-range-quick">
+            <button class="btn btn-sm btn-ghost" type="button" data-quick="last-month">上个月</button>
+            <button class="btn btn-sm btn-ghost" type="button" data-quick="30">近 30 天</button>
+            <button class="btn btn-sm btn-ghost" type="button" data-quick="90">近 90 天</button>
+        </div>
+        <span class="dp-range-hint" id="dpRangeHint"></span>
+    </div>
+
+    {# 这次研判是哪一次：周期、窗口、样本、引擎、完成时间，外加一句话结论 #}
+    <div class="dp-snap" id="dpSnap" hidden></div>
+
+    <div id="dpRisk">
+        <div class="skeleton" style="height:220px"></div>
+    </div>
+    <div id="dpDetail"></div>
+    <div class="dp-hist" id="dpMonthlyHist" hidden></div>
+    <div class="note note-muted is-hidden" id="dpRiskNote" style="margin-top:10px;"></div>
+</div>
+
+<div class="card" style="margin-top:14px;">
+    <div class="card-head">
+        <div>
+            <h2 class="card-title">部门与职责</h2>
+            {# 第 18 轮：「示例配置」从页首黄色警示条挪到这里——读者正好在这一屏
+               看到县体名、负责人、电话，也就是他会问"这些是真的吗"的地方。
+               风险指数的定义与免责在下面「风险指数怎么来的」里一字未删。 #}
+            <div class="card-sub" id="dpListSub">归口判断的依据：主题定主责，关键词细分到科室。
+                部门、负责人、联系方式为<strong>示例配置</strong>，请按学校实际分工修改。</div>
+        </div>
+        <div class="card-tools">
+            <span class="badge" id="dpCount">—</span>
+            <button class="btn btn-primary btn-sm" id="dpNew" type="button" hidden>新增部门</button>
+        </div>
+    </div>
+    <div id="dpList">
+        <div class="skeleton" style="height:88px;margin-bottom:8px"></div>
+        <div class="skeleton" style="height:88px"></div>
+    </div>
+</div>
+
+{# 权重说明默认收起：它的用途是"被问到时能当场翻开"，
+   不是每一屏都要读的表。一直铺在页面底部，会让人以为这一页的重点是算法，
+   而这页要回答的是"该谁管、有多急"。点标题展开。 #}
+<div class="card dp-weights is-hidden" id="dpWeights" style="margin-top:14px;">
+    {# 展开控件放在右边那颗按钮上，不是整个卡头。
+       卡头一旦 role="button"，里面那颗 h2 就会被按钮语义吞掉、从标题大纲里消失——
+       而这一页正好需要"风险指数怎么来的"能被当作一节找到。
+       整块卡头仍然可点（鼠标习惯不变），但键盘只走这颗按钮。 #}
+    <div class="card-head dp-weights-head" id="dpWeightsHead">
+        <div>
+            <h2 class="card-title">风险指数怎么来的<span class="dp-weights-caret" aria-hidden="true">›</span></h2>
+            <div class="card-sub">四项加权，每一项都有分子分母；样本不足的项不计分而不是记 0 分。
+                风险指数不是负面占比，也不代表对言论真实性的认定。</div>
+        </div>
+        <button class="dp-weights-tip" id="dpWeightsTip" type="button"
+                aria-expanded="false" aria-controls="dpWeightBody">展开看算法</button>
+    </div>
+    <div id="dpWeightBody" hidden></div>
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ static_url('cp/departments.js') }}"></script>
+{% endblock %}

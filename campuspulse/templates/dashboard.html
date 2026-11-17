@@ -1,112 +1,147 @@
 {% extends "base.html" %}
-{% block title %}智能驾驶舱{% endblock %}
-{% block page_title %}智能驾驶舱{% endblock %}
+{% block title %}舆情总览{% endblock %}
+{% block page_title %}舆情总览{% endblock %}
 {% block page_sub %}30 秒建立对当前数据集的整体认知 · 每个比例都可追溯到分母{% endblock %}
 
 {% block content %}
 <div id="filterBar"></div>
 
-{# 工单概览：只有开了工单功能、且角色有权查看时才由 dashboard.js 显示 #}
-<div class="card tk-strip" id="ticketStrip" style="display:none;"></div>
+{# 今天要办的三件事：驾驶舱原来只讲"这批数据长什么样"（声量 / 情感 / AI 长文），
+   而"风险指数 / 归口部门 / 多久之内"这三个词在全站正文里一次都没出现过——
+   它们是产品的主张，却只活在第 5、6 个入口之后。
+   三行取自 /api/departments/risk?ai=0（规则引擎，毫秒级，不调模型），
+   排的是"多急"而不是"多热"：一个热搜主题如果没有人需要动，它不该出现在这里。
+   链接落到研判页对应那一行（?dim=），点开就能建单。 #}
+{# 骨架与终态同高：这条在 300ms 内注入会把下面的 KPI 往下顶 283px（CLS）。
+   初始就摆三行占位，成功替换内容、失败替换成一句可重试的告警——
+   「正在读 / 读失败 / 今天真的没事」三种状态必须长得不一样。
+   卡片头（含这段口径说明）只在服务端渲染一次：JS 若连头部一起重写，
+   这行最宽的正文会在 2.6 秒被重新绘制并成为 LCP，尽管读者早就看见了。 #}
+<div class="card dp-today" id="todayStrip" aria-busy="true">
+    <div class="dp-today-head">
+        <div>
+            <h2 class="card-title">最该先办的三件事</h2>
+            <div class="card-sub">按「<b>还多久</b>」排：已超的在前，其次快到期的，
+                同一时刻比<b>风险指数</b>；<b>归口</b>与时限来自研判（按<b>工作小时</b>计，
+                不计周末与午休，时钟从今天起算），<b>不随上方筛选变化</b>。</div>
+        </div>
+        <a class="btn btn-sm" href="/departments">打开研判 →</a>
+    </div>
+    <div id="todayBody">
+        <div class="skeleton dp-today-skel"></div>
+        <div class="skeleton dp-today-skel"></div>
+        <div class="skeleton dp-today-skel"></div>
+    </div>
+</div>
 
-<div class="grid g-6" id="kpiRow">
-    {% for i in range(6) %}
+{# 工单概览：只有开了工单功能、且角色有权查看时才显示。
+   有权限时先渲染同高度的占位条：dashboard.js 取到数字后只换内容、不插入节点，
+   否则这一格会在首帧后把下面的 KPI 与图整体往下推（390 实测 136px）。 #}
+<div class="card tk-strip{% if not ticket_strip %} is-hidden{% endif %}" id="ticketStrip"
+     {%- if ticket_strip %} aria-busy="true"{% endif %}>
+    {%- if ticket_strip %}<div class="tk-strip-main">正在读取工单…</div>{% endif %}
+</div>
+
+<div class="grid g-5" id="kpiRow">
+    {% for i in range(5) %}
     <div class="card kpi"><div class="skeleton" style="height:12px;width:60%"></div>
         <div class="skeleton" style="height:28px;width:80%;margin-top:10px"></div>
         <div class="skeleton" style="height:10px;width:50%;margin-top:9px"></div></div>
     {% endfor %}
 </div>
 
-<div class="grid g-2-1" style="margin-top:14px;">
-    <div class="card">
-        <div class="card-head">
-            <div>
-                <div class="card-title">时间趋势</div>
-                <div class="card-sub" id="trendSub">评论量与负面评论随时间的分布</div>
-            </div>
-            <div class="card-tools">
-                <div class="chip-group" id="rangeTabs">
-                    <button class="chip" data-range="12">近 12 月</button>
-                    <button class="chip" data-range="24">近 24 月</button>
-                    <button class="chip on" data-range="all">全部</button>
-                </div>
-                <div class="chip-group" id="granTabs">
-                    <button class="chip on" data-gran="auto">自动</button>
-                    <button class="chip" data-gran="month">月</button>
-                    <button class="chip" data-gran="week">周</button>
-                    <button class="chip" data-gran="day">日</button>
-                </div>
-            </div>
-        </div>
-        <div class="chart chart-lg" id="chartTrend"></div>
-        <div class="note note-muted" style="margin-top:6px;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>
-            <span>缺失时段以 0 表示，仅说明该时段没有采集记录，不代表全网无声量。</span>
+{# 情感结构：一条横向堆叠条 + 一行可点图例，三段谁厚谁薄一眼可读；
+   精确占比与分母交给图例，首屏的「占比」解释已收敛到上面那条彩条说明，不在这里重复。
+   条上不压文字——中性那段的底是浅灰，压白字不合格、压深字又和另外两段不一致。 #}
+<div class="card" style="margin-top:14px;">
+    <div class="card-head">
+        <div>
+            <h2 class="card-title">情感分布</h2>
+            <div class="card-sub" id="sentSub">点任一段或图例，查看该类评论的原文证据</div>
         </div>
     </div>
-
-    <div class="card">
-        <div class="card-head">
-            <div>
-                <div class="card-title">情感分布</div>
-                <div class="card-sub" id="sentSub">点击扇区查看对应评论</div>
-            </div>
-        </div>
-        <div class="chart chart-lg" id="chartSentiment"></div>
-        <div id="sentLegend"></div>
-    </div>
-</div>
-
-<div class="grid g-2-1" style="margin-top:14px;">
-    <div class="card">
-        <div class="card-head">
-            <div>
-                <div class="card-title">七大维度热度</div>
-                <div class="card-sub">点击柱条进入证据中心，并带上该维度筛选</div>
-            </div>
-        </div>
-        <div class="chart chart-lg" id="chartDims"></div>
-    </div>
-
-    <div class="card">
-        <div class="card-head">
-            <div>
-                <div class="card-title">双平台概况</div>
-                <div class="card-sub" id="platSub">评论量与情感结构</div>
-            </div>
-        </div>
-        <div class="chart chart-sm" id="chartPlatform"></div>
-        <div id="platTable" class="table-scroll" style="margin-top:6px;"></div>
-    </div>
+    {# 三段各自是真按钮：这条条是首页最像"可以点"的元素，
+       以前是 aria-hidden 的 span，点下去什么都不发生。 #}
+    <div class="sent-bar" id="sentBar" role="group" aria-label="情感构成，点某一段查看该类评论"></div>
+    <div class="sent-legend" id="sentLegend"></div>
 </div>
 
 <div class="card" style="margin-top:14px;">
     <div class="card-head">
         <div>
-            <div class="card-title">AI 舆情简述</div>
-            <div class="card-sub">基于当前筛选范围的 KPI 与分布生成，用于快速把握重点</div>
+            <h2 class="card-title">AI 舆情简述</h2>
         </div>
         <div class="card-tools">
             <span class="badge badge-brand" id="insightEngine">生成中</span>
             <button class="btn btn-sm" id="btnInsight">重新生成</button>
         </div>
     </div>
-    <div id="aiInsight" style="font-size:13.5px;line-height:1.85;color:#334155;min-height:52px;"></div>
-    <div id="aiInsightNote" class="note note-muted" style="margin-top:10px;display:none;"></div>
+    <div id="aiInsight" class="ai-summary"></div>
+    <div id="aiInsightNote" class="note note-muted is-hidden" style="margin-top:10px;"></div>
+    <div class="ai-basis-slot" id="aiInsightBasis"></div>
 </div>
 
-<div class="note" style="margin-top:14px;">
+<div class="card" style="margin-top:14px;">
+    <div class="card-head">
+        <div>
+            <h2 class="card-title">时间趋势</h2>
+            <div class="card-sub" id="trendSub">柱高为时段总量，段长为正 / 中 / 负构成</div>
+        </div>
+        <div class="card-tools">
+            {# 七枚一模一样的胶囊（看多久 × 按什么粒度）以前挤在一排，读起来像"一个控件有七个选项"。
+               现在只留三个时间范围，粒度收进下拉——它改的是一个次要参数，不值得占三个按钮的位置。 #}
+            <div class="chip-group" id="rangeTabs" role="group" aria-label="时间范围">
+                <button class="chip" data-range="12">近 12 月</button>
+                <button class="chip" data-range="24">近 24 月</button>
+                <button class="chip on" data-range="all">全部</button>
+            </div>
+            <span class="tools-sep" aria-hidden="true"></span>
+            <label class="tools-field">粒度
+                <select class="select select-sm" id="granSel" aria-label="聚合粒度">
+                    <option value="auto">自动</option>
+                    <option value="month">按月</option>
+                    <option value="week">按周</option>
+                    <option value="day">按日</option>
+                </select>
+            </label>
+        </div>
+    </div>
+    <div class="chart chart-lg" id="chartTrend"></div>
+</div>
+
+{# 主题排行不在这里重复：热点与证据中心（PAGE-04）已经把同一份 ranking
+   连同可下钻的证据摆在一起，两处都放一张"主题热度"只会让人问
+   "这两个数为什么不一样"。驾驶舱只留"整体怎么样"。 #}
+<div class="card" style="margin-top:14px;">
+    <div class="card-head">
+        <div>
+            <h2 class="card-title">双平台概况</h2>
+            <div class="card-sub" id="platSub">评论量与情感结构</div>
+        </div>
+    </div>
+    <div class="grid g-1-2" style="align-items:center;">
+        <div class="chart" id="chartPlatform"></div>
+        <div class="table-scroll-hint" hidden>左右滑动查看更多列 →</div>
+        <div id="platTable" class="table-scroll"></div>
+    </div>
+</div>
+
+{# 口径行必须可见：它解释的是"784+559+…=2,502 为什么和 1,969 对不上"。
+   这类句子以前被当成"说明性小字"藏起来（data-hint），结果是数字看着像算错了，
+   而唯一的解释不可见。承载口径的注记不在此列——只有口号才藏。 #}
+<div class="note scope-line" style="margin-top:14px;">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 4.5v5c0 4.5-3.8 7.9-9 9-5.2-1.1-9-4.5-9-9v-5L12 3z"/></svg>
-    <span id="scopeNote">数据口径：情感与维度由关键词规则标注；维度为多标签计数，合计大于评论总数属正常；所有比例的分母随筛选条件变化并在图表下方标注。</span>
+    <span id="scopeNote">口径：关键词规则标注情感与主题；主题多标签，合计可大于评论总数；比例分母随筛选变化；有效评论只算去重、清洗、可判定情感的评论。</span>
 </div>
 {% endblock %}
 
 {% block vendor %}
 <script src="{{ static_url('vendor/echarts.min.js') }}"></script>
 <script>
-    // 只有真正画图的页面才加载 ECharts；本地 vendor 缺失时回退 CDN
+    // 只有真正画图的页面才加载 ECharts；缺本地组件时提示安装
     if (typeof window.echarts === 'undefined') {
-        document.write('<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"><\/script>');
+        document.currentScript.insertAdjacentHTML('afterend',
+            '<p class="note note-muted" style="margin:12px 0;padding:10px;"><span>图表组件未加载，请确认本地静态资源完整</span></p>');
     }
 </script>
 {% endblock %}

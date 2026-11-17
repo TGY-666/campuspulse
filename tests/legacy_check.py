@@ -17,14 +17,14 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from data_processor import (  # noqa: E402
+from legacy.data_processor import (  # noqa: E402
     DIMENSION_KEYWORDS, clean_text, is_valid_comment, timestamp_to_datetime,
 )
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FILES = [
-    ("抖音", os.path.join(BASE, "comparison_data", "first", "douyin_comments.json")),
-    ("小红书", os.path.join(BASE, "comparison_data", "first", "xhs_comments.json")),
+    ("抖音", os.path.join(BASE, "datasets", "2022-2026", "douyin_comments.json")),
+    ("小红书", os.path.join(BASE, "datasets", "2022-2026", "xhs_comments.json")),
 ]
 
 

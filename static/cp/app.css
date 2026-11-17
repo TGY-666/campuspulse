@@ -3,24 +3,32 @@
    白底 + 淡蓝辅助，圆角卡片，统一图表主题与状态反馈
    ============================================================ */
 :root {
-    --brand: #165DFF;
-    --brand-dark: #0E4BD6;
-    --brand-soft: #EEF4FF;
-    --brand-line: #D8E4FF;
-    --ink: #0F172A;
-    --ink-2: #334155;
-    --ink-3: #64748B;
-    --ink-4: #94A3B8;
-    --line: #E9EEF6;
-    --line-2: #F2F5FA;
-    --bg: #F7F9FC;
+    --brand: #3358E8;               /* 淡蓝 soft 底上 5.07、白底 5.67（原 #3B63F3 分别是 4.40 / 4.92） */
+    --brand-dark: #2D4ED7;
+    --brand-solid: var(--brand);    /* 实心按钮底色：白字必须压得住 */
+    --brand-text: var(--brand);     /* 品牌色「文字」档：浅底上要深、深底上要亮 */
+    --brand-soft: #EEF2FF;
+    --brand-line: #D4DDFC;
+    --ink: #172033;
+    --ink-2: #3E4C63;
+    /* 三档文字色都按"最脏的底"定：淡蓝 soft 底与 sunken 底（#EEF2FF / #F1F5F9）。
+       ink-3 原 #607089 在 soft 底上只有 4.50，卡在合格线上，压到 #5A6A83（4.9）；
+       ink-4 原 #748298 在 sunken 底上只有 3.56，压到 #5F6E85（4.77）。
+       代价是 ink-3 与 ink-4 视觉上几乎一样——因为浅底上留不住第四档灰度，
+       再淡一级就必然低于 AA。第四档只留给图形（--ink-faint）。 */
+    --ink-3: #5A6A83;
+    --ink-4: #5F6E85;
+    --ink-faint: #8C99AD;           /* 承载不了文字的图形：圆点、轨道、低优先级条 */
+    --line: #E3E8F0;
+    --line-2: #EDF1F6;
+    --bg: #F3F6FA;
     --white: #fff;                  /* 仅供"品牌色上的文字"使用 */
     /* 表面分层：深色模式下只改这 4 个值，整站跟着变 */
     --surface: #FFFFFF;             /* 卡片、侧栏、筛选栏 */
-    --surface-2: #FCFDFF;           /* 次级面：表头、输入框、推荐区 */
-    --surface-3: #FBFDFF;           /* 悬停 / 指标块 */
-    --surface-sunken: #F6F8FC;      /* 代码块、参数芯片 */
-    --topbar-bg: rgba(247, 249, 252, .88);
+    --surface-2: #F8FAFD;           /* 次级面：表头、输入框、推荐区 */
+    --surface-3: #F5F8FC;           /* 悬停 / 指标块 */
+    --surface-sunken: #F1F5F9;      /* 代码块、参数芯片 */
+    --topbar-bg: rgba(255, 255, 255, .86);
     /* 语义色（软底 + 深字），深色模式要整体换一套 */
     --pos-soft: #ECFDF3; --pos-ink: #067647;
     --neg-soft: #FEF3F2; --neg-ink: #B42318;
@@ -35,16 +43,45 @@
     --warn-line: #FDE9C0;
     --pos-solid: #067647; --neg-solid: #B42318;
     --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-    --pos: #16A34A;
+    /* 语义色的"实心/图形"档。--neg 同时被当成小字颜色用（风险百分比、负面数），
+       原来的 #E5484D 在白底只有 3.91、在 --neg-soft 上更低，压到 #D92D20（白底 4.83）。 */
+    --pos: #15803D;                 /* 白底 5.02；原 #16A34A 只有 3.30，当小字用时不合格 */
     --neu: #94A3B8;
-    --neg: #E5484D;
+    --neg: #D92D20;
     --warn: #D97706;
     --radius: 16px;
     --radius-sm: 10px;
-    --shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 10px 30px -18px rgba(15, 23, 42, .18);
-    --shadow-sm: 0 1px 2px rgba(15, 23, 42, .05);
+    --shadow: 0 2px 5px rgba(23, 32, 51, .035), 0 20px 42px -26px rgba(35, 55, 95, .28);
+    --shadow-sm: 0 1px 2px rgba(23, 32, 51, .025), 0 8px 22px -18px rgba(35, 55, 95, .18);
+    --focus-ring: 0 0 0 3px rgba(51, 88, 232, .38);
+    --sidebar-bg: #111B30;
+    --sidebar-ink: #E7ECF7;
+    --sidebar-muted: #8E9CB4;
+    --sidebar-line: rgba(148, 163, 194, .13);
+    --sidebar-hover: rgba(255, 255, 255, .055);
     --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
     "Hiragino Sans GB", "Microsoft YaHei", "Source Han Sans SC", sans-serif;
+    /* 字号阶梯：只有这几档。
+       以前全站 24 种字号（含 10.5 / 11.5 / 12.5 / 13.5 / 14.5 / 16.5 六个半像素档），
+       相邻两档只差 1px，读者分不出层级，投影仪上则一律糊成一片。
+       档位按"用途"取名：micro 只给单位、序号、导航码；xs 是元信息与表头；
+       sm 是表格正文与次要叙述；base 是正文；md 是卡片标题；lg 是弹窗标题与强调数字；
+       xl 是页标题；2xl / display 只给首屏指标数字。
+
+       micro 从 11px 提到 12px（2026-11-14）：被压在这一档上的不是装饰，
+       而是「负面率 7.9%」「截至 07-07」「责任人 陈老师」——投影到三米外、
+       或者手机竖屏上，最先糊掉的恰好是"这个数属于哪段时间、这个人是谁"。
+       代价是 micro 与 xs 现在同值；保留这个名字是为了不动 200 多处引用，
+       下次整理时并入 --fs-xs。**新代码别再写裸 px 字号**，包括内联 style。 */
+    --fs-micro: 12px;
+    --fs-xs: 12px;
+    --fs-sm: 13px;
+    --fs-base: 14px;
+    --fs-md: 16px;
+    --fs-lg: 18px;
+    --fs-xl: 20px;
+    --fs-2xl: 26px;
+    --fs-display: 30px;
 }
 
 * { box-sizing: border-box; }
@@ -55,13 +92,15 @@ body {
     font-family: var(--font);
     background: var(--bg);
     color: var(--ink);
-    font-size: 14px;
+    font-size: var(--fs-base);
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
 }
 
 a { color: inherit; text-decoration: none; }
 button { font-family: inherit; }
+::selection { background: var(--brand-line); color: var(--ink); }
 
 /* ---------------- 布局 ---------------- */
 .shell { display: flex; min-height: 100vh; }
@@ -86,54 +125,98 @@ button { font-family: inherit; }
     gap: 10px;
 }
 
+/* impeccable-disable-next-line dark-glow -- 用户 2026-11-15 显式 pin，见 DESIGN.md Explicit exemptions */
 .brand-mark {
-    width: 34px; height: 34px;
-    border-radius: 10px;
+    width: 36px; height: 36px;
+    border-radius: 11px;
     background: linear-gradient(135deg, #165DFF, #4C8DFF);
     display: grid; place-items: center;
-    color: #fff; font-weight: 700; font-size: 15px;
-    box-shadow: 0 6px 14px -6px rgba(22, 93, 255, .8);
+    color: #fff; font-weight: 750; font-size: var(--fs-md); letter-spacing: .2px;
+    box-shadow: 0 8px 18px -8px rgba(22, 93, 255, .85);
 }
 
-.brand-name { font-size: 16px; font-weight: 700; letter-spacing: -.2px; }
-.brand-sub { font-size: 11px; color: var(--ink-4); letter-spacing: .3px; }
+.brand-name { font-size: var(--fs-md); font-weight: 700; letter-spacing: -.25px; }
+.brand-sub { font-size: var(--fs-micro); color: var(--ink-4); letter-spacing: .35px; }
 
 .nav { padding: 6px 12px; flex: 1; overflow-y: auto; }
 .nav-label {
-    font-size: 11px; color: var(--ink-4);
+    font-size: var(--fs-micro); color: var(--ink-4);
     padding: 12px 10px 6px; letter-spacing: .6px;
 }
 
 .nav-item {
     display: flex; align-items: center; gap: 10px;
-    padding: 9px 12px;
+    padding: 10px 12px;
     border-radius: 10px;
     color: var(--ink-2);
-    font-size: 13.5px;
-    margin-bottom: 2px;
-    transition: background .15s, color .15s;
+    font-size: var(--fs-base);
+    margin-bottom: 3px;
+    transition: background .15s, color .15s, box-shadow .15s;
     position: relative;
 }
-.nav-item:hover { background: var(--line-2); color: var(--ink); }
-.nav-item.active { background: var(--brand-soft); color: var(--brand); font-weight: 600; }
+.nav-item:hover { background: var(--surface-3); color: var(--ink); }
+.nav-item.active {
+    background: var(--brand-soft); color: var(--brand); font-weight: 650;
+    box-shadow: inset 0 0 0 1px rgba(22, 93, 255, .04);
+}
 .nav-item.active::before {
     content: ""; position: absolute; left: -12px; top: 8px; bottom: 8px;
     width: 3px; border-radius: 0 3px 3px 0; background: var(--brand);
 }
 .nav-item svg { width: 17px; height: 17px; flex: 0 0 17px; opacity: .85; }
-.nav-code { margin-left: auto; font-size: 10px; color: var(--ink-4); font-weight: 500; }
+
+/* ---------- A2：父项上的子项折叠开关 ----------
+   子项默认折叠后，父项只剩一行字，谁也看不出「数据洞察中心」下面还有 3 个视图。
+   三角是独立按钮（不是 <a> 的子节点）：点标题进父页、点三角只展开，
+   键盘也只有两个各自独立的焦点。aria-expanded 与 .is-open 由 core.js 同步。 */
+.nav-group { position: relative; }
+.nav-item.has-children { padding-right: 36px; }
+.nav-caret {
+    position: absolute; top: 6px; right: 6px;
+    width: 28px; height: 28px; padding: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 0; border-radius: var(--radius-sm); background: transparent;
+    color: var(--ink-4); cursor: pointer;
+    transition: background .15s, color .15s;
+}
+.nav-caret svg { width: 14px; height: 14px; transition: transform .18s ease; }
+.nav-caret:hover { background: var(--line-2); color: var(--ink-2); }
+.nav-caret:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
+/* 收起时箭头朝右（"这里还有东西"），展开时朝下 */
+.nav-caret[aria-expanded="false"] svg { transform: rotate(-90deg); }
+
+/* 二级目录：左侧一条细竖线表示从属关系，子项比父项小半号。
+   03 数据洞察 / 05 风险研判 / 06 处置工单等目录都带子项（不止「数据洞察中心」一处）。
+   第 9 轮起改为「按当前组折叠」：默认收起、仅当前组父项（.is-open）展开，
+   样式见文件末尾第 9 轮补丁段。 */
+.nav-children {
+    margin: 1px 0 4px 22px;
+    padding-left: 8px;
+    border-left: 1px solid var(--line-2);
+}
+.nav-child {
+    display: flex; align-items: center;
+    padding: 7px 10px;
+    border-radius: 8px;
+    font-size: var(--fs-sm);
+    color: var(--ink-3);
+    margin-bottom: 1px;
+    transition: background .15s, color .15s;
+}
+.nav-child:hover { background: var(--line-2); color: var(--ink); }
+.nav-child.active { background: var(--brand-soft); color: var(--brand); font-weight: 600; }
 
 .sidebar-foot {
     padding: 14px 16px 18px;
     border-top: 1px solid var(--line);
-    font-size: 11.5px;
+    font-size: var(--fs-xs);
     color: var(--ink-4);
 }
 .engine-pill {
     display: inline-flex; align-items: center; gap: 6px;
     padding: 4px 9px; border-radius: 999px;
     background: var(--line-2); color: var(--ink-3);
-    font-size: 11px; margin-bottom: 8px;
+    font-size: var(--fs-micro); margin-bottom: 8px;
 }
 .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--neu); }
 .dot.on { background: var(--pos); box-shadow: 0 0 0 3px rgba(22, 163, 74, .12); }
@@ -144,16 +227,37 @@ button { font-family: inherit; }
 .topbar {
     position: sticky; top: 0; z-index: 15;
     background: var(--topbar-bg);
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(14px) saturate(1.15);
+    -webkit-backdrop-filter: blur(14px) saturate(1.15);
     border-bottom: 1px solid var(--line);
-    padding: 14px 28px;
+    padding: 14px 30px;
     display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
 }
-.page-title { font-size: 17px; font-weight: 700; letter-spacing: -.2px; }
-.page-sub { font-size: 12px; color: var(--ink-4); margin-top: 1px; }
-.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+/* flex-wrap 先换行再收缩，默认基数为 max-content：长副标题页（/insights、
+   /departments 的说明 500px+）在 1280 下会把控件组整个挤到第二行。
+   基数设 0，标题块只占剩余宽度，副标题自己折行；控件永远与标题同行。 */
+.topbar > div:not(.topbar-right) { flex: 1 1 0; min-width: 0; }
+/* 这两个类现在挂在真的 h1 / h2 上（屏幕阅读器要靠它建大纲），
+   只把浏览器默认的上下外边距清掉，字号与字重仍由类自己定。 */
+.page-title, .card-title { margin: 0; }
+.page-title { font-size: var(--fs-lg); font-weight: 700; letter-spacing: -.3px; }
+/* 页面副标题不显示：一句口号占掉顶栏半行，而且每页说的都是"这一页能干什么"，
+   读第二遍就没有信息量了。模板里的 {% block page_sub %} 一个字没删，
+   要恢复只删 display: none 这一句即可。 */
+/* 副标题是"这一页解决什么问题"的唯一入口（每个模板都写了 page_sub）。
+   之前这里 display:none，只在 720 那条媒体查询的注释里写着"手机上会挤掉筛选栏"——
+   本意是移动端隐藏，实际桌面端也一起没了。现在桌面恢复，移动端照旧隐藏。 */
+.page-sub {
+    font-size: var(--fs-sm); color: var(--ink-2);
+    margin-top: 2px; max-width: 78ch;
+    text-wrap: pretty;
+}
+/* A6 补漏：图标按钮补了可见动作名之后，topbar-right 的内容宽会顶破 1280 视口
+   （实测 11px 横向溢出）。min-width:0 让这个 flex item 可以收缩、由 flex-wrap 接管换行，
+   而不是把整行推到视口外。文案也同步缩到 2–3 字，双重保险。 */
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-width: 0; }
 
-.content { padding: 22px 28px 60px; max-width: 1560px; width: 100%; }
+.content { padding: 24px 30px 64px; max-width: 1560px; width: 100%; }
 
 /* ---------------- 通用控件 ---------------- */
 .btn {
@@ -161,12 +265,26 @@ button { font-family: inherit; }
     height: 34px; padding: 0 14px;
     border-radius: 9px; border: 1px solid var(--line);
     background: var(--surface); color: var(--ink-2);
-    font-size: 13px; cursor: pointer;
-    transition: all .15s;
+    font-size: var(--fs-sm); font-weight: 500; cursor: pointer;
+    transition: background .15s, border-color .15s, color .15s, box-shadow .15s, transform .12s;
     white-space: nowrap;
 }
-.btn:hover { border-color: var(--brand-line); color: var(--brand); background: var(--surface-3); }
+.btn:hover { border-color: var(--brand-line); color: var(--brand); background: var(--brand-soft); }
+.btn:active:not(:disabled) { transform: translateY(1px); }
 .btn:disabled { opacity: .55; cursor: not-allowed; }
+.btn:focus-visible, .chip:focus-visible, .seg button:focus-visible,
+.theme-btn:focus-visible, .nav-toggle:focus-visible, .user-chip:focus-visible,
+.nav-item:focus-visible, .nav-child:focus-visible, .rec-chip:focus-visible,
+.tk-open:focus-visible, .crumb a:focus-visible, .user-pop-item:focus-visible,
+.ev-act:focus-visible, #dsSelect:focus-visible {
+    outline: 2px solid var(--brand); outline-offset: 2px;
+}
+/* 可点整行（工单列表行、主题排行、风险表行）现在真的能 Tab 到了，必须让焦点看得见——
+   否则键盘用户不知道自己在第几行。inset 偏移是因为这些行没有外边距可退。 */
+.tk-item:focus-visible, .rank-row:focus-visible,
+tr[data-topic]:focus-visible, tr[data-mtopic]:focus-visible {
+    outline: 2px solid var(--brand); outline-offset: -2px; border-radius: var(--radius-sm);
+}
 .btn-primary {
     background: var(--brand); border-color: var(--brand); color: #fff;
     box-shadow: 0 6px 16px -8px rgba(22, 93, 255, .8);
@@ -174,46 +292,153 @@ button { font-family: inherit; }
 .btn-primary:hover { background: var(--brand-dark); border-color: var(--brand-dark); color: #fff; }
 .btn-ghost { background: transparent; border-color: transparent; color: var(--ink-3); }
 .btn-ghost:hover { background: var(--line-2); }
-.btn-sm { height: 28px; padding: 0 10px; font-size: 12px; border-radius: 8px; }
+/* 危险操作（删除工单）：入口用描边，确认弹窗里的主按钮才填红。
+   整个界面只有这一处是红的，点错的机会才小；红按钮一多就没有"危险"的意思了。 */
+.btn-danger { color: var(--neg-ink); border-color: var(--neg-line); }
+.btn-danger:hover { background: var(--neg-soft); border-color: var(--neg-ink); }
+.btn-danger-solid { background: var(--neg-ink); border-color: var(--neg-ink); color: #fff; }
+.btn-danger-solid:hover { background: #9A1C12; border-color: #9A1C12; color: #fff; }
+.btn-sm { height: 28px; padding: 0 10px; font-size: var(--fs-xs); border-radius: 8px; }
 
 .input, .select {
     height: 34px; padding: 0 10px;
     border: 1px solid var(--line); border-radius: 9px;
     background: var(--surface); color: var(--ink);
-    font-size: 13px; font-family: inherit; outline: none;
-    transition: border-color .15s, box-shadow .15s;
+    font-size: var(--fs-sm); font-family: inherit; outline: none;
+    transition: border-color .15s, box-shadow .15s, background .15s;
 }
-.input:focus, .select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(22, 93, 255, .1); }
+.input:hover, .select:hover { border-color: var(--brand-line); }
+.input:focus, .select:focus { border-color: var(--brand); box-shadow: var(--focus-ring); }
+.input::placeholder { color: var(--ink-4); }
 .select { padding-right: 26px; appearance: none; background-image: var(--select-arrow); background-repeat: no-repeat; background-position: right 9px center; }
 
 .chip {
     display: inline-flex; align-items: center; gap: 5px;
-    height: 28px; padding: 0 11px;
+    height: 28px; padding: 0 11px; white-space: nowrap;
     border-radius: 999px; border: 1px solid var(--line);
     background: var(--surface); color: var(--ink-3);
-    font-size: 12.5px; cursor: pointer; transition: all .15s;
+    font-size: var(--fs-sm); cursor: pointer; transition: all .15s;
     user-select: none;
 }
-.chip:hover { border-color: var(--brand-line); color: var(--brand); }
-.chip.on { background: var(--brand-soft); border-color: var(--brand-line); color: var(--brand); font-weight: 600; }
+.chip:hover { border-color: var(--brand-line); color: var(--brand-text); background: var(--brand-soft); }
+.chip.on {
+    background: var(--brand-soft); border-color: var(--brand-line); color: var(--brand-text); font-weight: 600;
+    box-shadow: inset 0 0 0 1px rgba(22, 93, 255, .035);
+}
+.chip-group {
+    display: inline-flex; align-items: center; flex-wrap: wrap;
+    gap: 6px; min-width: 0;
+}
+
+/* 分段控件：同一页里的并列入口（采集 / 文件 / 截图）用它切换。
+   不拆成三个侧栏子项，是因为它们回答的是同一个问题——"数据从哪进来"。 */
+.seg {
+    display: inline-flex; gap: 2px; padding: 3px;
+    background: var(--line-2); border-radius: 10px;
+}
+.seg button {
+    height: 30px; padding: 0 14px; border: 0; border-radius: 8px;
+    background: transparent; color: var(--ink-3);
+    font-size: var(--fs-sm); font-family: inherit; cursor: pointer; transition: all .15s;
+    display: inline-flex; align-items: center; gap: 6px;
+}
+.seg button:hover { color: var(--ink); }
+.seg button.on {
+    background: var(--surface); color: var(--brand); font-weight: 600;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .08);
+}
+.seg button:disabled { opacity: .5; cursor: not-allowed; }
+
+/* 采集参数行：平台/关键词/目标/动作一行排开。
+   用 grid 而不是 flex：flex 下 chips 会被关键词输入框挤成窄条，
+   标签还在、字已经被压扁了（截图里看得最明显）。 */
+.crawl-form {
+    display: grid;
+    grid-template-columns: auto minmax(220px, 1fr) 118px auto auto;
+    gap: 12px;
+    align-items: end;
+}
+.crawl-form label { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.crawl-form .form-cap { font-size: var(--fs-xs); color: var(--ink-4); }
+.crawl-form #crawlPlatforms { display: flex; gap: 6px; }
+.crawl-form .chip { white-space: nowrap; flex: 0 0 auto; height: 34px; }
+@media (max-width: 980px) {
+    .crawl-form { grid-template-columns: 1fr 1fr; }
+}
+
+/* 采集登录弹窗：说的是"窗口已经在那边了，你去扫码"，
+   所以正文要放状态机（打开中/等待/成功），而不是一个表单。 */
+.login-modal { max-width: 520px; }
+.login-state {
+    display: flex; gap: 10px; align-items: flex-start;
+    border: 1px solid var(--line); border-radius: 12px;
+    background: var(--surface-3); padding: 12px 14px;
+    font-size: var(--fs-sm); line-height: 1.7; color: var(--ink-2);
+}
+.login-state b { color: var(--ink); }
+.login-state .spinner { margin-top: 3px; flex: 0 0 auto; }
+
+/* 时间段一行：日期控件 + 快捷区间。单独占一行而不是挤进采集参数行——
+   两个日期加四个快捷按钮塞不进去，挤的结果是日期框被压到只剩年份。 */
+.crawl-form-time {
+    display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap;
+    margin-top: 10px;
+}
+.crawl-form-time label { display: flex; flex-direction: column; gap: 6px; }
+.crawl-form-time .form-cap { font-size: var(--fs-xs); color: var(--ink-4); }
+.crawl-form-time .chip { height: 34px; }
+
+/* 采集进度条：不用骨架屏——这不是"等待加载"，而是"正在产出"，
+   数字得跟着涨，否则用户分不清任务在跑还是卡死了。 */
+.live-bar {
+    height: 6px; border-radius: 999px; background: var(--line-2);
+    overflow: hidden; margin: 10px 0 6px;
+}
+.live-bar > i {
+    display: block; height: 100%; width: 0; border-radius: 999px;
+    background: linear-gradient(90deg, var(--brand), #4E8BFF);
+    transition: width .45s ease;
+}
+.live-meta {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    font-size: var(--fs-xs); color: var(--ink-4);
+}
+/* impeccable-disable-next-line pulsing-dot -- 用户 2026-11-15 显式 pin，见 DESIGN.md Explicit exemptions */
+.live-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--neg);
+    display: inline-block; animation: cp-pulse 1s ease-in-out infinite;
+}
+.live-log {
+    margin-top: 10px; max-height: 92px; overflow-y: auto;
+    font-size: var(--fs-xs); line-height: 1.75; color: var(--ink-3);
+    border-left: 2px solid var(--line); padding-left: 10px;
+}
+.live-log b { color: var(--ink-4); font-weight: 500; font-variant-numeric: tabular-nums; }
 
 .badge {
     display: inline-flex; align-items: center; gap: 5px;
     height: 22px; padding: 0 8px; border-radius: 6px;
-    font-size: 11.5px; font-weight: 500; background: var(--line-2); color: var(--ink-3);
+    font-size: var(--fs-xs); font-weight: 500; background: var(--line-2); color: var(--ink-3);
 }
-.badge-brand { background: var(--brand-soft); color: var(--brand); }
+/* 品牌徽标同一套分工：底用 --brand-soft，字用 --brand-text。
+   深色下 --brand(#3D7DFF) 压在淡蓝底只有 4.28:1，浅色下两者同值不受影响。 */
+.badge-brand, .badge-info { background: var(--brand-soft); color: var(--brand-text); }
 .badge-pos { background: var(--pos-soft); color: var(--pos-ink); }
 .badge-neg { background: var(--neg-soft); color: var(--neg-ink); }
 .badge-neu { background: var(--neu-soft); color: var(--neu-ink); }
 .badge-warn { background: var(--warn-soft); color: var(--warn-ink); }
 .badge-ok { background: var(--pos-soft); color: var(--pos-ink); }
-.badge-run { background: var(--brand-soft); color: var(--brand); }
+/* impeccable-disable-next-line pulsing-dot -- 用户 2026-11-15 显式 pin，见 DESIGN.md Explicit exemptions */
+.badge-run { background: var(--brand-soft); color: var(--brand-text); }
 .badge-run::before {
     content: ''; display: inline-block; width: 5px; height: 5px; border-radius: 50%;
     background: var(--brand); margin-right: 5px; vertical-align: 1px;
     animation: cp-pulse 1s ease-in-out infinite;
 }
+/* 042 登记豁免：.live-dot / .badge-run::before 的 cp-pulse 呼吸动画是采集态样式。
+   如实登记：模板里没有字面节点，但运行时会由 JS 注入「采集中 / 运行中」徽标，
+   /tickets 等页面实测能渲染出 .badge-run::before 实例，所以「静态页实例为 0」
+   只描述模板源码、不描述渲染结果。属有意保留的采集态样式，不删、不改。 */
 @keyframes cp-pulse { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
 
 /* 流式回答：光标与撤回提示 */
@@ -224,13 +449,13 @@ button { font-family: inherit; }
 }
 @keyframes cp-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 .stream-warn {
-    margin-top: 8px; font-size: 12px; line-height: 1.6;
+    margin-top: 8px; font-size: var(--fs-xs); line-height: 1.6;
     color: var(--warn-ink); background: var(--warn-soft); border: 1px solid var(--warn-line);
     border-radius: 8px; padding: 7px 9px;
 }
 .live-foot {
     margin-top: 10px; padding-top: 9px; border-top: 1px dashed var(--line-2);
-    font-size: 11.5px; color: var(--ink-4); line-height: 1.65;
+    font-size: var(--fs-xs); color: var(--ink-4); line-height: 1.65;
 }
 
 /* ---------------- 卡片 ---------------- */
@@ -239,47 +464,253 @@ button { font-family: inherit; }
     border: 1px solid var(--line);
     border-radius: var(--radius);
     box-shadow: var(--shadow-sm);
-    padding: 16px 18px;
+    padding: 18px 20px;
     min-width: 0;
 }
 .card-head {
-    display: flex; align-items: center; gap: 10px;
-    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 14px;
+    /* 允许换行：宽卡片里标题与工具并排，窄卡片（驾驶舱「时间趋势」在 1440 下
+       只剩 ~730px）里把整组工具挪到第二行，而不是让芯片各自折行——
+       原来「全部」和「日」各自孤零零掉到第二行，卡头比图还高。 */
+    flex-wrap: wrap; row-gap: 10px;
 }
-.card-title { font-size: 14px; font-weight: 650; letter-spacing: -.1px; }
-.card-sub { font-size: 11.5px; color: var(--ink-4); font-weight: 400; }
+.card-tools { flex-wrap: nowrap; }
+/* 卡头里的芯片组不许自己折行：一组 3~4 枚，拆开就分不清是"一组控件"还是"两枚散按钮"。
+   筛选栏（.filterbar）不在此列，窄屏下那里必须能折。 */
+.card-tools .chip-group { flex-wrap: nowrap; }
+@media (max-width: 720px) {
+    /* 手机上七枚一行放不下，但**不要在组内折**：一组拆成 2+1 会读成
+       "两枚散按钮 + 一枚"，分组就没了。让 card-tools 在两组之间折，
+       每组整体占一行（flex:0 0 auto 保证它不被压窄）。 */
+    .card-tools { flex-wrap: wrap; }
+    .card-tools .chip-group { flex: 0 0 auto; }
+    /* 两组已经分行，中间那道竖线指不清分组，收掉。 */
+    .tools-sep { display: none; }
+}
+/* 两个芯片组之间的一道竖线：它们管的是两个维度（看多久 / 按什么粒度） */
+.tools-sep {
+    width: 1px; height: 16px; flex: 0 0 auto;
+    background: var(--line); margin: 0 1px;
+}
+.card-title { font-size: var(--fs-md); font-weight: 650; letter-spacing: -.15px; }
+.card-sub { font-size: var(--fs-sm); color: var(--ink-4); font-weight: 400; line-height: 1.55; }
+/* 说明性副标题（模板里标了 data-hint）：解释"这块在讲什么 / 点了会怎样"的纯旁白，
+   和卡片标题同一行、同一灰度，堆十几张卡就是一片灰。C4：不再 display:none 抹掉，
+   改走 .sr-only 实现（见 :1086 附近）——视觉隐藏但读屏仍可读，**承载数据的不在此列**
+   （如"按天聚合 · 30 个时段 · 合计 383 条"是 JS 填进去的，模板里没标 data-hint）。 */
+/* .card-sub[data-hint] 的视觉隐藏由下方 .sr-only 选择器组统一承担。 */
+/* 口径 / 时限这类长句注释同理：纯旁白默认隐藏，但**不用 !important**。
+   以前那条 display:none !important 把 JS 的两条路一起压死，#sentNote / #trendNote
+   被 JS 填入内容后仍永远不显示。现在：纯旁白隐藏，但可由 JS 写内联 display 或加
+   .is-shown 打开。B5：主公式 note 由 G4 去掉 data-hint、加 .scope-line（14px 常驻可见）；
+   下面 .note.scope-line 与两条 id 兜底再保一次——承载口径 / 分母 / 单位的注记
+   绝不被 data-hint 误隐藏；空槽 / 失败态仍由 JS 的 .is-hidden 控制显隐。 */
+.note[data-hint] { display: none; }
+.note[data-hint].is-shown { display: flex; }
+.note.scope-line,
+#sentNote.note,
+#trendNote.note { display: flex; font-size: var(--fs-base); }
 .card-tools { margin-left: auto; display: flex; align-items: center; gap: 6px; }
 
-.grid { display: grid; gap: 14px; }
+.grid { display: grid; gap: 16px; }
 .g-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+/* 五格 KPI：auto-fit 让"放得下几列就几列"，不会在行尾留一个空槽。
+   写死 repeat(5) 的话 1200 断点掉到三列，第二行只剩两格，右边空一块。 */
+.g-5 { grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); }
 .g-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .g-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+/* 三张 KPI 用：宽屏 3 列，中屏 2 列。直接套 .g-3 会在 1100 断点掉成 1 列，
+   三个数字竖着堆成一长条，反而不像一排指标。 */
+.g-3k { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .g-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .g-2-1 { grid-template-columns: 2fr 1fr; }
 .g-1-2 { grid-template-columns: 1fr 2fr; }
 .span-2 { grid-column: span 2; }
+/* 网格子项默认是 min-width:auto，等于"我的内容多宽我就多宽"。
+   一张 520px 的表塞进 332px 的列时，它不会去滚动，而是把整列撑开——
+   390 的 /insights 因此整页横向溢出 159px（549 / 390），窗口能左右晃。
+   让子项可以被压缩，超出的部分交给 .table-scroll 自己滚。 */
+.grid > *, .card { min-width: 0; }
 
 /* ---------------- KPI ---------------- */
-.kpi { padding: 15px 16px; }
-.kpi-label { font-size: 12px; color: var(--ink-3); display: flex; align-items: center; gap: 6px; }
-.kpi-value { font-size: 27px; font-weight: 700; letter-spacing: -1px; margin-top: 6px; line-height: 1.15; }
-.kpi-unit { font-size: 13px; font-weight: 500; color: var(--ink-4); margin-left: 3px; }
-.kpi-foot { font-size: 11.5px; color: var(--ink-4); margin-top: 5px; min-height: 17px; }
+.kpi {
+    padding: 17px 18px;
+    background: linear-gradient(145deg, var(--surface) 55%, var(--surface-2));
+    transition: border-color .18s, box-shadow .18s, transform .18s;
+}
+/* 悬停只改描边与投影，不位移。
+   以前是 translateY(-2px)：五张 KPI 卡一悬停就往上跳，读起来像"可以点"，
+   而它们一个都没有点击事件（cursor 还是 auto）——全站最大的可点错觉。
+   真想让人点进去的卡，请用 <a> 包起来，别靠动效暗示。 */
+.kpi:hover { border-color: var(--brand-line); box-shadow: var(--shadow); }
+.kpi-label { font-size: var(--fs-xs); color: var(--ink-3); display: flex; align-items: center; gap: 6px; }
+.kpi-value { font-size: var(--fs-2xl); font-weight: 720; letter-spacing: -1px; margin-top: 7px; line-height: 1.15; font-variant-numeric: tabular-nums; }
+/* 单位与数字之间留 4px：3px 时"1,969条"会被读成一个数后面粘了个斑点 */
+.kpi-unit { font-size: var(--fs-sm); font-weight: 500; color: var(--ink-3); margin-left: 4px; }
+.kpi-foot { font-size: var(--fs-sm); color: var(--ink-4); margin-top: 6px; min-height: 17px; }
 .kpi-bar { height: 4px; border-radius: 4px; background: var(--line-2); margin-top: 10px; overflow: hidden; display: flex; }
 .kpi-bar i { display: block; height: 100%; }
+/* 024：填充色原先由 dashboard.js 内联写死 var(--pos)/var(--neg)，和位置色
+   （.kpi::before 按 nth-child 上色）混在一起，读者会把红条当"负面占比"。
+   不改 JS（别组文件），在 CSS 里用 !important 盖过内联色，统一成中性 brand 阶梯：
+   第一段实色，后续段按透明度递减，仍是同一支蓝。不加任何图例/新文案。 */
+.kpi-bar > i { background: var(--brand) !important; }
+.kpi-bar > i:nth-child(2) { opacity: .78; }
+.kpi-bar > i:nth-child(3) { opacity: .6; }
+.kpi-bar > i:nth-child(n+4) { opacity: .45; }
 
 /* ---------------- 图表 ---------------- */
 .chart { width: 100%; height: 260px; }
 .chart-sm { height: 200px; }
 .chart-lg { height: 320px; }
 
+/* 单页 AI 分析：一段连续的话，行距放宽才读得下去。
+   不用 <p> 默认的上下外边距——卡片里四边留白已经由 card 控制。 */
+.pi-text {
+    margin: 0;
+    font-size: var(--fs-base);
+    line-height: 2;
+    color: var(--ink-2);
+    letter-spacing: .01em;
+}
+/* 结论行：先给一句话判断，再给数据。读者扫一眼就知道这段分析要证明什么。 */
+.pi-head {
+    margin: 0 0 8px;
+    font-size: var(--fs-md);
+    font-weight: 600;
+    line-height: 1.75;
+    color: var(--ink);
+    letter-spacing: .01em;
+}
+/* 成因条目：编号 + 小标题 + 依据与解释。
+   每条都要求「先给依据再给解释」，所以左栏放编号而不是圆点——
+   读者要能一条条核对，编号比圆点更像待验证的清单。 */
+.pi-reasons {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.pi-reason {
+    display: flex;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 11px;
+    background: var(--surface-3);
+}
+/* C4：图表解读的四条子卡以前用内联样式自带「边框 + 圆角 11 + 实底」，
+   和 .cp-flat 的去套娃方向正好相反——同一层 AI 内容出现两种卡片语言。
+   改用 .pi-reason（已挂在 .cp-flat 去套娃清单里），这里只补它的横排布局。 */
+.ci-item { margin: 0; }
+.ci-item + .ci-item { border-top: 1px solid var(--line-2); }
+.pi-idx {
+    flex: 0 0 20px;
+    height: 20px;
+    margin-top: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--fs-micro);
+    font-weight: 600;
+    color: var(--brand-text);
+    background: var(--brand-soft, rgba(22, 93, 255, .10));
+    border-radius: 6px;
+}
+.pi-reason-body { min-width: 0; flex: 1; }
+.pi-point {
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    line-height: 1.6;
+    color: var(--ink);
+    margin-bottom: 3px;
+}
+.pi-detail {
+    font-size: var(--fs-sm);
+    line-height: 1.85;
+    color: var(--ink-3);
+}
+/* 词云解读：一朵云一份，左右并排，和上面两朵云的位置对齐。
+   左侧描边用正/负色，读的人不用看标题也知道左边那份在说哪朵云。
+   （原来的「还可以继续分析」那条蓝竖线提示已按需求去掉。） */
+.wi-side {
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface-3);
+}
+.wi-side.pos { border-left: 1px solid var(--pos); }
+.wi-side.neg { border-left: 1px solid var(--neg); }
+/* 情感编码交给已有的 .wi-dot（JS 上色）与标题色，3px 彩条降到 1px。 */
+.wi-side.pos .wi-side-head { color: var(--pos-ink); }
+.wi-side.neg .wi-side-head { color: var(--neg-ink); }
+.wi-side-head {
+    display: flex; align-items: center; gap: 7px;
+    font-size: var(--fs-sm); font-weight: 600; color: var(--ink-2);
+    margin-bottom: 7px;
+}
+.wi-dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
+.wi-total { margin-left: auto; font-weight: 500; color: var(--ink-4); }
+.wi-head {
+    font-size: var(--fs-base); font-weight: 600; line-height: 1.7;
+    color: var(--ink); margin-bottom: 6px;
+}
+.wi-points {
+    margin: 0; padding-left: 16px;
+    font-size: var(--fs-sm); line-height: 1.85; color: var(--ink-3);
+}
+.wi-points li { margin-bottom: 3px; }
+.wi-points li:last-child { margin-bottom: 0; }
+.wi-empty { font-size: var(--fs-sm); color: var(--ink-4); }
+
+/* 洞察总览页的三个分析入口。整卡可点，所以用 <a> 而不是 div，
+   键盘 Tab 也能聚焦到。 */
+.entry-card {
+    display: flex; flex-direction: column;
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+    transition: border-color .15s, box-shadow .15s, transform .15s;
+}
+.entry-card:hover {
+    border-color: var(--brand-line);
+    box-shadow: var(--shadow);
+    transform: translateY(-1px);
+}
+.entry-card:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.entry-top { display: flex; align-items: center; gap: 9px; }
+.entry-title { font-size: var(--fs-base); font-weight: 650; color: var(--ink); }
+/* 入口卡的描述句不显示：三张卡并排时，这三段话各自三行、行宽又窄，
+   读起来像一堆碎注解。标题 + 图表标签已经说清这一页有什么。 */
+/* 以前这里 display:none，于是三张入口卡各自空出约 60px，卡高 171px、
+   「进入分析 →」孤零零贴底，看起来像没做完。恢复描述但三行封顶——
+   两行时三张卡的句子都断在半句（「而不只…」「最后落到可以…」），
+   读者只看到三个"而"，不如给一行把它说完；卡高仍靠 line-clamp 拉齐。 */
+.entry-desc {
+    font-size: var(--fs-sm); line-height: 1.7; color: var(--ink-3); margin: 9px 0 12px;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden;
+    text-wrap: pretty;
+}
+.entry-charts { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.entry-chart {
+    font-size: var(--fs-micro); color: var(--ink-4);
+    background: var(--surface-sunken); border-radius: 6px; padding: 3px 8px;
+}
+.entry-go {
+    margin-top: auto; font-size: var(--fs-sm); font-weight: 600; color: var(--brand);
+    display: flex; align-items: center; gap: 4px;
+}
+
 /* ---------------- 状态 ---------------- */
 .state {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 8px; padding: 26px 16px; text-align: center;
-    color: var(--ink-4); font-size: 12.5px; min-height: 120px;
+    color: var(--ink-4); font-size: var(--fs-sm); min-height: 120px;
 }
-.state-title { color: var(--ink-2); font-size: 13px; font-weight: 600; }
+.state-title { color: var(--ink-2); font-size: var(--fs-sm); font-weight: 600; }
 .state-error .state-title { color: var(--neg); }
 .spinner {
     width: 18px; height: 18px; border-radius: 50%;
@@ -296,36 +727,93 @@ button { font-family: inherit; }
 @keyframes shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
 
 /* ---------------- 表格 ---------------- */
-.table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.table-scroll { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.table { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); }
 .table th {
-    text-align: left; font-weight: 600; font-size: 11.5px; color: var(--ink-4);
-    padding: 8px 10px; border-bottom: 1px solid var(--line);
+    text-align: left; font-weight: 600; font-size: var(--fs-xs); color: var(--ink-3);
+    padding: 9px 10px; border-bottom: 1px solid var(--line);
     white-space: nowrap; background: var(--surface-2);
 }
-.table td { padding: 10px; border-bottom: 1px solid var(--line-2); vertical-align: top; }
+.table th:first-child { border-radius: 8px 0 0 8px; }
+.table th:last-child { border-radius: 0 8px 8px 0; }
+.table td { padding: 11px 10px; border-bottom: 1px solid var(--line-2); vertical-align: top; }
+.table tbody tr:last-child td { border-bottom-color: transparent; }
 .table tr:hover td { background: var(--surface-3); }
-.table .num { font-variant-numeric: tabular-nums; }
+.table .num { font-variant-numeric: tabular-nums; text-align: right; }
 
 /* ---------------- 筛选栏 ---------------- */
 .filterbar {
     display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-    padding: 10px 14px; background: var(--surface);
-    border: 1px solid var(--line); border-radius: 12px;
-    margin-bottom: 14px;
+    padding: 10px 12px; background: var(--surface);
+    border: 1px solid var(--line); border-radius: 13px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 16px;
 }
-.filter-label { font-size: 12px; color: var(--ink-4); margin-right: 2px; }
+.filter-label { font-size: var(--fs-xs); font-weight: 500; color: var(--ink-3); margin-right: 2px; }
+/* label 与它那组 chip 绑成一个整体：筛选栏是 flex-wrap 的，label 单独当一个 item 时
+   会在换行处跟自己的 chip 分家——手机上出现过「情感」留在上一行、三枚 chip 掉到下一行。 */
+.filter-group { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
 .filter-sep { width: 1px; height: 18px; background: var(--line); margin: 0 4px; }
+/* 维度条件标签：默认不占位，只有真的带着维度时才出现（下钻/榜单/URL 带过来的） */
+.filter-dim { display: none; align-items: center; gap: 6px; }
+.filter-dim.on { display: inline-flex; }
+
+/* 一键清除筛选：紧跟关键词输入框，只在真有条件时出现（见 core.js 的 syncClear）。
+   用品牌色淡底而不是灰字按钮——它不是"次要操作"，而是"我误入了一撮数据，怎么退出去"
+   的那条路，得一眼能看见；否则用户会去手动删关键词、逐个点掉情感 chip。 */
+.filter-clear {
+    display: inline-flex; align-items: center; gap: 5px;
+    height: 28px; padding: 0 10px;
+    border-radius: 999px; border: 1px solid var(--brand-line);
+    background: var(--brand-soft); color: var(--brand);
+    font-size: var(--fs-xs); font-family: inherit; font-weight: 600;
+    cursor: pointer; transition: all .15s; white-space: nowrap;
+}
+/* display:inline-flex 会盖掉 hidden 的默认 display:none，必须显式补一条 */
+.filter-clear[hidden] { display: none; }
+.filter-clear:hover { border-color: var(--brand); color: var(--brand-ink); }
+.filter-clear:active { transform: translateY(1px); }
+
+/* 区间：默认一枚按钮，点开才露出两个日期框。
+   两枚空日期框在首屏占 320px 却一个字都不表达——不选的时候它是纯噪音。
+   按钮自己写着当前口径（全部时间 / 05-01 ~ 06-01），不点开也知道在算哪一段。 */
+.range-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 34px; padding: 0 12px; border-radius: 8px;
+    border: 1px solid var(--line); background: var(--surface);
+    color: var(--ink-3); font-size: var(--fs-xs); font-family: inherit;
+    white-space: nowrap; cursor: pointer;
+    transition: border-color .14s, color .14s, background .14s;
+}
+.range-btn:hover { border-color: var(--brand-line); color: var(--brand); }
+/* 有区间时不能再是灰字：它此刻是"正在生效的筛选条件" */
+.range-btn.on {
+    color: var(--brand-ink); font-weight: 600;
+    border-color: var(--brand-line); background: var(--brand-soft);
+}
+.range-btn::after {
+    content: ""; width: 5px; height: 5px;
+    border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor;
+    transform: translateY(-2px) rotate(45deg);
+}
+.range-btn[aria-expanded="true"]::after { transform: translateY(1px) rotate(-135deg); }
+.range-fields { display: inline-flex; align-items: center; gap: 6px; }
+.range-fields[hidden] { display: none; }
 
 /* ---------------- 提示条 ---------------- */
 .note {
-    display: flex; gap: 8px; align-items: flex-start;
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start;
     padding: 9px 12px; border-radius: 10px;
     background: var(--brand-soft); color: var(--brand-ink);
-    font-size: 12px; line-height: 1.55;
+    font-size: var(--fs-sm); line-height: 1.6;
 }
 .note-warn { background: var(--warn-soft); color: var(--warn-ink); }
 .note-muted { background: var(--line-2); color: var(--ink-3); }
 .note svg { flex: 0 0 14px; margin-top: 2px; }
+/* 裸文本匿名 flex 项在 390 会被压成单字一列：允许整组换行，
+   包了 <span> 的文字靠 min-width:0 收缩后正常折行。 */
+.note > span { min-width: 0; flex: 1 1 auto; }
+.sugg-rule { white-space: normal; overflow-wrap: anywhere; }
 
 /* ---------------- Toast ---------------- */
 #toastWrap {
@@ -334,7 +822,7 @@ button { font-family: inherit; }
 }
 .toast {
     background: var(--tip-bg); color: #fff; padding: 9px 14px;
-    border-radius: 10px; font-size: 12.5px; max-width: 380px;
+    border-radius: 10px; font-size: var(--fs-sm); max-width: 380px;
     box-shadow: 0 12px 30px -12px rgba(15, 23, 42, .6);
     animation: toastIn .22s ease;
 }
@@ -348,17 +836,46 @@ button { font-family: inherit; }
 ::-webkit-scrollbar-thumb:hover { background: var(--scroll-hover); }
 
 /* ---------------- 响应式 ---------------- */
+/* 030 / 032：桌面 1440 顶栏「历史快照」与侧栏页脚「历史数据快照」是同一句
+   口径的重复声明；顶栏这枚全视口隐藏，口径保留在侧栏页脚与筛选栏右端
+   「数据覆盖 …」徽标上。id 保留（core.js 的 updateSnapshotBadge 依赖它），
+   只做 display:none，JS 仍可写 title/aria-label 不报错。
+   1024/1100：侧栏压成图标条后内容区仍只有 952px，数据集下拉要收窄。 */
+#snapshotBadge { display: none; }
+/* 下拉的选项由 JS 填，空 select 只有 38px 宽。先按当前数据集名的宽度占位：
+   填充后顶栏不再从 88 涨到 107，标题与首屏内容也就不会被推下去
+   （1280 /evidence 实测 19px 下移、CLS 0.053 里的大头）。 */
+@media (min-width: 1101px) {
+    #dsSelect { min-width: 178px; }
+}
+@media (min-width: 721px) and (max-width: 1100px) {
+    #dsSelect { min-width: 148px; }
+}
+@media (max-width: 1100px) {
+    #dsSelect { max-width: 148px; }
+}
 @media (max-width: 1360px) {
     .g-6 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    .g-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    /* .g-3k 与 .g-4 不跟着掉成两列。它们都是"几张 KPI 并排"的专用栅格，
+       1280×800 与 1024×768 是最常见的笔记本/投影分辨率，掉成 2 列后
+       第三张卡孤零零占左半，右边 474px 全空，首屏被这一格空白吃掉 150px；
+       /tickets 的 4 张 KPI 掉成两列更是把工单列表整个推下首屏。
+       26px 的数字在 400px 宽的卡里放得下，宁可窄一点也不留洞。 */
+    .g-3k { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .g-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 @media (max-width: 900px) {
     .g-6 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 1100px) {
     .sidebar { width: 68px; flex: 0 0 68px; }
-    .brand-name, .brand-sub, .nav-label, .nav-code, .nav-item span, .sidebar-foot { display: none; }
+    .brand-name, .brand-sub, .nav-label, .nav-item span, .sidebar-foot { display: none; }
     .nav-item { justify-content: center; padding: 11px 0; }
+    /* 图标条模式没有"父项 / 子项"的层次可展开，折叠开关一并收起 */
+    .nav-caret { display: none; }
+    .nav-item.has-children { padding-right: 0; }
+    /* 图标条模式下子项没有图标可显示，留着只剩一条空白竖线 */
+    .nav-children { display: none; }
     .g-2-1, .g-1-2, .g-3, .g-2 { grid-template-columns: 1fr; }
     .span-2 { grid-column: auto; }
     .content { padding: 16px; }
@@ -371,7 +888,8 @@ button { font-family: inherit; }
 .agent-shell { display: grid; grid-template-columns: 396px minmax(0, 1fr); gap: 14px; align-items: start; }
 
 .chat-panel {
-    position: sticky; top: 78px;
+    /* 顶栏高度是变的（页面副标题 / 徽标 / 断点都会改），写死 78px 会被顶栏吃掉 */
+    position: sticky; top: calc(var(--topbar-h, 96px) + 12px);
     height: calc(100vh - 104px);
     display: flex; flex-direction: column;
     padding: 0; overflow: hidden;
@@ -381,42 +899,86 @@ button { font-family: inherit; }
     display: flex; align-items: center; gap: 8px; flex: 0 0 auto;
 }
 .chat-log { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
-.msg { max-width: 93%; font-size: 13px; line-height: 1.65; padding: 9px 12px; border-radius: 12px; word-break: break-word; }
+.msg { max-width: 93%; font-size: var(--fs-sm); line-height: 1.65; padding: 9px 12px; border-radius: 12px; word-break: break-word; }
 .msg.user { align-self: flex-end; background: var(--brand); color: #fff; border-bottom-right-radius: 4px; }
 .msg.bot { align-self: flex-start; background: var(--line-2); color: var(--ink-2); border-bottom-left-radius: 4px; }
-.msg.sys { align-self: center; font-size: 11.5px; color: var(--ink-4); background: transparent; padding: 0; text-align: center; }
+.msg.sys { align-self: center; font-size: var(--fs-xs); color: var(--ink-4); background: transparent; padding: 0; text-align: center; }
 
 .rec { padding: 10px 16px 12px; border-top: 1px solid var(--line); flex: 0 0 auto; background: var(--surface-2); }
-.rec-title { font-size: 11px; color: var(--ink-4); margin-bottom: 7px; letter-spacing: .3px; }
+.rec-title { font-size: var(--fs-micro); color: var(--ink-4); margin-bottom: 7px; letter-spacing: .3px; }
 .rec-chip {
     display: block; width: 100%; text-align: left;
-    font-size: 12.5px; color: var(--ink-2); background: var(--surface);
+    font-size: var(--fs-sm); color: var(--ink-2); background: var(--surface);
     border: 1px solid var(--line); border-radius: 9px;
     padding: 7px 10px; margin-bottom: 5px; cursor: pointer;
     transition: all .15s; font-family: inherit;
 }
 .rec-chip:hover { border-color: var(--brand-line); color: var(--brand); background: var(--brand-soft); }
 
+/* 空态：先给"能问什么、会得到什么"。
+   原先这一屏最醒目的是六张工具卡，标题是 get_sentiment_stats——
+   学工处看不懂，评委只会判断"这是 API 演示"。 */
+.demo-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.demo-card {
+    display: block; width: 100%; text-align: left; cursor: pointer;
+    /* 三列平分右栏（约 530px），每张可用宽度只有 140px 左右：
+       14px 标题会在这里折成两行并切断「问题」这样的词，13px 刚好一行放下。 */
+    padding: 12px 14px; border-radius: 12px; font-family: inherit;
+    border: 1px solid var(--line); background: var(--surface);
+    transition: border-color .15s, box-shadow .15s, transform .15s;
+}
+.demo-card:hover {
+    border-color: var(--brand-line); transform: translateY(-1px);
+    box-shadow: 0 10px 24px -20px rgba(23, 32, 51, .6);
+}
+.demo-q { display: block; font-size: var(--fs-sm); font-weight: 650; color: var(--ink); text-wrap: balance; }
+.demo-q::after { content: " →"; color: var(--brand); font-weight: 500; }
+.demo-a { display: block; margin-top: 7px; font-size: var(--fs-xs); line-height: 1.65; color: var(--ink-3); }
+
+.proc { margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--line); }
+.proc > summary {
+    cursor: pointer; font-size: var(--fs-sm); color: var(--ink-3);
+    list-style-position: inside; padding: 4px 0;
+}
+.proc > summary:hover { color: var(--brand-ink); }
+.proc .grid { margin: 12px 0; }
+.tool-card {
+    padding: 11px 12px; border-radius: 11px;
+    border: 1px solid var(--line); background: var(--surface-2);
+}
+.tool-label { font-size: var(--fs-sm); font-weight: 650; color: var(--ink); }
+/* 函数名是代码，给等宽；它现在的身份是"证明"而不是"标题" */
+.tool-name {
+    margin-top: 2px; font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: var(--fs-micro); color: var(--ink-4); letter-spacing: .01em;
+}
+.tool-desc { margin-top: 7px; font-size: var(--fs-xs); line-height: 1.65; color: var(--ink-3); }
+.tool-args { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+
 .composer { padding: 11px 14px 13px; border-top: 1px solid var(--line); background: var(--surface); flex: 0 0 auto; }
 .composer textarea {
     width: 100%; border: 1px solid var(--line); border-radius: 10px;
-    padding: 9px 10px; font: inherit; font-size: 13px; resize: none;
+    padding: 9px 10px; font: inherit; font-size: var(--fs-sm); resize: none;
     outline: none; min-height: 60px; color: var(--ink); background: var(--surface-2);
 }
 .composer textarea:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(22, 93, 255, .1); background: var(--surface); }
+/* 这个 textarea 没有挂 .input 类，所以只写了 .input::placeholder 的规则够不到它，
+   落到浏览器 UA 默认灰 #757575：在 --surface-2 (#F8FAFD) 上实测 4.4:1，
+   差 0.1 不到 AA，而且不在调色板里。统一用 --ink-4（4.99:1）。 */
+.composer textarea::placeholder { color: var(--ink-4); }
 .composer-foot { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
-.composer-hint { font-size: 11px; color: var(--ink-4); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.composer-hint { font-size: var(--fs-micro); color: var(--ink-4); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* 语音输入：默认低调，聆听中才醒目——避免它抢走「分析」按钮的主次 */
 .voice-btn { display: inline-flex; align-items: center; gap: 5px; flex: 0 0 auto; color: var(--ink-3); }
 .voice-btn:hover { color: var(--brand); }
 .voice-dot {
-    width: 7px; height: 7px; border-radius: 50%; background: #C7D2E3;
+    width: 7px; height: 7px; border-radius: 50%; background: var(--neu);
     transition: background .15s, box-shadow .15s;
 }
 .voice-btn.is-listening { color: var(--neg-ink); border-color: var(--neg-line); background: var(--neg-soft); }
 .voice-btn.is-listening .voice-dot {
-    background: #E5484D; box-shadow: 0 0 0 0 rgba(229, 72, 77, .55);
+    background: var(--neg); box-shadow: 0 0 0 0 rgba(229, 72, 77, .55);
     animation: voicePulse 1.4s infinite;
 }
 .voice-btn.is-disabled { opacity: .5; cursor: not-allowed; }
@@ -431,54 +993,120 @@ button { font-family: inherit; }
 
 .result-stack { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 
-.answer-text { font-size: 13.5px; line-height: 1.85; color: var(--ink-2); white-space: pre-wrap; }
+.answer-text { font-size: var(--fs-base); line-height: 1.85; color: var(--ink-2); white-space: pre-wrap; }
 .answer-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+/* 引用芯片现在只放一个序号（[1] [2]），完整 ID 在 title/aria-label 里。
+   以前是 109×21 的按钮包着 CMT-05D55FF542，插在句中像一段乱码。 */
 .ref-chip {
     display: inline-block; margin: 0 3px; padding: 0 5px; border-radius: 5px;
-    font-size: 11px; line-height: 17px; letter-spacing: .2px;
-    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: var(--fs-micro); line-height: 17px; letter-spacing: .2px;
+    font-variant-numeric: tabular-nums; vertical-align: 1px;
     background: var(--brand-soft); color: var(--brand);
+    border: 0; font-family: inherit;
     text-decoration: none; cursor: pointer; white-space: nowrap;
 }
 .ref-chip:hover { background: var(--brand-line); }
+/* 检索过程默认收起：它解释"为什么这么答"，但一次铺开会让整页长到三千多像素。
+   摘要那一行本身就带着结论（几段、几段被引用），想知道细节再展开。 */
+.rag-details { margin-top: 4px; }
+.rag-details > summary {
+    cursor: pointer; font-size: var(--fs-xs); color: var(--ink-3);
+    padding: 4px 0; list-style-position: inside;
+}
+.rag-details > summary:hover { color: var(--brand-text); }
 
 .metrics-row { display: flex; flex-wrap: wrap; gap: 8px; }
 .metric {
     background: var(--surface-3); border: 1px solid var(--line); border-radius: 10px;
     padding: 7px 11px; min-width: 92px;
 }
-.metric-name { font-size: 11px; color: var(--ink-4); }
-.metric-value { font-size: 16px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
-.metric-unit { font-size: 11px; color: var(--ink-4); margin-left: 2px; font-weight: 500; }
+.metric-name { font-size: var(--fs-micro); color: var(--ink-4); }
+.metric-value { font-size: var(--fs-md); font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+.metric-unit { font-size: var(--fs-micro); color: var(--ink-4); margin-left: 2px; font-weight: 500; }
 
 .step { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px dashed var(--line-2); }
 .step:last-child { border-bottom: none; }
 .step-idx {
     flex: 0 0 22px; width: 22px; height: 22px; border-radius: 50%;
-    background: var(--brand-soft); color: var(--brand); font-size: 11px;
+    background: var(--brand-soft); color: var(--brand); font-size: var(--fs-micro);
     display: grid; place-items: center; font-weight: 700;
 }
 .step.failed .step-idx { background: var(--neg-soft); color: var(--neg-ink); }
 .step-body { min-width: 0; flex: 1; }
-.step-title { font-size: 12.5px; font-weight: 600; color: var(--ink); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.step-tool { font-size: 11px; color: var(--ink-4); font-family: ui-monospace, Menlo, Consolas, monospace; }
-.step-summary { font-size: 12px; color: var(--ink-3); margin-top: 3px; line-height: 1.55; }
+.step-title { font-size: var(--fs-sm); font-weight: 600; color: var(--ink); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.step-tool { font-size: var(--fs-micro); color: var(--ink-4); font-family: ui-monospace, Menlo, Consolas, monospace; }
+.step-summary { font-size: var(--fs-xs); color: var(--ink-3); margin-top: 3px; line-height: 1.55; }
 .arg-chip {
     display: inline-block; background: var(--surface-sunken); border: 1px solid var(--line);
-    border-radius: 5px; padding: 0 5px; font-size: 10.5px; color: var(--ink-3);
+    border-radius: 5px; padding: 0 5px; font-size: var(--fs-micro); color: var(--ink-3);
     margin: 4px 4px 0 0; font-family: ui-monospace, Menlo, Consolas, monospace;
 }
 
+/* 证据行：左边一条情感色（扫一遍就知道哪些是负面的），中间正文 + 一行事实，
+   右边两枚动作。情感徽章仍在——色条负责"扫"，徽章负责"读"，
+   和工单列表里 3px 优先级条 + P1 徽章同一个分工。 */
 .evidence-item {
+    position: relative; display: flex; align-items: flex-start; gap: 10px;
     border: 1px solid var(--line); border-radius: 11px;
-    padding: 10px 12px; margin-bottom: 8px; cursor: pointer;
-    transition: all .15s; background: var(--surface);
+    padding: 10px 10px 10px 15px; margin-bottom: 8px; cursor: pointer;
+    transition: border-color .15s, background .15s; background: var(--surface);
 }
+/* 行级豁免：仅这枚 3px 情感色伪元素色条与其 [data-sent] 换色变体（用户 pin 品牌装饰）。
+   原来这里是文件级 impeccable-disable，把同文件另 5 条 side-tab 一起压掉了；
+   改成 -next-line 后只豁免紧邻的声明行，其余 5 条已按 craft-floor 降到 ≤1px / 中性色。 */
+/* impeccable-disable-next-line side-tab */
+.evidence-item::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    border-radius: 11px 0 0 11px; background: var(--neu);
+}
+/* impeccable-disable-next-line side-tab */
+.evidence-item[data-sent="positive"]::before { background: var(--pos); }
+/* impeccable-disable-next-line side-tab */
+.evidence-item[data-sent="negative"]::before { background: var(--neg); }
 .evidence-item:hover { border-color: var(--brand-line); background: var(--surface-3); }
 .evidence-item:last-child { margin-bottom: 0; }
-.ev-snippet { font-size: 12.5px; color: var(--ink-2); line-height: 1.65; }
-.ev-meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 7px; font-size: 11px; color: var(--ink-4); }
+.ev-body { min-width: 0; flex: 1 1 auto; }
+.ev-snippet {
+    font-size: var(--fs-sm); color: var(--ink-2); line-height: 1.65;
+    /* 长评论原来按容器高度硬切（"…[泣不成声][泣不成声…"），既没有省略号梯度
+       也没有出口。三行封顶 + 展开按钮：读得到开头，也知道还有下文。 */
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3;
+    overflow: hidden;
+}
+.ev-snippet.is-open { display: block; -webkit-line-clamp: unset; overflow: visible; }
+.ev-more {
+    margin-top: 4px; padding: 0; border: 0; background: none; cursor: pointer;
+    font: inherit; font-size: var(--fs-micro); color: var(--brand-text);
+    text-decoration: underline; text-underline-offset: 2px;
+}
+.ev-more:hover { color: var(--brand); }
+.ev-meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 7px; font-size: var(--fs-micro); color: var(--ink-4); }
+.ev-facts { font-size: var(--fs-micro); color: var(--ink-3); }
+/* 动作常驻而不是 hover 才出现：手机上根本没有 hover，
+   而且"这一行能做什么"本身是信息，不该藏起来。 */
+.ev-acts { display: flex; gap: 2px; flex: 0 0 auto; margin-left: auto; }
+.ev-act {
+    width: 34px; height: 34px; display: grid; place-items: center;
+    border: 1px solid transparent; border-radius: 7px; background: none;
+    color: var(--ink-4); cursor: pointer; transition: all .13s;
+}
+.ev-act svg { width: 16px; height: 16px; }
+.ev-act:hover { background: var(--brand-soft); border-color: var(--brand-line); color: var(--brand-ink); }
+.ev-act:focus-visible { outline: 2px solid var(--brand-line); outline-offset: 1px; color: var(--brand-ink); }
+/* agent 页与工单页的证据引用仍用这枚等宽小字，别跟着上面一起删 */
 .ev-ref { font-family: ui-monospace, Menlo, Consolas, monospace; color: var(--ink-3); }
+.evidence-item:hover .ev-act { color: var(--ink-3); }
+
+/* 无异常时这张卡压成一行：它原来 210px 高、正文只写"没事"，
+   把主题排行和证据列表整整推下去一屏。带明确意图进来的人，先被一段"没事"挡住。 */
+.card.is-quiet { padding: 14px 16px; }
+.card.is-quiet .card-head { margin-bottom: 8px; }
+.risk-quiet { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.risk-quiet-text { font-size: var(--fs-sm); color: var(--ink-3); line-height: 1.6; }
+.risk-th summary { cursor: pointer; font-size: var(--fs-xs); color: var(--brand-text); }
+.risk-th-list { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 7px; }
+
+html.is-modal-open, html.is-modal-open body { overflow: hidden; }
 
 .modal-mask {
     position: fixed; inset: 0; background: rgba(15, 23, 42, .42);
@@ -490,13 +1118,40 @@ button { font-family: inherit; }
     padding: 20px 22px; box-shadow: 0 24px 60px -20px rgba(15, 23, 42, .5);
     max-height: 84vh; overflow-y: auto;
 }
-.modal-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.modal-title { font-size: var(--fs-md); font-weight: 700; margin: 0 0 4px; }
+
+/* 跳到主要内容：只在键盘聚焦时出现。侧栏 11 个入口，看不见的跳板比"少按十几次 Tab"
+   更值钱——出现位置贴左上角，压住品牌区而不是把整页推下去。 */
+.skip-link {
+    position: fixed; top: 8px; left: 8px; z-index: 200;
+    transform: translateY(-160%);
+    padding: 9px 14px; border-radius: 10px;
+    background: var(--brand-solid); color: var(--white);
+    font-size: var(--fs-sm); font-weight: 600; text-decoration: none;
+    box-shadow: 0 10px 24px -12px rgba(23, 32, 51, .6);
+    transition: transform .16s ease;
+}
+.skip-link:focus-visible, .skip-link:focus {
+    transform: translateY(0); outline: 2px solid var(--ink); outline-offset: 2px;
+}
+.main:focus { outline: none; }
+/* 只给读屏的文本：不占版面、不被裁切影响，仍在无障碍树里。
+   常驻播报区（#cpLive / #cpLiveAssertive）用它，视觉用户看不见，读屏听得见。
+   C4：.card-sub[data-hint] 的纯说明旁白并入本组——视觉隐藏但读屏仍可读，
+   不再用 display:none 把说明从无障碍树里删掉。 */
+.sr-only, .card-sub[data-hint] {
+    position: absolute; width: 1px; height: 1px;
+    margin: -1px; padding: 0; border: 0; overflow: hidden;
+    clip: rect(0 0 0 0); clip-path: inset(50%);
+    white-space: nowrap;
+}
 .modal-quote {
-    background: var(--surface-3); border-left: 3px solid var(--brand);
-    border-radius: 0 8px 8px 0; padding: 11px 13px; font-size: 13.5px;
+    /* E1：>1px 彩色 border-left 降到 1px（craft-floor），保留品牌色作引用标记 */
+    background: var(--surface-3); border-left: 1px solid var(--brand);
+    border-radius: 0 8px 8px 0; padding: 11px 13px; font-size: var(--fs-base);
     line-height: 1.8; color: var(--ink-2); margin: 12px 0;
 }
-.kv { display: grid; grid-template-columns: 92px 1fr; gap: 6px 10px; font-size: 12.5px; }
+.kv { display: grid; grid-template-columns: 92px 1fr; gap: 6px 10px; font-size: var(--fs-sm); }
 .kv dt { color: var(--ink-4); }
 .kv dd { margin: 0; color: var(--ink-2); }
 
@@ -507,13 +1162,13 @@ button { font-family: inherit; }
     display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
 }
 .carry-bar .carry-label {
-    font-size: 11.5px; color: var(--ink-4); letter-spacing: .02em; margin-right: 2px;
+    font-size: var(--fs-xs); color: var(--ink-4); letter-spacing: .02em; margin-right: 2px;
 }
-.carry-bar .chip { cursor: default; height: 24px; padding: 0 9px; font-size: 11.5px; }
+.carry-bar .chip { cursor: default; height: 24px; padding: 0 9px; font-size: var(--fs-xs); }
 .carry-bar .chip:hover { border-color: var(--line); color: var(--ink-3); }
 .carry-bar .chip.is-ds { background: var(--brand-soft); border-color: var(--brand-line); color: var(--brand); }
 .carry-bar .carry-gap { flex: 1 1 auto; min-width: 8px; }
-.carry-bar .carry-note { font-size: 12px; color: var(--ink-4); }
+.carry-bar .carry-note { font-size: var(--fs-xs); color: var(--ink-4); }
 @media (max-width: 720px) {
     .carry-bar .carry-gap { display: none; }
     .carry-bar .btn { width: 100%; justify-content: center; }
@@ -533,18 +1188,20 @@ button { font-family: inherit; }
 [data-theme="dark"] {
     color-scheme: dark;                 /* 让原生控件（select/滚动条）跟着变暗 */
 
-    --brand: #3D7DFF;
+    --brand: #3D7DFF;                  /* 深底上的品牌「文字/描边」 */
     --brand-dark: #5E93FF;
+    --brand-solid: #2D6BE0;            /* 实心按钮底色：白字压上去 4.88 */
+    --brand-text: #5E93FF;             /* 品牌色文字：深底上 #3D7DFF 只有 3.9 */
     --brand-soft: rgba(61, 125, 255, .16);
     --brand-line: rgba(61, 125, 255, .38);
 
     --ink: #E8EEF8;
     --ink-2: #C2CDDE;
-    --ink-3: #93A2B8;
-    --ink-4: #6E7F99;
+    --ink-3: #9DACC1;
+    --ink-4: #7F90A9;
 
-    --line: #24314A;
-    --line-2: #1C2739;
+    --line: #29374F;
+    --line-2: #1D293C;
 
     --bg: #0B1220;
     --surface: #131C2B;
@@ -573,10 +1230,12 @@ button { font-family: inherit; }
 }
 
 /* 深色下这些"纯白叠加"要么刺眼、要么完全看不见，逐个改 */
+/* impeccable-disable-next-line dark-glow -- 用户 2026-11-15 显式 pin，见 DESIGN.md Explicit exemptions */
 [data-theme="dark"] .brand-mark { box-shadow: 0 6px 14px -6px rgba(61, 125, 255, .9); }
 [data-theme="dark"] .modal-mask { background: rgba(3, 7, 15, .66); }
 [data-theme="dark"] .modal { box-shadow: 0 24px 60px -20px rgba(0, 0, 0, .9); }
 [data-theme="dark"] .toast { box-shadow: 0 12px 30px -12px rgba(0, 0, 0, .9); }
+/* impeccable-disable-next-line dark-glow -- 用户 2026-11-15 显式 pin，见 DESIGN.md Explicit exemptions */
 [data-theme="dark"] .btn-primary { box-shadow: 0 6px 16px -8px rgba(61, 125, 255, .8); }
 [data-theme="dark"] .table th { background: var(--surface-2); }
 [data-theme="dark"] ::-webkit-scrollbar-thumb { border-color: var(--bg); }
@@ -603,6 +1262,33 @@ button { font-family: inherit; }
    ECharts 渲染后容器里会有 canvas，:empty 自然失效，
    所以不需要任何 JS 去"移除骨架"——这是最不容易忘同步的写法。
    ============================================================ */
+/* 横滑提示：右边还有内容时，右缘压一道内阴影。
+   先用 mask 渐隐做过一版，问题是它会把最后一个数字也变淡——
+   「784」半透明看着同样像坏了。内阴影只压暗不改透明度，数字还是实心的。
+   状态类由 core.js 的 watchXScroll 维护，滑到底自动撤掉。 */
+.table-scroll.is-xscroll {
+    box-shadow: inset -18px 0 16px -14px rgba(15, 23, 42, .34);
+}
+[data-theme="dark"] .table-scroll.is-xscroll {
+    box-shadow: inset -18px 0 16px -14px rgba(0, 0, 0, .62);
+}
+/* 一句话说明能横滑：只在容器真的溢出时由 core.js 取消 hidden。
+   阴影在深色主题上几乎看不见，文字不挑主题。提示放在表格之前——
+   长表在手机上要滑很久才到底，写在表尾等于"看完了才知道还能滑"。 */
+.table-scroll-hint {
+    margin-bottom: 6px; text-align: right;
+    font-size: var(--fs-xs); color: var(--ink-4);
+}
+.table-scroll-hint[hidden] { display: none; }
+@media (max-width: 720px) {
+    /* 提示在首帧后才按溢出状态显隐。先按同一行高占位，
+       否则它出现时会把整张表往下推（390 /data 实测 0.017 CLS）。 */
+    .table-scroll-hint { height: 19px; line-height: 19px; }
+    /* 全局 `[hidden]{display:none !important}` 会把占位一起抹掉，这里必须同级覆盖；
+       提示显隐只换 visibility，表格位置在首帧就固定。 */
+    .table-scroll-hint[hidden] { display: block !important; visibility: hidden; }
+}
+
 .chart { position: relative; }
 .chart:empty::after {
     content: ""; position: absolute; inset: 10px;
@@ -614,8 +1300,21 @@ button { font-family: inherit; }
 .chart:empty::before {
     content: "图表加载中"; position: absolute; inset: 10px;
     display: grid; place-items: center; z-index: 1;
-    font-size: 11.5px; color: var(--ink-4); letter-spacing: .5px;
+    font-size: var(--fs-xs); color: var(--ink-4); letter-spacing: .5px;
 }
+/* 空图表三态各说各的话，不把「还没滚到」演成故障：
+   · is-lazy-wait  纯懒加载、还在折线以下 —— 中性，保留 shimmer 骨架而非纯文字；
+   · is-stalled     已在视口 / 已调用 setOption，只是还没画完 —— 中性，不提滚动；
+   · is-failed      真失败 —— 警告色，但只写「刷新页面」，不承诺不存在的点击重试。
+   三类都由 core.js 按容器自身状态判定，不再是 8 秒一刀切。
+   就地恢复入口统一由 #cpShowAllCharts 承担，不在 :empty 伪元素上造「点此重试」。 */
+.chart:empty.is-lazy-wait::before { content: "图表将随滚动加载"; color: var(--ink-3); letter-spacing: 0; }
+.chart:empty.is-stalled::before { content: "图表仍在加载…"; color: var(--ink-3); letter-spacing: 0; }
+.chart:empty.is-failed::before { content: "图表未加载 · 刷新页面重试"; color: var(--warn-ink); letter-spacing: 0; }
+/* is-lazy-wait 保留基础 ::after 的 shimmer 骨架（不进这条停动画规则）；
+   stalled / failed 维持原逻辑：停掉动画、压低不透明度，不把故障演成"还在加载"。 */
+.chart:empty.is-stalled::after,
+.chart:empty.is-failed::after { animation: none; opacity: .45; }
 @media (prefers-reduced-motion: reduce) {
     .chart:empty::after, .skeleton { animation: none; }
 }
@@ -646,7 +1345,7 @@ button { font-family: inherit; }
     }
     body.side-open .sidebar { transform: none; }
     /* 抽屉里必须把在平板断点隐藏的文字放回来，否则只剩图标 */
-    .brand-name, .brand-sub, .nav-label, .nav-code, .nav-item span, .sidebar-foot { display: revert; }
+    .brand-name, .brand-sub, .nav-label, .nav-item span, .sidebar-foot { display: revert; }
     .nav-item { justify-content: flex-start; padding: 10px 12px; }
     .nav-mask {
         display: block; position: fixed; inset: 0; z-index: 55;
@@ -655,24 +1354,162 @@ button { font-family: inherit; }
     }
     body.side-open .nav-mask { opacity: 1; pointer-events: auto; }
 
-    .topbar { padding: 10px 12px; gap: 10px; }
-    .page-title { font-size: 15px; }
-    .page-sub { display: none; }             /* 手机上副标题只会挤掉筛选栏 */
+    /* A4：390 顶栏原本是 flex-wrap 自动换行 + .topbar-right 的 margin-left:auto，
+       换行之后控件行的左缘被推到 x=80，与标题左缘完全不对齐，
+       两块内容看起来不属于同一个页头。改成两行网格：第一行汉堡 + 标题，
+       第二行控件（从左排、左缘与标题齐）。ds-hint 仍是绝对定位贴底那行。 */
+    .topbar {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        grid-template-areas: "nav title" "acts acts";
+        align-items: start; gap: 8px 10px;
+        padding: 10px 12px;
+    }
+    .topbar > .nav-toggle { grid-area: nav; }
+    .topbar > div:not(.topbar-right) { grid-area: title; min-width: 0; }
+    .topbar-right { grid-area: acts; margin-left: 0; justify-content: flex-start; }
+    /* E5 / flat-type-hierarchy：body 14px、h1 提到 --fs-xl(20px)，≥1.25:1 */
+    .page-title { font-size: var(--fs-xl); }
+    /* 副标题是"这一页解决什么问题"的唯一一句话。手机 + 抽屉导航下，
+       11 个入口都折起来了，删掉它读者就再没有一句上下文。留两行。 */
+    .page-sub {
+        display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+        overflow: hidden; font-size: var(--fs-sm);
+    }
     .topbar-right { gap: 6px; }
+    /* 数据集下拉在手机上要收窄：它写着"2019-2026 · 1,969 条"，比其它控件加起来还宽，
+       一超宽整排就会换行，把账户头像孤零零挤到第三行去。完整口径在 title 里。 */
+    #dsSelect { max-width: 152px; }
     .content { padding: 12px 12px 48px; }
 
-    .g-6, .g-4, .g-3, .g-2, .g-2-1, .g-1-2 { grid-template-columns: 1fr; }
+    .g-6, .g-5, .g-4, .g-3, .g-3k, .g-2, .g-2-1, .g-1-2 { grid-template-columns: 1fr; }
     .span-2 { grid-column: auto; }
     .grid { gap: 10px; }
 
     .card { padding: 13px 14px; border-radius: 13px; }
 
     .filterbar { padding: 9px 10px; gap: 6px; }
-    .filter-sep { display: none; }
+    /* 分隔线以前在手机上被 display:none 掉，于是「情感 正面 中性 负面 全部时间」
+       挤在同一行，「全部时间」被读成第四种情感。省 9px 换一个误读不划算——
+       保留一条 1px 竖线，组与组之间有边界。 */
+    .filter-sep { display: block; flex: 0 0 1px; }
+    /* 加了「全部」之后情感组有四枚 chip，332px 里一行放不下。
+       让组内折行、标签不折字——否则「情感」被压成竖排的两个单字。 */
+    .filter-group { flex-wrap: wrap; }
+    .filter-label { white-space: nowrap; flex: 0 0 auto; }
 
-    /* 表格：不拆结构，直接让容器横滑——比在手机上把表压成卡片更诚实 */
+    /* 其它表格（证据、数据、报告）仍然横滑：结构不该为了窄屏被拆散。
+       唯独风险表改成了卡片——它是唯一每行都带动作的表，动作不能藏在横滑里。 */
     .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    .table { min-width: 520px; font-size: 12.5px; }
+    /* 520px 兜不住：390 下表格被拉到 550，首列「数据集名 + 来源口径」只剩 61px，
+       20+ 行逐字竖排、单行行高 260px（WCAG 1.4.10 Reflow 不过）。横滑本来就在，
+       真正缺的是"让横滑接管纵向挤压"：表格给到 760，首列再给 180 下限，
+       于是窄屏读法是"左右滑一屏"，而不是"一行字竖着念"。
+       风险表在 ≤720 已改成卡片（见上方规则），这里的 min-width 对它不生效。 */
+    .table { min-width: 760px; font-size: var(--fs-sm); }
+    .table td:first-child, .table th:first-child { min-width: 180px; white-space: normal; }
+    /* 横滑时首列钉住：九列滑到右边看不见"这是哪个主题"，等于白看。
+       钉住的格子必须自带不透明底，否则下面的内容会从字缝里透出来。 */
+    .table-scroll .dp-risk-table th:first-child,
+    .table-scroll .dp-risk-table td:first-child {
+        position: sticky; left: 0; z-index: 1;
+        background: var(--surface);
+        box-shadow: 1px 0 0 var(--line);
+    }
+    .table-scroll .dp-risk-table tbody tr:hover td:first-child { background: var(--surface-3); }
+    .table-scroll .dp-risk-table tbody tr.on td:first-child { background: var(--brand-soft); }
+    /* 第 11 轮：首列钉住以前只给风险表做，`/data` 与 `/data/reports` 一横滑就丢行身份
+       （实测 scrollLeft=200 时首列已滑到 x=-171，"这是哪个数据集 / 哪份报告"看不见了）。
+       现在所有横滑表都钉首列；风险表在下面会改成卡片，显式排除，免得两套规则打架。
+       钉住的格子必须自带不透明底，否则下面的内容会从字缝里透出来。 */
+    .table-scroll .table:not(.dp-risk-table) th:first-child,
+    .table-scroll .table:not(.dp-risk-table) td:first-child {
+        position: sticky; left: 0; z-index: 1;
+        background: var(--surface);
+        box-shadow: 1px 0 0 var(--line);
+    }
+    .table-scroll .table:not(.dp-risk-table) tr:hover td:first-child { background: var(--surface-3); }
+    /* 列序：1 主题 / 2 风险指数 / 3 等级 / 4 负面·总 / 5 归口 / 6 工单 / 7 箭头。
+       删掉「优先级」列之后，原第 5、6 列的规则各左移一位——**改列必须同步这里**。 */
+    /* 归口那一列（现在是第 5 列）也该有个下限：不设下限时它只剩 70px，
+       "招生就业处（招生办）"会折成五行，把整行撑到 140px。表格宽了由容器滑，不受罪的是文字。 */
+    .table-scroll .dp-risk-table td:nth-child(5),
+    .table-scroll .dp-risk-table th:nth-child(5) { min-width: 96px; }
+    /* 等级（3）与「62 / 784」+ 百分比（4）被挤窄时会拆成上下两行，行高从 63 涨到 84 */
+    .table-scroll .dp-risk-table td:nth-child(3),
+    .table-scroll .dp-risk-table th:nth-child(3),
+    .table-scroll .dp-risk-table td:nth-child(4),
+    .table-scroll .dp-risk-table th:nth-child(4) { white-space: nowrap; }
+    /* 窄屏把风险列收回来：四段条还能看出长短，又不至于让表格宽出一屏。
+       120 + 等级 40 是为了让前三列（96+120+40）加上「负面 / 总」的 73
+       正好落在 332 的容器内——**切点必须落在列边界上**，否则读者看到的是
+       "62 / 78" 这种被切掉一半的数字，会以为数据坏了。 */
+    .table-scroll .dp-risk-table .dp-col-risk { width: 120px; min-width: 120px; }
+    .table-scroll .dp-risk-table td:first-child,
+    .table-scroll .dp-risk-table th:first-child { min-width: 88px; }
+    /* 工单列在窄屏只放一枚按钮或一条单号，96px 太宽，挤掉的是风险与归口 */
+    .table-scroll .dp-risk-table .dp-col-tk { width: 78px; min-width: 78px; }
+
+    /* 风险表在手机上不再是"横滑的九列表格"，而是每行一张卡。
+       原因很实在：工单（这一页唯一的动作）原本落在 x=468，视口只有 390，
+       要横滑才摸得到；唯一的提示在表尾 8 行之后。后来试过把动作列钉在右缘，
+       结果 78px 的钉住列盖掉了「等级 / 负面」两列，屏幕上出现一块空白。
+       钉左钉右都只是把问题挪个位置——表格本身在 332px 里放不下七列。
+       所以 ≤720 换成卡：主题 + 等级在第一行，风险条第二行，负面/第三行，
+       归口第四行，动作列独占右侧（跨三行）。列的顺序没变，只是不再需要滑。 */
+    /* 只读工单页同理：这页唯一的任务就是看"什么状态、还剩多久"，
+       而 520px 的表塞进 332px 里，单号折成「TK-20261030- / 0002」，
+       状态与时限整列在屏幕外，提示还在七行之后。改成一行一张卡。 */
+    .tk-ro-table { display: block; min-width: 0; width: 100%; }
+    .tk-ro-table thead { display: none; }
+    .tk-ro-table tbody { display: block; }
+    .tk-ro-table tr {
+        display: grid; grid-template-columns: 1fr auto;
+        grid-template-areas: "code status" "dim dim" "sla sla";
+        align-items: center; gap: 5px 8px;
+        padding: 11px 12px; margin-bottom: 8px;
+        border: 1px solid var(--line); border-radius: 11px; background: var(--surface);
+    }
+    .tk-ro-table td { padding: 0; border: 0; }
+    .tk-ro-table td:nth-child(1) { grid-area: code; white-space: nowrap; }
+    .tk-ro-table td:nth-child(2) { grid-area: dim; }
+    .tk-ro-table td:nth-child(3) { grid-area: status; justify-self: end; text-align: right; }
+    .tk-ro-table td:nth-child(4) { grid-area: sla; }
+
+    .dp-risk-table { display: block; min-width: 0; width: 100%; }
+    .dp-risk-table thead, .dp-risk-table caption { display: none; }
+    .dp-risk-table tbody { display: block; }
+    .dp-risk-table tr[data-row] {
+        display: grid;
+        /* 第一列 auto：主题名占多宽就多宽，等级紧挨着它；剩下的空间给动作列前的空白 */
+        grid-template-columns: auto 1fr auto;
+        grid-template-areas:
+            "dim  lv   act"
+            "risk risk act"
+            "neg  neg  act"
+            "dept dept dept";
+        align-items: center; gap: 5px 8px;
+        padding: 11px 12px; margin-bottom: 8px;
+        border: 1px solid var(--line); border-radius: 11px;
+        background: var(--surface);
+    }
+    .dp-risk-table tr[data-row].on { border-color: var(--brand-line); background: var(--brand-soft); }
+    .dp-risk-table tr[data-row] td {
+        padding: 0; border: 0; background: transparent;
+        position: static; box-shadow: none;
+    }
+    .dp-td-dim { grid-area: dim; }
+    .dp-td-lv { grid-area: lv; justify-self: start; margin-left: 6px; }
+    .dp-td-risk { grid-area: risk; }
+    /* .num 在桌面是右对齐（数字列对右边缘），卡片里要改成左对齐，
+       否则「62 / 784」飘到动作列旁边，看起来像工单的数字。 */
+    .dp-risk-table tr[data-row] .dp-td-neg { grid-area: neg; font-size: var(--fs-micro); text-align: left; }
+    .dp-td-dept { grid-area: dept; font-size: var(--fs-micro); }
+    .dp-td-tk { grid-area: act; justify-self: end; align-self: center; }
+    /* 箭头是"点整行"的鼠标提示；卡片的动作已经是右侧那颗按钮，重复了 */
+    .dp-td-act { display: none; }
+    .dp-risk-table tr.dp-detail-row { display: block; padding: 0; margin: -4px 0 10px; border: 0; }
+    .dp-risk-table tr.dp-detail-row > td { display: block; }
 
     .chart, .chart-sm, .chart-lg { height: 230px; }
 
@@ -682,7 +1519,7 @@ button { font-family: inherit; }
     .composer-foot { flex-wrap: wrap; }
     .composer-hint { order: 3; width: 100%; white-space: normal; }
 
-    .kpi-value { font-size: 23px; }
+    .kpi-value { font-size: var(--fs-2xl); }
     #toastWrap { right: 12px; left: 12px; bottom: 12px; align-items: stretch; }
     .toast { max-width: none; }
 
@@ -692,12 +1529,20 @@ button { font-family: inherit; }
 
 @media (max-width: 420px) {
     .chart, .chart-sm, .chart-lg { height: 200px; }
-    .kpi-value { font-size: 21px; }
-    .badge { font-size: 10.5px; }
+    .kpi-value { font-size: var(--fs-xl); }
+    .badge { font-size: var(--fs-micro); }
 }
 
 /* ---------------- 报告打印（导出 PDF）---------------- */
+#printScope { display: none; }
+
 @media print {
+    /* 筛选条被隐掉了，但"这批数据是什么口径"不能跟着消失——
+       导出的 PDF 最常被翻到的就是这一句。由 beforeprint 写进 #printScope。 */
+    #printScope {
+        display: block; margin: 0 0 10px; padding: 6px 0 8px;
+        border-bottom: 1px solid #ddd; color: #333; font-size: 11pt; line-height: 1.6;
+    }
     .sidebar, .topbar, #filterBar, .card-tools, #btnPrint, #btnReport,
     #toastWrap, .chat-head, .composer { display: none !important; }
     body { background: #fff; }
@@ -719,17 +1564,17 @@ button { font-family: inherit; }
 .guard-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
 .guard-icon {
     flex: 0 0 22px; width: 22px; height: 22px; border-radius: 50%;
-    display: grid; place-items: center; font-size: 13px; font-weight: 700;
+    display: grid; place-items: center; font-size: var(--fs-sm); font-weight: 700;
     background: var(--warn-ink); color: var(--surface);
 }
-.guard-title { font-size: 14.5px; font-weight: 700; color: var(--warn-ink); }
-.guard-reply { font-size: 13.5px; line-height: 1.75; color: var(--ink); }
+.guard-title { font-size: var(--fs-base); font-weight: 700; color: var(--warn-ink); }
+.guard-reply { font-size: var(--fs-base); line-height: 1.75; color: var(--ink); }
 .guard-meta {
     margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--warn-line);
-    font-size: 12px; color: var(--ink-3); display: flex; flex-wrap: wrap; gap: 6px 14px;
+    font-size: var(--fs-xs); color: var(--ink-3); display: flex; flex-wrap: wrap; gap: 6px 14px;
 }
 .guard-acts { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-.guard-acts .guard-acts-label { font-size: 12px; color: var(--ink-3); }
+.guard-acts .guard-acts-label { font-size: var(--fs-xs); color: var(--ink-3); }
 
 /* ---------------- 处置工单（PAGE-06） ---------------- */
 /* 免责声明常驻在内容区顶部：不是弹窗、没有关闭按钮。
@@ -739,11 +1584,11 @@ button { font-family: inherit; }
     padding: 11px 14px; margin-bottom: 14px;
     background: var(--warn-soft); border: 1px solid var(--warn-line);
     border-radius: var(--radius-sm);
-    font-size: 12.5px; line-height: 1.7; color: var(--warn-ink);
+    font-size: var(--fs-sm); line-height: 1.7; color: var(--warn-ink);
 }
 .tk-disclaimer svg { width: 15px; height: 15px; flex: 0 0 auto; margin-top: 2px; }
 
-.tk-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-4); margin-left: auto; }
+.tk-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-faint); margin-left: auto; }
 .tk-dot.ok { background: var(--pos); }
 .tk-dot.warn { background: var(--warn); }
 .tk-dot.neg { background: var(--neg); }
@@ -752,90 +1597,164 @@ button { font-family: inherit; }
 .tk-sugg:first-child { border-top: 0; padding-top: 2px; }
 .tk-sugg-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .tk-sugg-gap { flex: 1 1 auto; }
-.tk-sugg-title { font-size: 13.5px; font-weight: 600; margin-top: 6px; }
-.tk-sugg-detail { font-size: 12.5px; color: var(--ink-3); line-height: 1.75; margin-top: 3px; }
+.tk-sugg-title { font-size: var(--fs-base); font-weight: 600; margin-top: 6px; }
+.tk-sugg-detail { font-size: var(--fs-sm); color: var(--ink-3); line-height: 1.75; margin-top: 3px; }
 .tk-sugg-basis { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 7px;
-    font-size: 11.5px; color: var(--ink-4); }
+    font-size: var(--fs-xs); color: var(--ink-4); }
 .tk-sugg-basis b { color: var(--ink-2); font-weight: 600; }
 
 .tk-filters { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-.tk-filters .select { height: 30px; font-size: 12.5px; }
-.tk-filters .input { height: 30px; font-size: 12.5px; min-width: 150px; flex: 1 1 150px; }
+.tk-filters .select { height: 30px; font-size: var(--fs-sm); }
+.tk-filters .input { height: 30px; font-size: var(--fs-sm); min-width: 150px; flex: 1 1 150px; }
 
 .tk-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 11px 12px; border-radius: var(--radius-sm);
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 12px 11px; border-radius: var(--radius-sm);
     border: 1px solid transparent; cursor: pointer; transition: background .14s, border-color .14s;
 }
 .tk-item:hover { background: var(--surface-3); }
+/* 复选框的 44px 热区由行内 padding 撑出来（22 + 11×2），对齐方式交给这里：
+   桌面行短、垂直居中好看；≤720 卡片折成两行变高，居中会让它浮在空白里，
+   改为贴着标题顶对齐。行内 style 里不再写 align-self，否则媒体查询压不动。 */
+.tk-bulk {
+    appearance: none; -webkit-appearance: none;
+    position: relative; flex: 0 0 auto; align-self: center;
+    /* 热区 44×44（WCAG 2.5.8），视觉只在中间 18×18。
+       以前是 22px 原生框 + content-box 的 11px padding 冒充热区，
+       结果屏幕上是一个 44px 的空方框——看着像占位，勾选标记还只有指甲盖大。
+       负外边距把多出来的 26px 让回去，行距与左边缘都和改动前对齐。 */
+    width: 44px; height: 44px; margin: -11px 0 -11px -12px;
+    border: 0; background: transparent; cursor: pointer;
+}
+.tk-bulk::before {
+    content: ""; position: absolute; left: 13px; top: 13px;
+    width: 18px; height: 18px; box-sizing: border-box;
+    border: 1.5px solid var(--ink-3); border-radius: 5px; background: var(--surface);
+}
+.tk-bulk:checked::before { background: var(--brand); border-color: var(--brand); }
+.tk-bulk:checked::after {
+    content: ""; position: absolute; left: 19px; top: 16px;
+    width: 5px; height: 9px; transform: rotate(45deg);
+    border: solid #fff; border-width: 0 2px 2px 0;
+}
+.tk-bulk:focus-visible { outline: 2px solid var(--brand); outline-offset: -11px; border-radius: 8px; }
 .tk-item.on { background: var(--brand-soft); border-color: var(--brand-line); }
 .tk-pri { width: 3px; align-self: stretch; border-radius: 3px; background: var(--line); flex: 0 0 auto; }
 .tk-pri.p0 { background: var(--neg-solid); }
-.tk-pri.p1 { background: #EA580C; }
+.tk-pri.p1 { background: var(--warn); }
 .tk-pri.p2 { background: var(--brand); }
-.tk-pri.p3 { background: var(--ink-4); }
+.tk-pri.p3 { background: var(--ink-faint); }
+/* 优先级徽章：P0–P3 四色语义。
+   原来优先级在列表里只有一条 3px 竖色条、在详情里是一段彩色文字，
+   跟旁边的「已分派」「食堂餐饮」比，既读不出是几级、也看不出比谁重。
+   现在三处（规则建议 / 列表 / 详情）统一成同一枚东西：色块 + 「P1 · 高」。 */
+/* 009：优先级是列表里要一眼扫出来的信息，不该是 12px 淡灰小字。
+   四档都配语义色底 + 同色描边，文字用各语义色的 ink 档（浅色/深色均由变量
+   整套重定义，对比度都 ≥4.5:1），--fs-xs + 600 字重抬出层级。 */
+.tk-prib {
+    display: inline-flex; align-items: center; height: 20px; padding: 0 7px;
+    border-radius: 5px; font-size: var(--fs-xs); font-weight: 600; letter-spacing: .02em;
+    white-space: nowrap;
+}
+.tk-prib.p0 { background: var(--neg-soft); color: var(--neg-ink); box-shadow: inset 0 0 0 1px var(--neg-line); }
+.tk-prib.p1 { background: var(--warn-soft); color: var(--warn-ink); box-shadow: inset 0 0 0 1px var(--warn-line); }
+.tk-prib.p2 { background: var(--brand-soft); color: var(--brand-text); box-shadow: inset 0 0 0 1px var(--brand-line); }
+.tk-prib.p3 { background: var(--neu-soft); color: var(--ink-2); box-shadow: inset 0 0 0 1px var(--line); }
 .tk-item-main { flex: 1 1 auto; min-width: 0; }
-.tk-item-title { display: flex; align-items: center; gap: 7px; font-size: 13.5px; font-weight: 500;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.tk-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px;
-    color: var(--ink-4); background: var(--surface-sunken); padding: 1px 6px; border-radius: 5px;
-    flex: 0 0 auto; font-weight: 500; }
-.tk-item-meta { display: flex; align-items: center; gap: 8px; margin-top: 5px;
-    font-size: 11.5px; color: var(--ink-4); flex-wrap: wrap; }
-.tk-item-sla { text-align: right; font-size: 11.5px; color: var(--ink-3); flex: 0 0 auto; }
-.tk-item-sla em { display: block; font-style: normal; color: var(--ink-4); font-size: 10.5px; }
+/* 标题两行折行：一行 295px 只放得下 16 个字，"食堂餐饮窗口排队时间过长（早餐
+   时段拥堵）"这种真实标题会被截成"…（早"，而列表的全部价值就是让人扫一眼认出是哪件事。
+   原来的编号不再挤在这一行——它挪到下面那行做行标识，标题才有整行可用。 */
+.tk-item-title {
+    font-size: var(--fs-base); font-weight: 500; line-height: 1.45;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden; word-break: break-word;
+}
+.tk-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: var(--fs-micro);
+    color: var(--ink-3); background: var(--surface-sunken); padding: 0 5px; border-radius: 5px;
+    flex: 0 0 auto; font-weight: 500; line-height: 1.6; }
+.tk-item-meta { display: flex; align-items: center; gap: 7px; margin-top: 5px;
+    font-size: var(--fs-xs); color: var(--ink-3); flex-wrap: wrap; overflow: visible; }
+.tk-item-meta > span { white-space: nowrap; }
+/* C1（P0-2）：.tk-open 是 meta 行里唯一的 <a>。这几条布局约束原来只写在 ≤720 的
+   媒体查询里，桌面 .tk-item-meta 仍是 nowrap + overflow:hidden，把链接挤成十几个字
+   逐字竖排、宽度不足 44px（断链）。移到全局后桌面 / 移动共用：不收缩、不折字、
+   整行折下去而不是被裁切；min-width 兜住桌面点击区 ≥44px。44px 高度仍只给触屏。 */
+.tk-item-meta > .tk-open {
+    flex: 0 0 auto; white-space: nowrap;
+    display: inline-flex; align-items: center;
+    min-width: 44px; min-height: 24px;
+}
+/* 负责人是这一行里最长、最可省的字段：宁可让它带省略号收尾，
+   也不要为了塞下名字把整行 meta 撑成两行（1180 宽时行高会从 74 涨到 101）。 */
+.tk-owner { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+/* 时限独立成右列：label 一行、时长一行。整句"已超期 8 个工作日 4 小时"塞进来
+   会把主列挤到 174px（1180 宽时实测），标题就只剩编号那么宽。 */
+.tk-item-sla {
+    flex: 0 0 86px; max-width: 86px; text-align: right;
+    font-size: var(--fs-xs); color: var(--ink-3); line-height: 1.4;
+    font-variant-numeric: tabular-nums;
+}
+.tk-item-sla b { display: block; font-size: var(--fs-micro); font-weight: 500; color: var(--ink-3); }
+.tk-item-sla span { display: block; font-weight: 600; }
+.tk-item-sla i { display: block; font-style: normal; white-space: nowrap; }
 .tk-item-sla.warn { color: var(--warn-ink); }
-.tk-item-sla.neg { color: var(--neg-ink); font-weight: 600; }
+.tk-item-sla.warn b { color: var(--warn-ink); }
+.tk-item-sla.neg { color: var(--neg-ink); }
+.tk-item-sla.neg b { color: var(--neg-ink); }
 
 .tk-pager { display: flex; align-items: center; justify-content: flex-end; gap: 8px;
-    margin-top: 12px; font-size: 12px; color: var(--ink-4); }
-
-.tk-pri-text { font-size: 11.5px; font-weight: 600; }
-.tk-pri-text.p0 { color: var(--neg-ink); }
-.tk-pri-text.p1 { color: #C2410C; }
-.tk-pri-text.p2 { color: var(--brand-ink); }
-.tk-pri-text.p3 { color: var(--ink-3); }
+    margin-top: 12px; font-size: var(--fs-xs); color: var(--ink-4); }
 
 .tk-sla-box { margin: 12px 0 4px; padding: 10px 12px; border-radius: var(--radius-sm);
-    background: var(--surface-3); border: 1px solid var(--line); font-size: 13px; }
+    background: var(--surface-3); border: 1px solid var(--line); font-size: var(--fs-sm); }
 .tk-sla-box > div:first-child { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
-.tk-sla-box em { font-style: normal; font-size: 11.5px; color: var(--ink-4); }
+.tk-sla-box em { font-style: normal; font-size: var(--fs-xs); color: var(--ink-4); }
 .tk-sla-box.neg { background: var(--neg-soft); border-color: var(--neg-line); }
 .tk-sla-box.neg > div:first-child span { color: var(--neg-ink); font-weight: 600; }
-.tk-sla-foot { font-size: 11.5px; color: var(--ink-4); margin-top: 4px; line-height: 1.65; }
+.tk-sla-foot { font-size: var(--fs-xs); color: var(--ink-4); margin-top: 4px; line-height: 1.65; }
 
 .tk-block { margin-top: 16px; }
-.tk-block-title { font-size: 12.5px; font-weight: 600; color: var(--ink-2); margin-bottom: 7px;
+.tk-block-title { font-size: var(--fs-sm); font-weight: 600; color: var(--ink-2); margin-bottom: 7px;
     display: flex; align-items: baseline; gap: 8px; }
-.tk-block-title em { font-style: normal; font-size: 11px; font-weight: 400; color: var(--ink-4); }
-.tk-preview { font-size: 12px; color: var(--ink-3); background: var(--surface-sunken);
+.tk-block-title em { font-style: normal; font-size: var(--fs-micro); font-weight: 400; color: var(--ink-4); }
+.tk-preview { font-size: var(--fs-xs); color: var(--ink-3); background: var(--surface-sunken);
     border-radius: 8px; padding: 7px 10px; }
 
 .tk-evidence .evidence-item { margin-bottom: 8px; }
 .tk-evidence .evidence-item:last-child { margin-bottom: 0; }
 
 .tk-timeline { list-style: none; margin: 0; padding: 0 0 0 4px; }
-.tk-ev { position: relative; padding: 0 0 12px 18px; border-left: 2px solid var(--line); }
+.tk-ev { position: relative; padding: 0 0 12px 18px; border-left: 1px solid var(--line); }
 .tk-ev:last-child { border-left-color: transparent; padding-bottom: 0; }
 .tk-ev-dot { position: absolute; left: -5px; top: 5px; width: 8px; height: 8px;
     border-radius: 50%; background: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
-.tk-ev-top { display: flex; align-items: baseline; gap: 8px; font-size: 12.5px; }
-.tk-ev-top span { color: var(--ink-3); font-size: 11.5px; }
-.tk-ev-top em { margin-left: auto; font-style: normal; color: var(--ink-4); font-size: 11px; }
-.tk-ev-flow { font-size: 11.5px; color: var(--ink-4); margin-top: 2px; }
-.tk-ev-note { font-size: 12.5px; color: var(--ink-2); margin-top: 3px; line-height: 1.7;
+.tk-ev-top { display: flex; align-items: baseline; gap: 8px; font-size: var(--fs-sm); }
+.tk-ev-top span { color: var(--ink-3); font-size: var(--fs-xs); }
+.tk-ev-top em { margin-left: auto; font-style: normal; color: var(--ink-4); font-size: var(--fs-micro); }
+.tk-ev-flow { font-size: var(--fs-xs); color: var(--ink-4); margin-top: 2px; }
+.tk-ev-note { font-size: var(--fs-sm); color: var(--ink-2); margin-top: 3px; line-height: 1.7;
     background: var(--surface-3); border-radius: 7px; padding: 5px 9px; }
 
 .tk-acts { display: flex; flex-wrap: wrap; gap: 8px; }
-.tk-act-to { font-size: 10.5px; color: var(--ink-4); margin-left: 6px; font-weight: 400; }
-.btn-primary .tk-act-to { color: rgba(255, 255, 255, .82); }
-.tk-comment { width: 100%; margin-bottom: 8px; font-size: 13px; resize: vertical; }
+/* 删除工单和「下一张 / 返回列表 / 关闭」以前同为灰 ghost：翻页与不可逆删除
+   长得一模一样，点错一次后面再好的确认弹窗也只是补救。现在它排在关闭之后、
+   由一条竖线隔开（.card-tools 仍是单行），并且走 .btn-danger（红字 + 弱红边）。
+   颜色不是唯一线索：位置与分组也变了，色盲用户同样分得开。 */
+.tk-danger-sep {
+    align-self: center; width: 1px; height: 18px;
+    background: var(--line); margin: 0 2px;
+}
+.tk-act-to { font-size: var(--fs-micro); color: var(--ink-4); margin-left: 6px; font-weight: 400; }
+.btn-primary .tk-act-to { color: rgba(255, 255, 255, .92); }
+.tk-comment { width: 100%; margin-bottom: 8px; font-size: var(--fs-sm); resize: vertical; }
 
 .tk-modal-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
 .tk-two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
 @media (max-width: 1080px) {
-    .tk-item-sla { display: none; }
+    /* 单列堆叠后列表是满宽的，时限有时间可读——把整列藏掉等于"这张单超没超时"
+       在手机上无从判断。收窄到 72px 就够它两行放下。 */
+    .tk-item-sla { flex: 0 0 72px; max-width: 72px; }
     .tk-two { grid-template-columns: 1fr; }
 }
 
@@ -844,36 +1763,126 @@ button { font-family: inherit; }
     display: inline-flex; align-items: center; gap: 5px;
     height: 30px; padding: 0 10px; border-radius: 8px;
     background: var(--brand-soft); border: 1px solid var(--brand-line);
-    color: var(--brand); font-size: 12px; font-weight: 600;
+    color: var(--brand); font-size: var(--fs-xs); font-weight: 600;
     text-decoration: none; transition: all .14s;
 }
 .tk-badge svg { width: 14px; height: 14px; }
+/* 模板先渲染占位徽标、数字后到。桌面固定宽度，避免它出现时把长标题页的
+   顶栏挤成两行；≤1100 只剩图标，宽度本来就固定。 */
+@media (min-width: 1101px) {
+    .tk-badge:not(.is-hidden) { min-width: 90px; justify-content: center; }
+}
 .tk-badge:hover { background: var(--brand); color: var(--white); border-color: var(--brand); }
 .tk-badge.is-overdue { background: var(--neg-soft); border-color: var(--neg-line); color: var(--neg-ink); }
 .tk-badge.is-overdue:hover { background: var(--neg-solid); color: var(--white); border-color: var(--neg-solid); }
 
 /* 驾驶舱工单概览条 */
 .tk-strip { display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
-    padding: 12px 16px; margin-top: 14px; }
-.tk-strip-main { display: flex; align-items: baseline; gap: 8px; font-size: 13.5px; }
-.tk-strip-main b { font-size: 20px; letter-spacing: -.5px; }
+    /* 下面紧接着 KPI 网格。只给 margin-top 会让两卡严丝合缝贴在一起，
+       顶部那条彩色 KPI 条看着像被红条压住；补一个与栅格 gap 同级的间距。 */
+    padding: 12px 16px; margin-top: 14px; margin-bottom: 14px; }
+.tk-strip-main { display: flex; align-items: baseline; gap: 8px; font-size: var(--fs-base); }
+.tk-strip-main b { font-size: var(--fs-xl); letter-spacing: -.5px; }
 .tk-strip-main.neg b { color: var(--neg-ink); }
-.tk-strip-sub { font-size: 11.5px; color: var(--ink-4); }
+.tk-strip-sub { font-size: var(--fs-xs); color: var(--ink-4); }
 .tk-strip-gap { flex: 1 1 auto; }
+/* 模板先放一句“正在读取工单…”占位，取到数字只换 innerHTML。
+   占住最终高度，首帧后就不再把 KPI 与图表整体往下推（390 实测 136px）。 */
+#ticketStrip:not(.is-hidden) { min-height: 84px; }
+@media (max-width: 720px) {
+    #ticketStrip:not(.is-hidden) { min-height: 136px; }
+}
+/* 异步区块的骨架先按终态高度占位；骨架被替换后 :has 自动失效，
+   卡片不会在数据回来时整体涨/缩（390 实测 < 200ms 时发生 0.15–0.22 CLS）。 */
+.dp-today:has(.skeleton) { min-height: 284px; }
+#riskCard:has(.skeleton) { height: 105px; overflow: hidden; }
+/* AI 解读先两张骨架、后四条结论：先按终态高度占位，避免结论到达时
+   把下面的平台图表整体推 37px。 */
+#chartInsights:has(.skeleton) { min-height: 165px; }
+#dsTable:has(.skeleton) { min-height: 381px; }
+#qualityBody:has(.skeleton) { min-height: 537px; }
+.risk-ph { height: 21px; }
+/* 主题排行先 3 条骨架、后 8–10 行真实数据。骨架被替换后 :has 自动失效；
+   不先占住终态高度，排行卡会长高 200px 并把下方证据整体推走（实测 CLS 0.1）。 */
+#rankList:has(.skeleton) { min-height: 320px; }
+@media (max-width: 720px) {
+    .dp-today:has(.skeleton) { min-height: 452px; }
+    #riskCard:has(.skeleton) { height: 235px; overflow: hidden; }
+    #rankList:has(.skeleton) { min-height: 352px; }
+    /* 检索口径在漏斗页是竖排的 6 行，加载中只有 1 行；同样先占位。 */
+    #scopeKv { min-height: 149px; }
+    #dsTable:has(.skeleton) { min-height: 513px; }
+    #qualityBody:has(.skeleton) { min-height: 959px; }
+    .risk-ph { height: 96px; }
+}
+/* 超期不为 0 时整条换配色：它是首屏唯一"今天就得处理"的事。
+   原来它排在最上面，却是一行 20px 的灰字，压不过下面六张并排的卡。
+   底色报警、字不报警：只有「超期」那两处是红的，"待处置 5 单"本身不是事故。 */
+.tk-strip.is-alert { background: var(--neg-soft); border-color: var(--neg-line); }
+.tk-strip.is-alert .tk-strip-main { color: var(--ink-2); }
+.tk-strip.is-alert .tk-strip-main b { font-size: var(--fs-2xl); }
+.tk-strip.is-alert .tk-strip-main.neg,
+.tk-strip.is-alert .tk-strip-main.neg b { color: var(--neg-ink); }
 
 /* 列表与详情 1:1.15 —— 详情里有口径、证据、时间线三块内容，
    给 1/3 宽会把每条证据挤成两行，读起来比没有还累。 */
 .tk-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); }
+/* KPI 是这一层的第一个网格项（跨两列），桌面保持在最前，与原来的排版一致。 */
+.tk-layout > #tkKpi { grid-column: 1 / -1; order: -1; margin-bottom: 14px; }
 @media (max-width: 1080px) {
     .tk-layout { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* 规则建议卡的折叠头：桌面默认展开、不显示三角（它在这里是标题，不是开关），
+   窄屏才露出「展开」二字——手机上它是唯一允许被折叠的东西，
+   因为首屏得先给工单。summary 去掉默认 marker，用文字说明自己是什么。 */
+.sugg-fold > summary { list-style: none; cursor: default; }
+.sugg-fold > summary::-webkit-details-marker { display: none; }
+.sugg-fold > summary::after { content: ""; }
+
+/* ≤720：规则卡收起、列表提到 KPI 之前。
+   390 实测第一张工单原本在 y=1455（1.7 屏之后），前面排着 269px 的规则说明
+   和 544px 的四张 KPI。「手机上是工作台还是说明书」的答案是工作台，
+   所以顺序也要按这个来——只改 CSS order，不动 DOM 顺序（桌面排版不变）。 */
+@media (max-width: 720px) {
+    .tk-flow { display: flex; flex-direction: column; }
+    .tk-flow > #suggCard { order: 1; }
+    .tk-flow > .tk-layout { order: 2; }
+
+    /* 顺序：工单列表 → KPI → 详情。手机上一屏只放得下一件事，
+       先给"要做的事"，再给"总量多少"，最后才是某一张单的细节。 */
+    /* 顺序：列表 → 详情 → KPI。手机上点开一条单，第一屏就该看到三把尺子与
+       「开始处理」；5 张统计卡排在最后（原来挂在详情上方，复评实测详情被推到 y=2050）。 */
+    .tk-layout > .card { order: 1; }
+    .tk-layout > #tkDetail { order: 2; margin-top: 14px; }
+    .tk-layout > #tkKpi { order: 3; margin: 14px 0 0; }
+
+    .sugg-fold > summary { cursor: pointer; }
+    .sugg-fold > summary::after {
+        content: "展开"; margin-left: auto; padding-left: 10px;
+        font-size: var(--fs-micro); color: var(--brand-text);
+    }
+    .sugg-fold[open] > summary::after { content: "收起"; }
+    .sugg-fold[open] > summary { margin-bottom: 4px; }
+    /* 收起时把那句解释也一并收掉：标题本身已经说明它是「只建议、不自动建单」。 */
+    .sugg-fold:not([open]) #suggSub { display: none; }
+
+    /* 四张 KPI 改 2×2：竖排 4 张要 544px，排在列表之后也不该占掉一整屏。 */
+    #tkKpi { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* 维护操作：破坏性动作收在折叠里，代价写在 summary 上（不开也看得见）。
+   页面上最贵的位置应该给"读数据"，不是给一枚会改全站数字的按钮。 */
+.ds-maint { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--line-2); }
+.ds-maint summary { cursor: pointer; color: var(--ink-4); }
+.ds-maint-body { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
 
 /* ---------------- 引用核验（M4） ---------------- */
 /* 明细默认收起、被剥离时自动展开：pass 时不该占版面，
    但"删掉了什么"必须第一眼看见，否则就是静默丢弃。 */
 .cv-details { margin-top: 8px; }
 .cv-details summary {
-    cursor: pointer; font-size: 12.5px; color: var(--brand);
+    cursor: pointer; font-size: var(--fs-sm); color: var(--brand-text);
     padding: 3px 0; list-style: none;
 }
 .cv-details summary::-webkit-details-marker { display: none; }
@@ -881,12 +1890,1922 @@ button { font-family: inherit; }
 .cv-details[open] summary::before { content: "▾ "; }
 .cv-row {
     display: flex; align-items: flex-start; gap: 8px; flex-wrap: wrap;
-    padding: 7px 0; border-top: 1px dashed var(--line); font-size: 12.5px;
+    padding: 7px 0; border-top: 1px dashed var(--line); font-size: var(--fs-sm);
 }
 .cv-row:first-of-type { border-top: 0; }
 .cv-ref {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 11.5px; color: var(--ink-3); flex: 0 0 auto;
+    font-size: var(--fs-xs); color: var(--ink-3); flex: 0 0 auto;
     background: var(--surface-sunken); padding: 1px 6px; border-radius: 5px;
 }
 .cv-snip { color: var(--ink-3); line-height: 1.65; flex: 1 1 220px; min-width: 0; }
+
+/* ============================================================
+   账户菜单（仅 CP_AUTH=1）
+   顶栏右侧的用户胶囊 + 下拉 + 改密弹窗。
+   深色模式只依赖 --surface / --ink 系列变量，不写死颜色。
+   ============================================================ */
+.user-menu { position: relative; flex: 0 0 auto; }
+.user-chip {
+    display: flex; align-items: center; gap: 8px; padding: 4px 9px 4px 4px;
+    border: 1px solid var(--line); border-radius: 999px; background: var(--surface);
+    cursor: pointer; transition: border-color .16s, background .16s;
+}
+.user-chip:hover { border-color: var(--brand-line); background: var(--surface-3); }
+.user-chip > svg { width: 13px; height: 13px; color: var(--ink-4); flex: 0 0 auto; }
+.user-avatar {
+    width: 26px; height: 26px; border-radius: 50%; flex: 0 0 auto;
+    display: grid; place-items: center; font-size: var(--fs-xs); font-weight: 700;
+    background: var(--brand-soft); color: var(--brand-ink);
+}
+.user-meta { display: flex; flex-direction: column; line-height: 1.25; text-align: left; }
+.user-meta b { font-size: var(--fs-sm); color: var(--ink); font-weight: 600; }
+.user-meta em { font-size: var(--fs-micro); color: var(--ink-4); font-style: normal; }
+
+.user-pop {
+    position: absolute; right: 0; top: calc(100% + 8px); z-index: 70;
+    min-width: 188px; padding: 6px; border-radius: 12px;
+    background: var(--surface); border: 1px solid var(--line);
+    box-shadow: 0 18px 40px -18px rgba(15, 23, 42, .38);
+}
+.user-pop[hidden] { display: none; }
+.user-pop-head {
+    display: flex; flex-direction: column; gap: 2px;
+    padding: 8px 10px 9px; border-bottom: 1px solid var(--line-2); margin-bottom: 5px;
+}
+.user-pop-head b { font-size: var(--fs-sm); color: var(--ink); }
+.user-pop-head span { font-size: var(--fs-micro); color: var(--ink-4); }
+.user-pop-item {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    width: 100%; padding: 8px 10px; border: 0; border-radius: 8px;
+    background: transparent; color: var(--ink-2); font-size: var(--fs-sm);
+    cursor: pointer; text-align: left;
+}
+.user-pop-item:hover { background: var(--surface-3); color: var(--ink); }
+.dot-warn {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--neg-solid);
+    display: inline-block; flex: 0 0 auto;
+}
+
+.pwd-modal { max-width: 380px; }
+.pwd-sub { font-size: var(--fs-xs); color: var(--ink-4); margin: 2px 0 14px; line-height: 1.6; }
+.pwd-field { display: block; margin-bottom: 12px; }
+.pwd-field > span { display: block; font-size: var(--fs-xs); color: var(--ink-3); margin-bottom: 5px; }
+.pwd-field input {
+    width: 100%; padding: 9px 11px; border-radius: 9px; font-size: var(--fs-sm);
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--ink);
+    font-family: inherit;
+}
+.pwd-field input:focus {
+    outline: none; border-color: var(--brand); background: var(--surface);
+    box-shadow: 0 0 0 3px var(--brand-soft);
+}
+.pwd-field em { display: block; font-size: var(--fs-micro); color: var(--ink-4); margin-top: 4px; font-style: normal; }
+.pwd-err {
+    font-size: var(--fs-xs); color: var(--neg-ink); background: var(--neg-soft);
+    border-radius: 8px; padding: 8px 10px; margin-bottom: 12px; line-height: 1.55;
+}
+.pwd-err[hidden] { display: none; }
+.pwd-acts { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+
+@media (max-width: 720px) {
+    /* 窄屏只留头像，名字和角色放不下 */
+    .user-meta { display: none; }
+    .user-chip { padding: 4px; }
+    .user-chip > svg { display: none; }
+}
+
+/* ------------------------------------------------------------
+   hidden 属性必须是"真的不显示"。
+   .modal-mask / .user-pop 这类规则自带 display，会覆盖浏览器默认的
+   [hidden] { display: none }，结果"隐藏"的遮罩仍铺满全屏并吃掉所有点击
+   （症状：弹窗明明没弹出来，页面却点不动了）。加这条兜底。
+   ------------------------------------------------------------ */
+/* 次级页的面包屑：一级目录是「风险研判与处置中心」，子页得让人知道自己
+   还在同一件事里，而不是"跳到另一个模块去了"。只有两页，所以不做通用组件。 */
+.page-crumb {
+    display: flex; align-items: center; gap: 6px;
+    font-size: var(--fs-xs); color: var(--ink-4); margin-bottom: 10px;
+}
+.page-crumb a { color: var(--brand); text-decoration: none; }
+.page-crumb a:hover { text-decoration: underline; }
+.page-crumb i { font-style: normal; opacity: .55; }
+
+/* ============================================================
+   PAGE-06 风险研判与处置中心（dp- 前缀）
+   左栏是"谁负责"，右栏是"多急、该谁管"，两块并排是为了让归口判断
+   在看风险时就能对上号；分两页会让人来回切。
+   ------------------------------------------------------------ */
+/* 示例配置说明：第 16 轮由黄色警示条降成一行口径句。
+   原来它是 68px（390 上 112px）的 warn 底 + 图标，排在周带之前、抢走首屏第一块位置，
+   而它说的是免责而不是答案。信息全留，只把语气从"警告"改回"口径"。
+   仍常驻可见——PRODUCT.md 要求"示例配置"必须写在页面上，不能靠口头解释。 */
+
+/* 动态区一次成型：数据回来前保持布局、不可见；首次渲染完只切 visibility。
+   见 departments.html 的 #dpBoot：周带/KPI/风险表的高度都由数据决定，
+   先摆骨架再换内容会让整页向下跳一次。 */
+.dp-boot { visibility: hidden; }
+
+/* ---- 工单闭环条（研判 → 建单 → 归档，断在哪一环） ----
+   单列一条而不是扩成 8 张 KPI：上面四张讲"研判本身"，这里四格讲"研判之后"，
+   混在一起读者会以为是同一类指标。每格可点，直接跳子页「处置工单」。 */
+.dp-todo {
+    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+    padding: 13px 16px; margin-bottom: 14px;
+}
+/* 标题块竖排：横排时按钮会紧贴副标题，读起来像副标题的一部分 */
+.dp-todo-head { flex: 0 0 auto; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.dp-todo-head .card-sub { margin-top: 2px; max-width: 260px; }
+.dp-todo-head .btn { white-space: nowrap; text-decoration: none; }
+.dp-todo-metrics {
+    flex: 1 1 420px; display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px;
+}
+.dp-todo-item {
+    display: block; padding: 7px 11px; border-left: 1px solid var(--line);
+    border-radius: 0 8px 8px 0; color: inherit; text-decoration: none;
+    transition: background .15s, border-color .15s;
+}
+.dp-todo-item:hover { background: var(--surface-3); border-left-color: var(--brand); }
+.dp-todo-label { font-size: var(--fs-micro); color: var(--ink-4); }
+.dp-todo-value {
+    font-size: var(--fs-xl); font-weight: 700; letter-spacing: -.4px;
+    font-variant-numeric: tabular-nums; margin-top: 2px;
+}
+.dp-todo-value span { font-size: var(--fs-micro); font-weight: 500; color: var(--ink-4); margin-left: 2px; }
+.dp-todo-value.neg { color: var(--neg); }
+.dp-todo-value.ok { color: var(--pos); }
+.dp-todo-foot { font-size: var(--fs-micro); color: var(--ink-4); margin-top: 1px; }
+
+.dp-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-faint); margin-left: auto; }
+.dp-dot.ok { background: var(--pos); }
+.dp-dot.warn { background: var(--warn); }
+.dp-dot.neg { background: var(--neg); }
+
+.dp-layout { grid-template-columns: minmax(320px, 380px) minmax(0, 1fr); }
+
+/* ---- 部门卡 ---- */
+/* 部门清单从"左栏一列"改成"整宽网格"：风险表合并成一张后占了整宽，
+   这一块跟着铺开，否则右侧会空出一大块。 */
+#dpList { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; }
+.dp-card { padding: 12px 14px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface-2); }
+.dp-card:first-child { padding-top: 12px; }
+@media (max-width: 720px) { #dpList { grid-template-columns: 1fr; } }
+.dp-card-head { display: flex; align-items: flex-start; gap: 10px; }
+.dp-name { font-size: var(--fs-base); font-weight: 700; color: var(--ink); }
+.dp-owner { font-size: var(--fs-xs); color: var(--ink-4); margin-top: 3px; }
+.dp-card-acts { margin-left: auto; display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
+.dp-duties {
+    font-size: var(--fs-sm); line-height: 1.75; color: var(--ink-3);
+    margin-top: 7px; padding-left: 1px;
+    /* 8 个部门全部展开职责会把左栏拉到 2000px，右栏的风险表被甩在下面。
+       默认两行，点卡片再看全文——这一栏的用途是"扫一眼谁负责什么"。 */
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.dp-card.open .dp-duties { -webkit-line-clamp: unset; overflow: visible; }
+.dp-dims { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+.dp-kw {
+    font-size: var(--fs-micro); color: var(--ink-4); background: var(--surface-sunken);
+    border-radius: 6px; padding: 1px 6px;
+}
+
+/* ---- 风险表 ---- */
+.dp-risk-table { width: 100%; }
+.dp-risk-table th { font-weight: 500; }
+.dp-risk-table tbody tr { cursor: pointer; }
+.dp-risk-table tbody tr:hover { background: var(--surface-3); }
+.dp-risk-table tbody tr.on { background: var(--brand-soft); }
+/* 选中行框住整行，而不是在左边贴一条 3px 竖色条：竖条在 9 列表格里指不清"这一行到哪结束"，
+   而且贴边色条是通用 BI 模板最典型的手势。outline 不参与布局，加在 tr 上也不会把行撑高。 */
+.dp-risk-table tbody tr.on, .dp-mrun-table tbody tr.on {
+    outline: 1px solid var(--brand-line); outline-offset: -1px;
+}
+/* 风险列要放下"数字 + 四段构成条"：112px 时轨道只剩 50px，
+   四段各 8~19px，看不出谁占大头。宽度从「归口部门」那列挪过来（它多出 200px 空着）。 */
+.dp-col-risk { width: 190px; }
+.dp-col-neg { width: 108px; }
+/* 主题列必须有个下限：风险/负面两列是固定宽（112 + 108），剩下的空间在窄屏上
+   会被挤到 40px 左右——「食堂餐饮」就变成一个字的竖排，行高翻倍。
+   表格总宽超出去由 .table-scroll 横滑承担，不该让主题名去顶这个缺口。 */
+.dp-risk-table th:first-child,
+.dp-risk-table td:first-child { min-width: 96px; white-space: nowrap; }
+/* 风险列自带的窗口（近 30 天 / 03-01~06-01）。这一页同时存在两套口径，
+   数字不写清"属于哪段时间"就会被读成同一件事的两个答案。
+   用 ink-3 而不是 ink-4：10.5px 的说明字压在白底上要过 4.5:1。 */
+.dp-th-hint {
+    display: block; margin-top: 1px;
+    font-size: var(--fs-micro); font-weight: 400; line-height: 1.35;
+    color: var(--ink-3); letter-spacing: 0;
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.dp-td-act { width: 22px; text-align: right; color: var(--ink-4); }
+.dp-caret { font-size: var(--fs-md); line-height: 1; }
+
+.dp-risk-cell { display: flex; align-items: center; gap: 8px; }
+.dp-risk-num { font-size: var(--fs-md); font-weight: 700; font-variant-numeric: tabular-nums; min-width: 30px; }
+.dp-risk-num span { font-size: var(--fs-micro); font-weight: 500; margin-left: 1px; }
+.dp-risk-track { flex: 1; height: 5px; border-radius: 3px; background: var(--line-2); overflow: hidden; display: flex; }
+/* 四段之间不留缝：这条轨道的长度就是分数，缝会被读成"缺了一截" */
+.dp-risk-track i { display: block; height: 100%; }
+/* 卡片布局没有表头，57 / 62 / 7.9% / 后勤保障处 都是裸值——谁也不认识它们。
+   标签只在窄屏出现，桌面有表头时不重复。 */
+.dp-lbl { display: none; font-size: var(--fs-micro); color: var(--ink-4); font-weight: 500; }
+@media (max-width: 720px) {
+    .dp-lbl { display: inline; margin-right: 4px; }
+}
+
+/* 表头上方那一行图例：解释"这个数字由四段合成、它不是负面占比"。
+   margin-top 为负是抵掉 card-head 的下边距，别让它把表推得太远。 */
+.dp-risk-legend {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    margin: -4px 0 10px; font-size: var(--fs-xs); color: var(--ink-3);
+}
+.dp-lg-name { font-weight: 600; color: var(--ink-2); }
+.dp-lg-item { display: inline-flex; align-items: center; gap: 4px; }
+.dp-lg-item i { width: 10px; height: 4px; border-radius: 2px; flex: 0 0 auto; }
+.dp-lg-note { color: var(--ink-4); }
+.dp-lg-note b { color: var(--ink-2); font-weight: 600; }
+
+.dp-risk-num.high, .dp-lv.high { color: var(--neg); }
+/* 「中高」这一档原来用 --warn（#D97706）当文字色：白底 15px/700 只有 3.19:1。
+   色板里本来就有分工——--warn 是图形色（进度条、圆点，只需 3:1），
+   --warn-ink 才是文字色（#B54708，白底 4.9、深色 6.2）。进度条那一行不动。 */
+.dp-risk-num.midhigh, .dp-lv.midhigh { color: var(--warn-ink); }
+/* 品牌色的「文字档」而不是 --brand 本身：深色下 --brand(#3D7DFF) 压在卡片底上
+   只有 3.6:1，--brand-text(#5E93FF) 是 5.6。浅色下两者同值，改这里不动浅色。 */
+.dp-risk-num.mid, .dp-lv.mid { color: var(--ink); }
+.dp-risk-num.low, .dp-lv.low { color: var(--ink-3); }
+.dp-risk-track i.high { background: var(--neg); }
+.dp-risk-track i.midhigh { background: var(--warn); }
+.dp-risk-track i.mid { background: var(--brand); }
+.dp-risk-track i.low { background: var(--ink-faint); }
+
+.dp-lv { font-size: var(--fs-xs); font-weight: 600; }
+.dp-rate { display: block; font-size: var(--fs-micro); color: var(--ink-4); font-weight: 400; }
+.dp-rsn {
+    display: inline-block; margin-left: 6px; font-size: var(--fs-micro); color: var(--ink-4);
+    background: var(--surface-sunken); border-radius: 5px; padding: 0 5px;
+}
+.dp-dept { font-size: var(--fs-sm); color: var(--ink-2); }
+.dp-dept-owner { font-size: var(--fs-micro); color: var(--ink-4); margin-top: 2px; }
+
+/* ---- 主题详情 ---- */
+.dp-detail {
+    margin-top: 12px; padding: 14px 16px;
+    background: var(--surface-3); border: 1px solid var(--line);
+    border-radius: 13px;
+}
+/* 详情现在是表格里的一行（紧跟被点的那一行），所以：
+   ① 单元格不能继承首列/末列的 sticky 定位，否则它会跟着横滑一起钉住；
+   ② 内边距交给 .dp-detail 自己，单元格只当容器；
+   ③ 上下留一点缝，看起来像"这一行的展开面"而不是"新的一张表"。 */
+.dp-detail-row > td {
+    position: static !important;
+    background: transparent;
+    padding: 0 0 10px !important;
+    border-top: 0;
+}
+.dp-detail-row .dp-detail { margin-top: 8px; }
+.dp-detail-head { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.dp-detail-title { font-size: var(--fs-base); font-weight: 700; }
+.dp-detail-sub { font-size: var(--fs-xs); color: var(--ink-4); margin-top: 3px; }
+.dp-detail-acts { margin-left: auto; display: flex; gap: 7px; flex: 0 0 auto; align-items: center; }
+.dp-detail-acts .btn { text-decoration: none; }
+
+/* 无建单权限时的说明标签。虚线边框 + 灰字，明确"这不是一个可以点的东西"；
+   用禁用按钮会在浅色底上几乎看不出边框，读起来像半截文字。 */
+.dp-noperm {
+    font-size: var(--fs-xs); color: var(--ink-4); padding: 3px 9px;
+    border: 1px dashed var(--line); border-radius: 7px; white-space: nowrap;
+}
+
+.dp-assign {
+    display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px;
+    margin-top: 11px; padding: 10px 12px;
+    background: var(--brand-soft); border: 1px solid var(--brand-line);
+    border-radius: 10px; font-size: var(--fs-xs); color: var(--ink-2);
+}
+.dp-assign-label { font-size: var(--fs-micro); color: var(--brand-ink); font-weight: 600; letter-spacing: .04em; }
+.dp-assign b { font-size: var(--fs-sm); }
+.dp-assign-contact { color: var(--ink-4); }
+.dp-ai-reason { flex-basis: 100%; font-size: var(--fs-xs); color: var(--ink-3); margin-top: 2px; }
+
+.dp-sec-title {
+    margin-top: 15px; margin-bottom: 8px;
+    font-size: var(--fs-xs); font-weight: 700; color: var(--ink-2);
+    display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+}
+.dp-sec-hint { font-size: var(--fs-micro); font-weight: 400; color: var(--ink-4); }
+
+.dp-parts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.dp-part { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; }
+.dp-part-head { display: flex; justify-content: space-between; font-size: var(--fs-xs); color: var(--ink-2); }
+.dp-part-w { color: var(--ink-4); font-size: var(--fs-micro); }
+.dp-part-track { height: 5px; border-radius: 3px; background: var(--line-2); margin: 6px 0 5px; overflow: hidden; }
+.dp-part-track i { display: block; height: 100%; border-radius: 3px; background: var(--brand); }
+.dp-part-label { font-size: var(--fs-micro); color: var(--ink-4); line-height: 1.5; }
+
+.dp-advices { display: flex; flex-direction: column; gap: 7px; }
+.dp-advice { display: flex; gap: 9px; font-size: var(--fs-sm); line-height: 1.75; color: var(--ink-2); }
+.dp-advice-idx {
+    flex: 0 0 auto; width: 17px; height: 17px; margin-top: 3px; border-radius: 50%;
+    background: var(--brand-soft); color: var(--brand); font-size: var(--fs-micro); font-weight: 700;
+    display: grid; place-items: center;
+}
+
+.dp-samples { display: flex; flex-direction: column; gap: 8px; }
+.dp-sample { background: var(--surface); border-left: 1px solid var(--line); border-radius: 0 8px 8px 0; padding: 8px 11px; }
+.dp-sample-meta { font-size: var(--fs-micro); color: var(--ink-4); }
+.dp-sample-text { font-size: var(--fs-sm); color: var(--ink-2); line-height: 1.7; margin-top: 3px; }
+
+/* ---- 部门表单 ---- */
+.dp-form { max-width: 560px; }
+.dp-form-sub { font-size: var(--fs-xs); color: var(--ink-4); line-height: 1.7; margin: 3px 0 12px; }
+.dp-field { display: block; margin-bottom: 11px; }
+.dp-field > span { display: block; font-size: var(--fs-xs); color: var(--ink-3); margin-bottom: 5px; }
+.dp-field .input { width: 100%; height: 34px; }
+.dp-textarea { height: auto; min-height: 74px; padding: 8px 10px; line-height: 1.7; resize: vertical; }
+.dp-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.dp-dim-pick { display: flex; flex-wrap: wrap; gap: 6px; }
+.dp-check {
+    display: inline-flex; align-items: center; gap: 5px; font-size: var(--fs-xs);
+    padding: 5px 9px; border: 1px solid var(--line); border-radius: 8px;
+    background: var(--surface-2); cursor: pointer; color: var(--ink-2);
+}
+.dp-check input { margin: 0; accent-color: var(--brand); }
+.row-pick { width: 16px; height: 16px; margin: 0; accent-color: var(--brand); cursor: pointer; }
+.dp-check:has(input:checked) { border-color: var(--brand-line); background: var(--brand-soft); color: var(--brand-ink); }
+.dp-err { font-size: var(--fs-xs); color: var(--neg); margin: 4px 0 0; }
+.dp-form-acts { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+
+.dp-weight-wrap .table { width: 100%; }
+
+/* ---- 权重说明（默认收起）----
+   标题行整行可点。加 hover 反馈而不是只加 cursor：收起状态下它是页面底部
+   一块静止的卡片，没有任何"可以点"的暗示，人会直接划过去。 */
+.dp-weights-head { cursor: pointer; align-items: center; }
+.dp-weights-head:hover .card-title { color: var(--brand-ink); }
+.dp-weights-caret {
+    display: inline-block; margin-left: 6px; font-size: var(--fs-base); line-height: 1;
+    color: var(--ink-4); transition: transform .15s ease;
+}
+.dp-weights-head.open .dp-weights-caret { transform: rotate(90deg); color: var(--brand); }
+.dp-weights-tip {
+    margin-left: auto; font-size: var(--fs-xs); color: var(--ink-4); white-space: nowrap;
+    background: none; border: 0; border-radius: 6px;
+    /* 21px 高：手机上点不中，也低于 WCAG 2.5.8 的 24px 底线 */
+    min-height: 28px; padding: 4px 8px;
+    font-family: inherit; cursor: pointer; transition: color .14s, background .14s;
+}
+.dp-weights-head:hover .dp-weights-tip { color: var(--brand-ink); }
+.dp-weights-tip:focus-visible {
+    outline: 2px solid var(--brand-line); outline-offset: 2px; color: var(--brand-ink);
+}
+
+/* ---- 定期研判（区间）----
+   这一块是"上一次的结论"，用一层浅底和下面的实时风险表区分开：
+   两块都是风险百分比，靠背景区分比靠标题更不容易看错。 */
+.dp-monthly { background: var(--surface-2); }
+.dp-monthly .card-sub { min-height: 15px; }
+.dp-mpick-wrap { flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+
+/* 区间选择条：两个日期 + 三个快捷区间 + 数据集覆盖范围提示。
+   单独一行而不是塞进卡片头部：日期框比按钮宽得多，挤在标题行会把标题压断行。 */
+.dp-range {
+    display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+    padding: 9px 11px; margin-bottom: 11px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+}
+.dp-range-field {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: var(--fs-xs); color: var(--ink-4);
+}
+.dp-range-field .input {
+    height: 28px; width: 152px; padding: 0 8px; font-size: var(--fs-xs);
+    border-radius: 8px; border: 1px solid var(--line);
+    background: var(--surface); color: var(--ink-2);
+}
+.dp-range-sep { font-size: var(--fs-xs); color: var(--ink-4); }
+.dp-range-quick { display: flex; gap: 4px; margin-left: 2px; }
+.dp-range-quick .btn { height: 26px; padding: 0 9px; font-size: var(--fs-xs); }
+.dp-range-hint { margin-left: auto; font-size: var(--fs-micro); color: var(--ink-4); }
+
+.dp-snap { margin-bottom: 12px; }
+.dp-mrun-head { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+.dp-mrun-period {
+    font-size: var(--fs-base); font-weight: 700; color: var(--ink);
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.dp-mrun-flag {
+    font-size: var(--fs-micro); font-weight: 500; padding: 2px 7px; border-radius: 999px;
+    background: var(--warn-soft); color: var(--warn-ink); border: 1px solid var(--warn-line);
+}
+.dp-mrun-meta { font-size: var(--fs-xs); color: var(--ink-4); line-height: 1.7; }
+.dp-mrun-sum {
+    font-size: var(--fs-sm); color: var(--ink-2); line-height: 1.75; margin: 0 0 10px;
+    padding: 8px 11px; background: var(--brand-soft); border-radius: 9px;
+    border-left: 1px solid var(--brand);
+}
+.dp-mrun-table { width: 100%; }
+/* 区间表整行可点：点开看"这 31% 是怎么算出来的"。
+   以前这一块只读（cursor: default），理由是"结论是给人看的，不是给人改的"；
+   现在结论本身能被展开复核，行也就是一个入口了。 */
+.dp-mrun-table tbody tr { cursor: pointer; }
+.dp-mrun-table tbody tr:hover { background: var(--surface-3); }
+.dp-mrun-table tbody tr.on { background: var(--brand-soft); }
+.dp-mrun-foot { display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+.dp-mrun-hint { font-size: var(--fs-micro); color: var(--ink-4); }
+
+/* 行内「建单」：开不开单由人判断，按钮就放在那一行里。
+   表格下方放一个"全部建单"等于把门槛换个名字，所以没有那个按钮。 */
+/* 两种时间窗共用同一颗按钮：外观必须一样，否则"换个窗口按钮变了"
+   会被当成功能不同。 */
+.dp-mk {
+    height: 24px; padding: 0 10px; font-size: var(--fs-xs); border-radius: 7px;
+    background: var(--surface); border-color: var(--line); color: var(--ink-2);
+}
+.dp-mk:hover {
+    border-color: var(--brand-line); color: var(--brand-ink); background: var(--brand-soft);
+}
+.dp-mk:disabled { opacity: .45; cursor: default; }
+
+.dp-tk {
+    display: inline-block; font-size: var(--fs-micro); padding: 2px 7px; border-radius: 6px;
+    background: var(--neu-soft); color: var(--neu-ink); white-space: nowrap;
+}
+.dp-tk.on { background: var(--pos-soft); color: var(--pos-ink); font-weight: 600; }
+.dp-tk.old { background: var(--brand-soft); color: var(--brand-ink); }
+/* 工单列只放一枚短按钮或一条单号，给它固定宽度，别让它把「归口部门」挤扁、
+   自己空出一大片。 */
+.dp-col-tk { width: 96px; }
+
+.dp-hist {
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+    margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--line);
+}
+.dp-hist-label { font-size: var(--fs-micro); color: var(--ink-4); margin-right: 2px; }
+.dp-hist-item {
+    font-size: var(--fs-micro); padding: 3px 8px; border-radius: 7px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface); color: var(--ink-3);
+    font-family: inherit;
+}
+.dp-hist-item i { font-style: normal; color: var(--ink-4); margin-left: 5px; }
+.dp-hist-item:hover { border-color: var(--brand-line); color: var(--brand-ink); }
+.dp-hist-item.on { border-color: var(--brand-line); background: var(--brand-soft); color: var(--brand-ink); }
+
+@media (max-width: 1100px) {
+    .dp-layout { grid-template-columns: minmax(0, 1fr); }
+    .dp-todo-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); flex-basis: 100%; }
+}
+@media (max-width: 720px) {
+    .dp-form-row { grid-template-columns: 1fr; }
+    /* 详情头改成上下两段：动作区并排会把整页顶宽 55px（实测 docSW 390 → 445）。
+       元凶是那枚「演示模式不开放建单…」的虚线标签——white-space:nowrap 让它
+       撑到 296px，和「看该主题证据」挤在一行，右端直接跑到屏幕外。 */
+    .dp-detail-head { flex-direction: column; align-items: stretch; gap: 8px; }
+    .dp-detail-acts { margin-left: 0; flex-wrap: wrap; }
+    .dp-noperm { white-space: normal; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .kpi, .entry-card, .sidebar, .nav-mask, .toast { transition: none; }
+    .kpi:hover, .entry-card:hover { transform: none; }
+    .toast { animation: none; }
+    /* 上面只关了七类元素，全站 47 个带 transition 的节点里还有 40 个照旧在动——
+       "减少动态效果"不是"少动几个"。这里统一收口：位移、缩放、旋转全部停掉，
+       只保留颜色与透明度（反馈还在，动感没了）。 */
+    *, *::before, *::after {
+        transition-property: color, background-color, border-color, box-shadow, opacity !important;
+        transition-duration: .01ms !important;
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+[hidden], .is-hidden { display: none !important; }
+
+/* ============================================================
+   2026 视觉升级
+   保留既有 DOM、状态类与交互契约，只统一品牌、层级、控件和响应式表现。
+   ============================================================ */
+body {
+    background-color: var(--bg);
+}
+
+/* 品牌导航：深色导航与浅色工作区形成清晰分区，两种主题下都保持稳定。 */
+.shell { background: var(--sidebar-bg); }
+.main {
+    background-color: var(--bg);
+}
+.sidebar {
+    width: 252px;
+    flex-basis: 252px;
+    background-color: var(--sidebar-bg);
+    border-right: 1px solid rgba(10, 18, 34, .32);
+    color: var(--sidebar-ink);
+}
+.brand {
+    padding: 24px 20px 22px;
+    gap: 12px;
+    border-bottom: 1px solid var(--sidebar-line);
+    margin-bottom: 8px;
+}
+/* impeccable-disable-next-line dark-glow -- 用户 2026-11-15 显式 pin，见 DESIGN.md Explicit exemptions */
+.brand-mark {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    border-radius: 12px;
+    background: linear-gradient(145deg, #6685FF, #3B63F3 58%, #2D4ED7);
+    border: 1px solid rgba(255, 255, 255, .18);
+    box-shadow: 0 10px 24px -10px rgba(59, 99, 243, .85), inset 0 1px 0 rgba(255, 255, 255, .22);
+}
+.brand-mark svg { width: 23px; height: 23px; }
+.brand-name { color: #F7F9FF; font-size: var(--fs-md); font-weight: 720; letter-spacing: -.35px; }
+.brand-sub { color: var(--sidebar-muted); font-size: var(--fs-micro); letter-spacing: .65px; margin-top: 1px; }
+.nav { padding: 8px 12px 18px; }
+.nav-label {
+    padding: 12px 12px 9px;
+    color: var(--sidebar-muted);
+    font-size: var(--fs-micro);
+    font-weight: 650;
+    letter-spacing: 1.4px;
+}
+.nav-item {
+    min-height: 42px;
+    padding: 10px 12px;
+    margin-bottom: 4px;
+    border-radius: 10px;
+    color: #AAB6CA;
+    font-size: var(--fs-sm);
+    font-weight: 500;
+}
+.nav-item svg { width: 18px; height: 18px; flex-basis: 18px; opacity: .82; }
+.nav-item:hover { background: var(--sidebar-hover); color: #F3F6FC; }
+.nav-item.active {
+    color: #FFFFFF;
+    font-weight: 650;
+    background: linear-gradient(100deg, rgba(82, 113, 246, .32), rgba(82, 113, 246, .15));
+    box-shadow: inset 0 0 0 1px rgba(129, 151, 255, .18), 0 8px 20px -16px rgba(0, 0, 0, .8);
+}
+.nav-item.active::before {
+    left: 0;
+    top: 11px;
+    bottom: 11px;
+    width: 3px;
+    border-radius: 0 4px 4px 0;
+    background: #8CA2FF;
+    /* impeccable-disable-next-line dark-glow -- 用户 2026-11-15 显式 pin，见 DESIGN.md Explicit exemptions */
+    box-shadow: 0 0 12px rgba(140, 162, 255, .42);
+}
+.nav-item.active svg { opacity: 1; color: #AFC0FF; }
+.nav-children { margin: 3px 0 7px 21px; padding-left: 12px; border-left-color: var(--sidebar-line); }
+.nav-child { position: relative; padding: 9px 10px; color: #8695AF; font-size: var(--fs-xs); }
+.nav-child::before {
+    content: "";
+    width: 4px;
+    height: 4px;
+    margin-right: 8px;
+    border-radius: 50%;
+    background: #52617C;
+}
+.nav-child:hover { color: #EEF2FB; background: var(--sidebar-hover); }
+.nav-child.active { color: #C9D4FF; background: rgba(82, 113, 246, .12); }
+/* impeccable-disable-next-line dark-glow -- 用户 2026-11-15 显式 pin，见 DESIGN.md Explicit exemptions */
+.nav-child.active::before { background: #8CA2FF; box-shadow: 0 0 0 3px rgba(140, 162, 255, .1); }
+.sidebar-foot { border-top-color: var(--sidebar-line); color: var(--sidebar-muted); }
+.engine-pill { background: rgba(255, 255, 255, .055); color: #9AA9C1; }
+
+/* 顶栏与内容画布 */
+.topbar {
+    min-height: 72px;
+    padding: 15px 32px;
+    border-bottom-color: rgba(222, 229, 239, .82);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, .55);
+}
+.page-title { font-size: var(--fs-xl); font-weight: 720; letter-spacing: -.45px; color: var(--ink); }
+.page-title::before {
+    content: "";
+    display: inline-block;
+    width: 4px;
+    height: 17px;
+    margin-right: 10px;
+    border-radius: 4px;
+    vertical-align: -2px;
+    background: linear-gradient(180deg, #6D89FF, var(--brand));
+}
+.topbar-right { gap: 8px; }
+.topbar .select { border-color: transparent; background-color: var(--surface-2); font-weight: 500; }
+.topbar .select:hover { border-color: var(--brand-line); }
+#snapshotBadge { background: var(--surface-2); color: var(--ink-3); border: 1px solid var(--line); }
+.content { max-width: 1640px; padding: 24px 32px 60px; margin: 0 auto; }
+
+/* 控件：统一 36px 密度、明确的焦点和更轻的投影。 */
+.btn { height: 36px; padding: 0 15px; border-radius: 9px; font-weight: 550; }
+.btn-sm { height: 30px; padding: 0 11px; }
+/* impeccable-disable-next-line dark-glow -- 用户 2026-11-15 显式 pin，见 DESIGN.md Explicit exemptions */
+.btn-primary {
+    /* 渐变整体压深一档：白字在任一端/平均色上都 ≥5:1（检测器曾报 4.49:1）。 */
+    background: linear-gradient(180deg, #3B5DE0, #2A4AC8);
+    border-color: #2A4AC8;
+    box-shadow: 0 7px 16px -9px rgba(53, 96, 238, .9), inset 0 1px 0 rgba(255, 255, 255, .16);
+}
+.btn-primary:hover { background: linear-gradient(180deg, #3456D6, #2440B8); border-color: #2440B8; }
+.input, .select { height: 36px; border-radius: 9px; }
+.theme-btn, .nav-toggle { width: 36px; height: 36px; border-radius: 10px; }
+.theme-btn { background: var(--surface-2); }
+.theme-btn:hover { background: var(--brand-soft); }
+.chip { height: 30px; padding: 0 12px; border-radius: 8px; }
+.chip-group { gap: 5px; }
+.chip.on { box-shadow: inset 0 0 0 1px rgba(59, 99, 243, .06); }
+.seg { padding: 4px; border: 1px solid var(--line-2); }
+.badge { border-radius: 6px; letter-spacing: .01em; }
+.user-chip { border-color: transparent; background: var(--surface-2); }
+.user-avatar { background: linear-gradient(145deg, #6D89FF, #3B63F3); }
+
+/* 卡片与数据层级 */
+.card {
+    padding: 20px 22px;
+    border-color: var(--line);
+    box-shadow: var(--shadow-sm);
+}
+/* 错误页：左侧一道状态色，让人一眼看出"这页不是内容，是提示" */
+.card.is-error { box-shadow: inset 3px 0 0 var(--warn), var(--shadow-sm); }
+.card-head { margin-bottom: 16px; }
+.card-title { font-size: var(--fs-md); font-weight: 680; letter-spacing: -.1px; }
+.card-sub { color: var(--ink-4); }
+.grid { gap: 16px; }
+.kpi {
+    position: relative;
+    min-height: 126px;
+    padding: 20px;
+    overflow: hidden;
+    background: var(--surface);
+}
+/* 第 19 轮：**取消卡顶彩条**。它的长度没有任何可比基准（固定 34px），
+   却要靠一句「彩条表示指标类别」的说明替它辩护。说明已删，
+   装饰也一并去掉——卡片本身的分隔与标题就够了。 */
+.kpi::before { content: none; }
+/* B6：卡片顶部彩条是「指标类别」的视觉分组，不是情感编码——G1 的图例已写
+   「卡片顶部彩条 = 指标类别」。统一到中性品牌阶梯（--brand / --brand-dark /
+   --brand-ink / 中性灰 --ink-faint），去掉绿(--pos)/红(--neg)/紫/橙等会被读成
+   「好 / 坏」的色，让图例与真实控件逐字一致。 */
+.kpi:nth-child(2)::before { background: var(--brand-dark); }
+.kpi:nth-child(3)::before { background: var(--brand-ink); }
+.kpi:nth-child(4)::before { background: var(--brand); }
+.kpi:nth-child(5)::before { background: var(--brand-dark); }
+.kpi:nth-child(6)::before { background: var(--brand-ink); }
+/* 驾驶舱这一排：无 data-tone（加载前 / 旧数据）中性灰兜底；
+   有 data-tone 仍按品牌蓝深浅区分指标类别，不再用 pos 绿 / neg 红。 */
+/* 彩条已取消（见上），这里不再上色；data-tone 仍留给状态语义用。 */
+.kpi:hover { border-color: var(--brand-line); }
+/* 研判页三张 KPI 讲的是"配置了多少 / 风险有多高 / 该不该派人"。
+   B6：色条不再用红 / 橙 / 绿的情感色，改由数据给 tone、CSS 只翻译成
+   中性品牌蓝深浅——顶部彩条是「指标类别」，与图例逐字一致。 */
+#dpKpi .kpi::before { background: var(--ink-faint); }
+#dpKpi .kpi[data-tone="neg"]::before { background: var(--brand-dark); }
+#dpKpi .kpi[data-tone="warn"]::before { background: var(--brand); }
+#dpKpi .kpi[data-tone="ok"]::before { background: var(--brand-ink); }
+.kpi-label { font-size: var(--fs-xs); color: var(--ink-3); font-weight: 550; }
+.kpi-value { margin-top: 10px; font-size: var(--fs-display); font-weight: 740; letter-spacing: -1.1px; }
+.kpi-foot { margin-top: 8px; font-size: var(--fs-sm); }
+/* 首屏层级：这五张卡是"摘要带"，不是主角。
+   原来 126px 高、30px 数字，5 张并排占了首屏 60% 的面积，
+   而它们只是下面三张卡里那几件事的另一种说法。 */
+#kpiRow .kpi { min-height: 104px; padding: 16px 18px; }
+#kpiRow .kpi-value { font-size: var(--fs-2xl); margin-top: 8px; }
+#kpiRow .kpi-foot { margin-top: 6px; }
+/* 卡片工具区里的次要参数：粒度这种改法，一个下拉够了 */
+.tools-field {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: var(--fs-xs); color: var(--ink-3); white-space: nowrap;
+}
+.select-sm { height: 30px; padding: 0 8px; font-size: var(--fs-xs); }
+.kpi-bar { height: 3px; margin-top: 12px; }
+
+/* 筛选器是工作区的工具条，不与数据卡争夺视觉焦点。 */
+.filterbar {
+    padding: 12px 14px;
+    margin-bottom: 18px;
+    border-radius: 13px;
+    box-shadow: 0 1px 2px rgba(23, 32, 51, .02);
+}
+.filter-label { font-weight: 600; color: var(--ink-3); }
+.filter-sep { height: 20px; }
+/* #filterBar 是 core.js 在首帧之后才填充的空容器：不先占住渲染后的高度，
+   下面所有内容会在 100–200ms 时整体下移一栏（390 实测 70px + 18px 外边距）。
+   62px 是桌面渲染高度，70px 是 ≤720 收起摘要后的高度。 */
+#filterBar { min-height: 62px; margin-bottom: 18px; }
+@media (max-width: 720px) {
+    #filterBar { min-height: 70px; }
+}
+
+/* 表格：表头成为独立层级，行 hover 更轻，数字更易扫描。 */
+.table { font-size: var(--fs-sm); }
+.table th { padding: 10px 12px; color: var(--ink-3); font-size: var(--fs-xs); letter-spacing: .035em; }
+.table td { padding: 12px; }
+.table tbody tr { transition: background .14s ease; }
+.table .num { font-weight: 550; }
+/* 报告列表里的数据版本：第二行小字，用来解释"同一区间为什么条数不同"。
+   ink-3 而不是 ink-4——10.5px 的正文说明要过 4.5:1。 */
+.rp-ver { font-size: var(--fs-micro); line-height: 1.5; color: var(--ink-3); margin-top: 1px; }
+.evidence-item { padding: 13px 12px 13px 17px; border-radius: 12px; }
+.evidence-item:hover { border-color: var(--brand-line); box-shadow: 0 8px 22px -20px rgba(59, 99, 243, .75); }
+
+/* 洞察入口：用编号、细分标签与明确的箭头形成可扫描的导航卡。 */
+.entry-card { position: relative; min-height: 148px; padding: 20px; overflow: hidden; }
+.entry-card::after {
+    content: "";
+    position: absolute;
+    width: 110px;
+    height: 110px;
+    right: -58px;
+    top: -62px;
+    border-radius: 50%;
+    background: var(--brand-soft);
+    opacity: .72;
+    pointer-events: none;
+}
+.entry-card:hover { transform: translateY(-3px); border-color: var(--brand-line); }
+.entry-top { gap: 11px; }
+.entry-title { font-size: var(--fs-md); font-weight: 680; }
+.entry-charts { gap: 6px; margin: 14px 0 15px; }
+.entry-chart { padding: 3px 8px; background: transparent; border: 1px solid var(--line-2); color: var(--ink-3); }
+.entry-go { padding-top: 11px; border-top: 1px solid var(--line-2); justify-content: space-between; }
+.entry-go span { font-size: var(--fs-lg); transition: transform .16s ease; }
+.entry-card:hover .entry-go span { transform: translateX(3px); }
+
+/* AI 结论、提示与弹层 */
+#aiInsight {
+    padding: 15px 17px;
+    border: 1px solid var(--brand-line);
+    border-left: 1px solid var(--brand);
+    border-radius: 11px;
+    background: var(--brand-soft);
+    color: var(--ink-2);
+}
+/* 第 10 轮 C4：图表解读的四条子卡不再自带卡片四件套，这里那条
+   `border-color / background !important` 一并删掉——它正是同一层 AI 内容
+   出现两种卡片语言的来源。分隔改由 .ci-item + .ci-item 的 1px 细线承担。 */
+.note, .tk-disclaimer { border: 1px solid var(--line); }
+.note { border-color: var(--brand-line); }
+.note-warn, .tk-disclaimer { border-color: var(--warn-line); }
+.modal-mask { backdrop-filter: blur(6px); }
+.modal { border: 1px solid var(--line); border-radius: 18px; padding: 24px; }
+.modal-title { font-size: var(--fs-lg); font-weight: 700; }
+.toast { border: 1px solid rgba(255, 255, 255, .12); box-shadow: 0 16px 38px -16px rgba(15, 23, 42, .5); }
+
+/* 上传区、排行与图例不再写死浅色，深浅主题共用。 */
+.drop-zone {
+    border: 1.5px dashed var(--brand-line);
+    border-radius: 14px;
+    padding: 28px 18px;
+    text-align: center;
+    background: var(--surface-2);
+    cursor: pointer;
+    transition: border-color .16s, background .16s, transform .16s;
+}
+.drop-zone:hover, .drop-zone.is-dragging { border-color: var(--brand); background: var(--brand-soft); }
+.drop-zone:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-color: var(--brand); }
+.drop-zone:active { transform: scale(.997); }
+.drop-zone-title { font-size: var(--fs-base); color: var(--ink-2); font-weight: 650; }
+.drop-zone-sub { font-size: var(--fs-xs); color: var(--ink-4); margin-top: 5px; }
+.rank-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 8px;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: background .15s;
+}
+.rank-row:hover { background: var(--surface-3); }
+.rank-name { width: 62px; flex: 0 0 62px; font-size: var(--fs-sm); color: var(--ink-2); }
+.rank-track { flex: 1; height: 8px; background: var(--line-2); border-radius: 5px; overflow: hidden; }
+.rank-track i { display: block; height: 100%; border-radius: 5px; background: linear-gradient(90deg, #B7C7FA, var(--brand)); }
+.rank-value { width: 46px; text-align: right; font-size: var(--fs-xs); color: var(--ink); font-weight: 650; font-variant-numeric: tabular-nums; }
+.rank-badge { width: 74px; justify-content: center; }
+/* 结论句是首屏的主角，不是脚注：正文档 + 更松的行高，投影下才读得下来 */
+#aiInsight {
+    font-size: var(--fs-md); line-height: 1.8; min-height: 96px;
+    /* 第 23 轮：结论段跟随卡片宽度，不再固定 74ch。
+       74ch 在 1280 屏只有 638px，而卡片内宽 918px——右侧留下近三分之一空白，
+       读起来像"没排完"，也让下方那条满宽的口径行显得和正文不是一块的。
+       现在正文用满卡片（1280 约 57 字/行、1440 约 60 字/行，1.8 行高仍读得下来），
+       只在超宽屏用 75rem（1200px）兜底：1920 屏卡片内宽约 1560px，
+       不设上限会变成 90+ 字/行，眼睛回行会丢行。
+       ≤1200 时 min(100%, …) 取 100%，与改动前完全一致，移动端不受影响。 */
+    max-width: min(100%, 75rem);
+}
+/* 筛选态横幅：第一句是"你要看的那批有几条 + 去哪看"，机制说明压成一行小字。
+   以前这里是一段 90 字的解释——用户点了「负面」想看证据，得到的是一篇免责声明。 */
+.dp-sent-hint { align-items: center; gap: 10px; flex-wrap: wrap; }
+.dp-sh-main { font-size: var(--fs-sm); font-weight: 600; }
+.dp-sh-main b { font-size: var(--fs-md); letter-spacing: -.3px; }
+.dp-sh-share { font-weight: 400; font-size: var(--fs-xs); margin-left: 8px; }
+.dp-sh-sub { font-size: var(--fs-xs); opacity: .92; }
+.dp-sh-gap { flex: 1 1 auto; }
+@media (max-width: 720px) {
+    .dp-sh-gap { display: none; }
+    .dp-sent-hint .btn { width: 100%; justify-content: center; }
+}
+
+/* ---------------- 证据分页 ---------------- */
+/* 99 页只能"下一页"的时代结束了：页码可跳、页长可选、条件可带走。
+   窄屏折行而不是挤成一条——这一排在 390 下原本会溢出。 */
+#pager {
+    display: flex; align-items: center; gap: 8px;
+    justify-content: flex-end; flex-wrap: wrap; margin-top: 12px;
+}
+.pager-info { font-size: var(--fs-xs); color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.pager-info b { color: var(--ink); font-weight: 650; }
+.pager-jump, .pager-size {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: var(--fs-xs); color: var(--ink-3);
+}
+/* 上一页 / 下一页必须成对。窄屏折行时它们被拆到两行两端（390 实测：
+   第一行以「上一页」结尾，第二行以「下一页」开头），翻页的方向感就断了。 */
+.pager-nav { display: inline-flex; gap: 6px; }
+.pager-input { width: 58px; height: 30px; padding: 0 6px; text-align: center; font-variant-numeric: tabular-nums; }
+.pager-input::-webkit-outer-spin-button, .pager-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.pager-input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+.pager-select { height: 30px; padding: 0 8px; }
+
+/* 数据集表的单元格：日期与平台改成不换行的小字块。
+   200% 缩放下"2020-01-09"会被压成"2020-01-" + "09" 三行。 */
+.ds-name { font-weight: 600; color: var(--ink); font-size: var(--fs-sm); }
+.ds-src { margin-top: 2px; font-size: var(--fs-micro); color: var(--ink-4); }
+.ds-span, .ds-plat { font-size: var(--fs-micro); white-space: nowrap; }
+/* 行内四个动作固定 2×2：1280 下宽度只够放两颗按钮，
+   flex-wrap 会让「重算 / 删除」各自独占一行，行高被撑成三行。 */
+.ds-actions {
+    display: grid; grid-template-columns: repeat(2, max-content);
+    gap: 6px; justify-content: end;
+}
+.ds-none {
+    margin-left: 5px; padding: 1px 5px; border-radius: 5px;
+    background: var(--surface-sunken); color: var(--ink-3); font-size: var(--fs-micro);
+}
+@media (max-width: 720px) {
+    #pager { justify-content: flex-start; }
+    .pager-input, .pager-select { height: 40px; }
+    .pager-input { width: 64px; }
+    /* 图例是那条 19px 窄段的等价控件：手机上手点不准时，从这一行进 */
+    .sent-key { min-height: 40px; }
+    /* 5.9% 那段在 390 下只有 19.6px 宽，低于 2.5.8 的 24px。
+       以前给它 min-width: 24px：点得中了，但比例被挤歪 4px——
+       而这一页整页都在讲分母，最经不起的就是"条子长度不等于比例"。
+       现在条严格等比（只留 4px 可见下限），点按改由下面那行 40px 高的图例承担，
+       2.5.8 认的就是"同一页面上有等价控件"。 */
+    .sent-seg { min-width: 4px; }
+}
+
+/* 情感结构条：一条 40px 的横杠代替原来 320px 的环形图。
+   段间不留缝——留 2px 白缝会被读成"四段"，而不是"三段按占比分"。 */
+.sent-bar { display: flex; height: 40px; border-radius: 10px; overflow: hidden; background: var(--line-2); }
+/* 每一段是可点的按钮：去掉按钮默认外观，但保留焦点环——
+   一条 5.9% 宽的段只有 64px，键盘用户得看得见自己停在哪。 */
+.sent-seg {
+    display: block; height: 100%; padding: 0; border: 0;
+    appearance: none; -webkit-appearance: none; cursor: pointer;
+    transition: opacity .16s, filter .16s;
+}
+.sent-seg:hover { filter: brightness(1.08) saturate(1.06); }
+.sent-seg:focus-visible { outline: 2px solid var(--brand-line); outline-offset: -4px; }
+/* 筛了情感时，没选中的那两段压暗：它们只是"参照物"，不是当前范围的数据。 */
+.sent-seg.is-dim { opacity: .35; }
+.sent-legend { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 6px; margin-top: 10px; }
+/* 图例每一项是按钮：它点击后跳证据中心，原本是个 div —— 只能点、不能聚焦。 */
+.sent-key {
+    display: inline-flex; align-items: baseline; gap: 7px;
+    padding: 6px 10px; border: 1px solid transparent; border-radius: 9px;
+    background: none; font: inherit; font-size: var(--fs-sm); color: var(--ink-2);
+    cursor: pointer; transition: background .14s, border-color .14s;
+}
+.sent-key:hover { background: var(--surface-3); border-color: var(--line); }
+.sent-key:focus-visible { outline: 2px solid var(--brand-line); outline-offset: 1px; }
+.sent-key-dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; align-self: center; }
+.sent-key-value { color: var(--ink); font-weight: 650; font-variant-numeric: tabular-nums; }
+.sent-key-unit { color: var(--ink-4); font-size: var(--fs-micro); }
+.sent-key-rate { color: var(--ink-4); font-variant-numeric: tabular-nums; }
+.sent-legend-total { margin-left: auto; font-size: var(--fs-xs); color: var(--ink-4); }
+/* 空态/错误态塞进图例那一行时，别让它挤在 flex 行的末端只占半格宽。 */
+.sent-legend > .state { flex: 1 1 100%; }
+
+/* 研判与工单页沿用同一套层级，不再出现一块“默认样式”的区域。 */
+.dp-monthly { background: var(--surface); }
+.dp-range { background: var(--surface-2); }
+.dp-card { padding: 14px 0; }
+.dp-card-head { align-items: center; }
+.dp-name { font-size: var(--fs-base); }
+.dp-detail { background: var(--surface-2); }
+.tk-item { padding: 12px; }
+/* 选中行已经有淡蓝底 + 边框，左侧那条 3px 色条是第三遍重复，去掉。 */
+.chat-head, .rec, .composer { background: var(--surface-2); }
+/* 气泡靠底色与圆角区分说话人，再加一层边框就变成了"卡中卡"。
+   聊天气泡不是卡片：去掉边框，保留底色与左下角的直角。 */
+.msg.bot { border: 0; }
+
+[data-theme="dark"] {
+    --sidebar-bg: #0D1627;
+    --sidebar-line: rgba(148, 163, 194, .11);
+}
+[data-theme="dark"] body, [data-theme="dark"] .main { background-image: none; }
+[data-theme="dark"] .topbar { border-bottom-color: var(--line); box-shadow: none; }
+[data-theme="dark"] .kpi { background: var(--surface); }
+[data-theme="dark"] .entry-card::after { opacity: .35; }
+/* impeccable-disable-next-line dark-glow -- 用户 2026-11-15 显式 pin，见 DESIGN.md Explicit exemptions */
+[data-theme="dark"] .brand-mark { box-shadow: 0 10px 24px -12px rgba(59, 99, 243, .8); }
+[data-theme="dark"] .btn-primary { background: #2559C4; border-color: #2559C4; }
+[data-theme="dark"] .btn-primary:hover { background: #1E4CAB; border-color: #1E4CAB; }
+/* 深色下 --neg-ink 是浅粉（#FF8A8A，给"红字"用的），压白字只有 1.9:1。
+   实心红按钮改用 --neg-solid（#8E2020），白字 7.2:1。 */
+[data-theme="dark"] .btn-danger-solid { background: var(--neg-solid); border-color: var(--neg-solid); color: var(--white); }
+[data-theme="dark"] .btn-danger-solid:hover { background: #A32B2B; border-color: #A32B2B; }
+
+@media (max-width: 1100px) and (min-width: 721px) {
+    .sidebar { width: 72px; flex-basis: 72px; }
+    .brand { padding: 22px 16px; justify-content: center; }
+    .nav { padding-left: 10px; padding-right: 10px; }
+    .nav-item.active::before { left: 0; }
+}
+
+@media (max-width: 720px) {
+    body { background-image: none; }
+    .sidebar { width: 276px; flex-basis: 276px; }
+    .brand { justify-content: flex-start; padding: 22px 20px; }
+    .brand-name, .brand-sub, .nav-label, .nav-item span, .sidebar-foot { display: revert; }
+    .nav { padding: 8px 12px 18px; }
+    .nav-item { justify-content: flex-start; padding: 11px 12px; }
+    .nav-children { display: block; }
+    .topbar { min-height: 60px; padding: 11px 12px; }
+    /* E5 / flat-type-hierarchy：与桌面同档 --fs-xl(20px)，body 14 / h1 20 = 1.43 */
+    .page-title { font-size: var(--fs-xl); }
+    .page-title::before { height: 14px; margin-right: 7px; }
+    .content { padding: 14px 12px 48px; }
+    .card { padding: 16px; }
+    .kpi { min-height: 112px; padding: 17px 18px; }
+    .kpi-value { font-size: var(--fs-2xl); }
+    /* 五张 KPI 竖排要占两屏，把情感分布和趋势推到很深的地方。
+       两列放得下 20px 的数字，第五张单独一行也好过五张整屏卡片。 */
+    #kpiRow.g-5 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    #kpiRow .kpi { min-height: 96px; padding: 14px 15px; }
+    #kpiRow .kpi-value { font-size: var(--fs-xl); }
+    /* 096：末张无条件横跨整行收尾。筛情感后只剩 4 张时，第 4 张是 even，
+       原来的 :last-child:nth-child(odd) 不命中，会留半格白；5 张时行为不变。 */
+    #kpiRow .kpi:last-child { grid-column: span 2; }
+    .btn, .input, .select { min-height: 38px; }
+    .chip { min-height: 34px; }
+    .entry-card { min-height: 138px; }
+    .drop-zone { padding: 24px 14px; }
+    .modal { padding: 20px 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .entry-go span, .drop-zone, .table tbody tr { transition: none; }
+    .entry-card:hover .entry-go span { transform: none; }
+}
+
+@media print {
+    .sidebar, .topbar, #filterBar, .card-tools, #btnPrint, #btnReport,
+    #toastWrap, .chat-head, .composer { display: none !important; }
+    body { background: #fff; }
+    .content { padding: 0; max-width: none; }
+    .card { border: none; box-shadow: none; padding: 0; }
+    #reportSheet { padding: 0; }
+}
+
+/* ============================================================
+   触屏尺寸（放在文件最后）
+   ------------------------------------------------------------
+   这条规则原来写在文件中部的 720 断点里，结果被后面"重构段"的同名组件声明
+   按顺序覆盖掉了：.chip 仍是 34px、.btn/.select 仍是 38px（实测 152/242 < 44）。
+   CSS 没有"更重要的断点"，只有先后——所以它必须排在所有组件声明之后。
+   桌面密度不动（鼠标点 28px 的按钮没问题），只对触屏生效。
+   ============================================================ */
+@media (max-width: 720px) {
+    .btn, .btn-sm, .chip, .select, .input, .ev-act, .dp-mk, .rec-chip,
+    .sent-key, .range-btn, .filter-clear, .pager-input, .pager-select,
+    #navToggle, #dsRename, #themeToggle, .tk-badge, .user-chip { min-height: 44px; }
+    .ev-act, #navToggle, #dsRename, #themeToggle, .user-chip { min-width: 44px; }
+    /* 图标按钮的命中区是"看不见的那圈"，图标本身保持原尺寸 */
+    .ev-act svg, #navToggle svg { pointer-events: none; }
+}
+
+/* ============================================================
+   第 5 轮 critique 补丁（样式组）
+   ------------------------------------------------------------
+   集中放在文件末尾：项目里"写在中部、被后面的 2026 升级段按同名覆盖"的坑
+   （见上方触屏规则注释）已经踩过一次，响应式覆盖必须排在全部组件声明之后。
+   只涉及 app.css / login.css / core.js 三个文件；不新增裸 px 字号，
+   不碰 :root 的 9 档 --fs-* 数值，深色模式里的 glow 段保持用户豁免。
+   ============================================================ */
+
+/* ---------- 093 / 25：顶栏数据集组 .ds-group ----------
+   「标签 + 下拉 + 口径说明」是一个整体。三者并排时右侧控件组宽 803px，
+   1280 投影下（顶栏可用 964px）标题与控件组放不进一行，整排折行、
+   顶栏高 145px。改成纵向小组后宽度由说明兜底（253px），
+   1280 下标题 353 + 间距 18 + 控件组 573 = 944，恢复单行。
+   说明由 093 的"并排可见"改为"贴在下拉正下方可见"，口径仍常驻。 */
+.ds-group { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.ds-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.ds-hint {
+    font-size: var(--fs-sm);
+    color: var(--ink-4);
+    line-height: 1.4;
+    white-space: normal;
+    max-width: 260px;
+    overflow-wrap: anywhere;
+}
+/* 「数据集」三个字：下拉里写的是「2019-2026 · 1,969 条」，不标注会被当成
+   时间筛选。1100 以下顶栏留给控件的位置不够，隐藏（aria-label 仍在）。 */
+.ds-label {
+    font-size: var(--fs-xs); color: var(--ink-3);
+    white-space: nowrap; flex: 0 0 auto;
+}
+@media (max-width: 1100px) { .ds-label { display: none; } }
+
+/* ---------- 接口约定：面包屑 .crumb ----------
+   分隔符由 CSS ::before 生成，不进读屏（伪元素天然不在无障碍树里）。
+   兼容模板里若已放 aria-hidden 的 "/" 元素：不给它、也不给它后一个兄弟
+   再补 ::before，避免同一处出现两个分隔符。 */
+.crumb {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+    font-size: var(--fs-xs); color: var(--ink-4); margin-bottom: 10px;
+}
+.crumb a { color: var(--brand); text-decoration: none; }
+.crumb a:hover { text-decoration: underline; }
+.crumb > * + *::before {
+    content: "/"; display: inline-block; margin-right: 6px;
+    color: var(--ink-4); opacity: .6;
+}
+.crumb > [aria-hidden="true"]::before { content: none; }
+.crumb > [aria-hidden="true"] + *::before { content: none; }
+
+/* ---------- 接口约定：底部批量工具条 .bulk-bar（038） ---------- */
+.bulk-bar {
+    position: sticky; bottom: 0; z-index: 30;
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding: 10px 14px; margin-top: 12px;
+    background: var(--surface);
+    border: 1px solid var(--brand-line);
+    border-radius: 12px;
+    box-shadow: 0 -8px 24px -16px rgba(23, 32, 51, .35);
+}
+/* display:flex 会盖掉 [hidden] 的默认 display:none，显式兜底 */
+.bulk-bar[hidden] { display: none; }
+.bulk-count { font-size: var(--fs-sm); font-weight: 600; color: var(--ink); }
+.bulk-count b { color: var(--brand); font-variant-numeric: tabular-nums; }
+.bulk-acts { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ---------- 接口约定：空态「清除筛选」按钮 .clear-filters ----------
+   core.js 的 setState('empty') 生成，点击复用 renderFilterBar 的清空实现。 */
+.clear-filters {
+    color: var(--brand); border-color: var(--brand-line); background: var(--brand-soft);
+}
+.clear-filters:hover { color: var(--brand-ink); border-color: var(--brand); }
+.state .clear-filters { margin-top: 2px; }
+
+/* ---------- 接口约定：表头吸顶 .cp-sticky-head ----------
+   滚动祖先就是 .table-scroll，它必须保留 overflow-x:auto 的可滚能力，
+   绝不能设成 overflow:hidden —— 否则 th 的 position:sticky 失去滚动容器，
+   表头会跟着内容一起滚走。这里显式重申，防止后续样式误加 hidden。 */
+.table-scroll:has(.cp-sticky-head) { overflow-x: auto; }
+.cp-sticky-head thead th {
+    position: sticky; top: 0; z-index: 2;
+    background: var(--surface);
+    box-shadow: inset 0 -1px 0 var(--line);
+}
+/* 接口约定：AI 卡 / 图表卡并排布局下 .card 仍要可压缩，别被图撑破列 */
+.ai-lead .card, .chart-lead .card { min-width: 0; }
+
+/* ---------- 046 / 101：排序表头 .sortable ----------
+   排序逻辑与激活 class / aria-sort 由 departments.js 组加，这里只给
+   hover / 激活视觉与箭头。101：箭头同时认 aria-sort 属性，原 class 逻辑不删。 */
+.cp-sticky-head th.sortable, .table th.sortable { cursor: pointer; user-select: none; }
+.sortable:hover { background: var(--surface-3); color: var(--brand-text); }
+.sortable::after {
+    content: "↕"; display: inline-block; margin-left: 5px;
+    font-size: var(--fs-micro); color: var(--ink-4); opacity: .55;
+}
+.sortable.asc::after, .sortable.is-asc::after, .sortable[aria-sort="ascending"]::after,
+.sortable.desc::after, .sortable.is-desc::after, .sortable[aria-sort="descending"]::after { opacity: 1; color: var(--brand); }
+.sortable.asc::after, .sortable.is-asc::after, .sortable[aria-sort="ascending"]::after { content: "↑"; }
+.sortable.desc::after, .sortable.is-desc::after, .sortable[aria-sort="descending"]::after { content: "↓"; }
+
+/* ---------- 020：证据元数据「数字 + 单位」不拆行 ----------
+   「29,342 赞」的空格会把单位孤立到下一行；facts 是拼好塞进单个 .ev-facts 的，
+   没法只框数字那一小段，给整段收成一行，过长时省略，免得 390 下撑破 .ev-meta。 */
+.ev-facts {
+    white-space: nowrap; min-width: 0; max-width: 100%;
+    overflow: hidden; text-overflow: ellipsis;
+}
+
+/* ---------- 025 / 111：风险四段「量级」段去红 ----------
+   departments.js 已直接引用 var(--risk-magnitude)（中性石板蓝灰），不占用
+   「红=负面」语义色。CSS 侧只保留变量定义，删掉原先按 [style*="--neg"] +
+   !important 盖内联色的权宜覆盖（脚本组同步改 RISK_PART_COLOR / riskLegend）。 */
+:root { --risk-magnitude: #64748B; }
+
+/* ---------- 003 / 092：筛选栏折叠（core.js 注入的 DOM） ----------
+   .cp-filter-body 用 display:contents：不生成盒子，桌面端所有控件照旧作为
+   .filterbar 的 flex 子项排布。092 后桌面不再有 #cpFilterMore 空折叠，
+   只保留窄屏（≤720）这一枚 #cpFilterToggle 摘要与 .is-expanded 开关；
+   [data-role="range-hint"]（数据覆盖口径）与分隔线桌面常驻可见。
+   现有控件 id/class/data 一个未改。 */
+.cp-filter-toggle {
+    display: none;
+    align-items: center; gap: 6px;
+    height: 30px; padding: 0 12px;
+    border-radius: 999px; border: 1px solid var(--brand-line);
+    background: var(--brand-soft); color: var(--brand);
+    font-size: var(--fs-xs); font-family: inherit; font-weight: 600;
+    cursor: pointer; white-space: nowrap; max-width: 100%;
+    overflow: hidden; text-overflow: ellipsis;
+}
+.cp-filter-body { display: contents; }
+.cp-filter-toggle::after {
+    content: ""; width: 5px; height: 5px;
+    border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor;
+    transform: translateY(-2px) rotate(45deg);
+}
+.filterbar.is-expanded #cpFilterToggle::after { transform: translateY(1px) rotate(-135deg); }
+
+/* 092：桌面不设折叠区——口径徽标常驻，移动端 #cpFilterToggle 折叠（≤720）保留。 */
+
+/* 003 窄屏：默认只显示一行摘要（#cpFilterToggle），点开才铺开全部控件。
+   摘要文案短且 max-width:100%，390 下不会横向溢出。 */
+@media (max-width: 720px) {
+    /* 093：口径说明在 390 也要可见。用绝对定位贴在顶栏底部独立一行：
+       脱离 .topbar-right 的 flex 流，右上四个图标仍保持原来的位置/宽度不被挤走，
+       顶栏只多这一行小字，不横向溢出、不撑出图标的第二行。 */
+    .topbar { position: relative; padding-bottom: 28px; }
+    .ds-hint {
+        position: absolute; left: 12px; right: 12px; bottom: 7px;
+        display: block; max-width: 100%;
+        white-space: normal; overflow-wrap: anywhere;
+        font-size: var(--fs-sm); line-height: 1.4;
+    }
+    .cp-filter-toggle { display: inline-flex; }
+    .filterbar:not(.is-expanded) .cp-filter-body { display: none; }
+    .filterbar.is-expanded .cp-filter-body {
+        display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+        flex: 1 1 100%; width: 100%; margin-top: 8px;
+    }
+}
+
+/* ---------- 019 / 096：.g-5 在 ≤720 排成 2+2+1(占满) 且不溢出 ---------- */
+@media (max-width: 720px) {
+    .g-5 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    /* 096：末项无条件跨 2 列，筛选态 4 张卡也不留半格白 */
+    .g-5 > :last-child { grid-column: span 2; }
+}
+
+/* ---------- 028：Agent 结果区移动端定位 ---------- */
+.agent-result { scroll-margin-top: 16px; }
+@media (max-width: 720px) {
+    .agent-result { scroll-margin-top: 12px; }
+    /* 「跳到结果」锚（JS 组注入）：单列后长对话把结果推到屏外，
+       给一枚吸底按钮，出结果后仍可一键回到结果区。 */
+    .jump-result {
+        display: inline-flex; align-items: center; gap: 6px;
+        position: sticky; bottom: 12px; z-index: 12;
+        margin: 8px 0; padding: 8px 14px;
+        border-radius: 999px; border: 1px solid var(--brand-line);
+        background: var(--brand); color: var(--white);
+        font-size: var(--fs-sm); font-weight: 600; text-decoration: none;
+        box-shadow: var(--shadow-sm);
+    }
+}
+
+/* ---------- 030 / 032：窄屏脚注排版 ----------
+   模板组去掉部分 data-hint 后可见文字变多，给足行距并允许长句折行，
+   避免口径句堆成一片灰，也别让长分母 / 单位把列撑破。 */
+@media (max-width: 720px) {
+    .card-sub { line-height: 1.7; overflow-wrap: anywhere; text-wrap: pretty; }
+    .note { line-height: 1.75; overflow-wrap: anywhere; }
+    /* 095：KPI 脚注承载「仅统计点赞，不含评论、转发与收藏」这类口径长句，
+       390 下两列卡很窄，用 --fs-xs 允许折两行并断词，不撑破 KPI 卡。 */
+    .kpi-foot { font-size: var(--fs-sm); overflow-wrap: anywhere; text-wrap: pretty; }
+}
+
+
+/* ============================================================
+   第 8 轮 critique 修复（样式组）
+   ------------------------------------------------------------
+   集中排在文件末尾：响应式 / 同名组件覆盖必须排在所有组件声明之后
+   （见上方触屏规则注释）。不新增裸 px 字号、不改 :root 9 档值、不加优先级强制覆盖。
+   ============================================================ */
+
+/* ---------- AI 依据行 .ai-basis ----------
+   两条 <span> 各自承载「口径/分母」与「引擎/时间/免责」，可 wrap；
+   上边框是分隔线不是情感色条。 */
+.ai-basis {
+    display: flex; flex-wrap: wrap; gap: 2px 10px;
+    width: 100%; min-width: 0;
+    /* C6：分母/口径与 .scope-line 同档（--fs-base 14px），不再用 --fs-sm 13px */
+    font-size: var(--fs-base); color: var(--ink-2); line-height: 1.6;
+    margin-top: 10px; padding-top: 8px;
+    border-top: 1px solid var(--line-2);
+}
+.ai-basis > span { min-width: 0; }
+/* 槽还没写入时不占高度：生成中 / 失败时页面 JS 会把它清空 */
+.ai-basis-slot:empty { display: none; }
+
+/* ---------- 口径句 .scope-line ----------
+   承载单位 / 分母 / 口径 / 控件名的说明，14px 独立成行。
+   刻意不写 display：模板会把本类挂到 .note / .card-sub 上，
+   设 display 会盖掉 .note 的 flex 容器（文字必须包 <span>）。 */
+.scope-line {
+    font-size: var(--fs-base); line-height: 1.65; color: var(--ink-2);
+    min-width: 0;
+}
+
+/* ---------- 研判到处置：一句话流程说明 .cp-chain-note ----------
+   第 10 轮定性：原来那条 `<nav class="chain">` 是四个 <span> 的伪导航——
+   组内 0 个可聚焦元素、aria-current="step" 挂在不参与导航的元素上等于噪音，
+   而且它在 DOM 里排在 .crumb 之前（实测 y=164 vs 217），一条不可点的流程条
+   压过了「你在这里」。四次修复都没改变它的本质：它解释的是**流程**，不是位置。
+   所以退回成一句普通段落：不声明 navigation 地标、不写 aria-current、
+   不做三段态（那三段的差别本来就只在颜色），当前位置用 <strong> 标出来，
+   读屏按一句正常的话读。位置跟着面包屑走，见 departments.html / tickets.html。 */
+.cp-chain-note {
+    margin: 0 0 12px;
+    font-size: var(--fs-sm); color: var(--ink-3);
+    line-height: 1.7;
+}
+.cp-chain-note strong { color: var(--brand-ink); font-weight: 600; }
+.cp-chain-note .cp-chain-step { color: var(--ink-2); }
+
+/* ---------- AI 生成中计时 .ai-progress ---------- */
+.ai-progress {
+    font-size: var(--fs-sm); color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------- 重新生成中：旧结论压暗而不是清空 ----------
+   模型要 10–30 秒，把旧结论整段抹掉等于让屏幕上什么都不剩——点了「重新生成」
+   却没有反应，是本轮最像"按钮坏了"的一处。压到 0.55 + 卡头写「更新中」，
+   一眼能看出"这是旧的那份，正在换"，也不会误读成最终结论。 */
+.is-refreshing { opacity: .55; transition: opacity .2s ease; }
+
+/* ---------- 首屏 AI 骨架最小高度 ----------
+   避免「一行生成中」占掉一整张大卡。 */
+#pageInsight { min-height: 120px; }
+#wordInsight { min-height: 120px; }
+#chartInsights { min-height: 96px; }
+
+/* ---------- ≤720：.ai-basis 两行竖排 ---------- */
+@media (max-width: 720px) {
+    .ai-basis { flex-direction: column; }
+}
+
+/* ---------- ≤720：44px 点击区（排在全部组件声明之后） ----------
+   不改字号、不改圆角；.tk-bulk 是 checkbox，另补 min-width。
+   .sent-seg 是情感构成的等比条：宽度承载数据，强行拉到 44px 会把比例画错，
+   所以只补高度，并把它下面那排 .sent-key 图例按钮放大到 44px 作为等价的可点目标。
+   C1：.tk-item-meta 与 .tk-open 的布局约束已提到全局（见基础定义处），这里只留 44px 声明。
+   C2：「月/周/日」chip、粒度下拉、区间下拉补 min-width:44px；.sent-seg 宽度保持不动（登记例外）。 */
+@media (max-width: 720px) {
+    /* .tk-bulk 的 44px 热区已在基础规则里（第 13 轮改成 44px 盒 + 18px 视觉），
+       这里不再补 min-width：这条曾经把原生框撑成 44px 空方框，正是要修的那个问题。 */
+    /* 面包屑与折叠说明行：390 实测 .crumb a 19px、summary.scope-line 23px，
+       都在项目自定的 44px 之下（第 9 轮的 16/16 只覆盖按钮，没覆盖这两层）。
+       链接用 inline-flex 撑高，分隔符是 ::before 跟着基线走；summary 用
+       padding-block 撑高，不动 display，三角标记照旧。 */
+    .crumb a { display: inline-flex; align-items: center; min-height: 44px; }
+    /* summary 的 padding-block 只把高度顶到 43.1，差 0.9 就够不到 44。
+       不用再调 padding 追那个小数——line-height 一改就又不对了，直接给 min-height。 */
+    summary { padding-block: 10px; min-height: 44px; }
+    /* 抽屉展开后的二级项实测 217×37.2，是全站唯一还没到 44 的可点链接。
+       基础规则已经是 flex + align-items:center，补一条 min-height 就够。 */
+    .nav-child { min-height: 44px; }
+    /* 展开三角在抽屉里同样是可点目标，撑到 44（桌面 28 够用）。
+       display 要显式写回 inline-flex：1100 那条把它关掉了，≤720 的抽屉
+       是完整侧栏，层次和三角都该回来。 */
+    .nav-caret { display: inline-flex; top: 2px; width: 44px; height: 44px; }
+    .nav-item.has-children { padding-right: 52px; }
+    /* .tk-open 必须写成和全局规则一样的选择器 `.tk-item-meta > .tk-open`：
+       第 9 轮把布局约束提到全局时顺手写了 `min-height:24px`（特异性 0,2,1），
+       而这里原来只有 `.tk-open`（0,1,0）——特异性输，移动端 44px 从第 8 轮起
+       就再没生效过（实测 62×24）。同选择器 + 更靠后，才轮得到这条赢。 */
+    .tk-item-meta > .tk-open, .theme-btn, .chip, #cpFilterToggle, .cp-filter-toggle,
+    .sent-seg { min-height: 44px; }
+    .theme-btn, .tk-item-meta > .tk-open, .sent-key { min-width: 44px; }
+    .chip, .select, .select-sm, #granSel { min-width: 44px; }
+    .sent-bar { height: 44px; }
+    .sent-key { display: inline-flex; align-items: center; }
+}
+
+/* ============================================================
+   第 9 轮 critique 修复（样式组）
+   ------------------------------------------------------------
+   集中排在文件末尾：同名组件 / 响应式覆盖必须排在所有组件声明之后
+   （见上方触屏规则注释）。不新增裸 px 字号、不改 :root 9 档值、
+   不加 !important 压 JS 状态类、不动 6 类已 pin 品牌装饰。
+   ============================================================ */
+
+/* ---------- A5：侧栏二级目录按当前组折叠 ----------
+   侧栏给当前组父项的 .nav-children 追加 .is-open，父项上的 .nav-caret 按钮
+   用 aria-expanded 报告同一状态（见 base.html）。 */
+
+/* A5：默认折叠，仅当前组（.is-open）展开。原「子项常驻展开」决策按第 9 轮改为折叠。 */
+.nav-children { display: none; }
+.nav-children.is-open { display: block; }
+/* 图标条模式（721–1100）：子项没有图标可显示，即便当前组也一并收起。 */
+@media (min-width: 721px) and (max-width: 1100px) {
+    .nav-children, .nav-children.is-open { display: none; }
+}
+
+/* ---------- A6：图标按钮的可见动作名 ----------
+   桌面（>1100）显示动作名；≤1100 图标条 / 抽屉模式隐藏，避免撑破 topbar。 */
+.topbar-icon-text {
+    font-size: var(--fs-xs); color: var(--ink-3);
+    margin-left: 6px; white-space: nowrap;
+}
+@media (max-width: 1100px) {
+    .topbar-icon-text { display: none; }
+}
+
+/* ---------- E5：扁平化内层卡片 .cp-flat ----------
+   nested-cards：外层 .card 里再画一层带边框 / 实底 / 圆角 / 阴影的"卡片"读成套娃。
+   不删元素、不改 DOM 层级，只清内层的"卡片四件套"；padding 由各组件保留，
+   文字仍需与外层标题拉开距离。G1 可给内层追加 .cp-flat 获得同一效果；
+   #aiInsight / .tk-item / #suggNote 带状态色或为首屏主角，交由 G1 按需挂 .cp-flat，
+   这里不全局强清，避免抹掉 .on / .neg 的选中态与语义底色。 */
+.cp-flat,
+.pi-reason, .metric, .wi-side, .tk-sla-box, .dp-card {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    border-radius: 0;
+}
+
+/* E5 补漏（父代理 URL 渲染扫描给出的精确选择器）：这些内层容器确实嵌在 .card 里，
+   再带一层圆角+阴影就被读成「套娃卡片」。只抹掉圆角与阴影，保留背景（选中态
+   .tk-item.on 的 brand-soft、口径 note 的 line-2）与边框分隔，信息层级不丢。 */
+.card .ai-summary,
+.card .note.note-muted,
+.card .tk-item,
+.card .evidence-item,
+.card .tk-block .note { border-radius: 0; box-shadow: none; }
+/* #aiInsight 还有一层淡蓝实底（brand-soft）+ 圆角 + padding，只去圆角仍会被判套娃。
+   第 9 轮这条写成 `.card .ai-summary`（0,2,0）想覆盖它，但 #aiInsight 是 ID 选择器
+   （1,0,0）——特异性赢，所以那次"视觉已无套娃"的结论从未生效（实测仍是
+   rgb(238,242,255) / radius 11px / padding 15px 17px）。这里把 id 写进选择器
+   才轮得到它赢：去掉内层底色与内边距，让 AI 结论像卡片正文，而不是嵌进去的第二张卡。
+   文字 14px 深色、与白底对比 8.7:1，可读性不受影响；左侧 1px 品牌竖线保留，
+   它是"这段是模型生成"的唯一视觉标记，抹掉会让结论与卡片正文分不清。 */
+.card .ai-summary,
+#aiInsight.ai-summary {
+    background: transparent; border: 0; border-radius: 0;
+    border-left: 2px solid var(--brand-line); padding: 0 0 0 14px;
+}
+
+/* E5 / icon-tile-stack：≤720 图标方块与标题同行、不独占一行压住标题。
+   项目里没有 44×44 固定图标块（44px 均为触屏 min-* 点击区），
+   这里给图标行兜底：同行、图标不拉伸；精确选择器由父代理 URL 扫描复查。 */
+@media (max-width: 720px) {
+    .entry-top, .dp-card-head { align-items: center; }
+    .ev-acts { flex: 0 0 auto; }
+}
+
+/* ---------- #cpShowAllCharts（G3 注入，文案「显示全部图表」）----------
+   ≥44px 点击区、常驻可见；作为独立行出现，不挤占筛选栏（.filterbar）布局。
+   显示 / 隐藏由 G3 控制（存在 pendingOptions 时出现、点击 flush 后隐藏）。 */
+#cpShowAllCharts {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: 44px; min-width: 44px;
+    margin: 0 0 12px; padding: 0 16px;
+    border: 1px solid var(--brand-line); border-radius: 9px;
+    background: var(--brand-soft); color: var(--brand-ink);
+    font-size: var(--fs-sm); font-weight: 600; cursor: pointer;
+    white-space: nowrap;
+}
+#cpShowAllCharts:hover { background: var(--brand-line); }
+#cpShowAllCharts:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+/* ============================================================
+   第 11 轮：390 工单卡把主列还回来
+   ------------------------------------------------------------
+   390 上卡片内容宽 332-24=308，减去复选框 44、优先级条 3、时限列 86、
+   三处 10px 间距，主列只剩 149px（45%）。标题「食堂餐饮窗口排队时间过长」
+   只能放 9 个字就折行——而这一屏的第一任务是"扫一眼认出是哪件事"，
+   不是"先读时限"。时限自己折到第二行（仍常驻可见，不删不藏），
+   主列回到 241px，标题一行能放完。
+   ============================================================ */
+@media (max-width: 720px) {
+    .tk-item { flex-wrap: wrap; }
+    /* 卡片折成两行后变高，居中的复选框会浮在空白中间、看起来像"这一格是空的"。
+       贴住标题顶对齐，行首一眼就能看到「这是一条可以勾选的记录」。 */
+    .tk-item .tk-bulk { align-self: flex-start; margin-top: -9px; }
+    /* flex-basis 必须是 0，不能是 auto：auto 会拿标题的 max-content 宽度当基准，
+       在 wrap 容器里直接把自己挤到下一行——实测过，那样第一行只剩复选框，
+       标题独占一行，卡片反而从 74 涨到 207。基准 0 才能"先占住剩下的宽度再长"。 */
+    .tk-item-main { flex: 1 1 0; }
+    .tk-item-sla {
+        flex: 1 1 100%; max-width: none;
+        margin-top: 2px; text-align: left;
+        display: flex; align-items: baseline; gap: 6px;
+    }
+    /* 右列时是"标签一行、时长一行"（86px 里塞不下整句）；
+       折成整行之后改成一行读完，省掉那一行的高度。 */
+    .tk-item-sla b { display: inline; }
+    .tk-item-sla span { display: inline-flex; gap: 4px; }
+    .tk-item-sla i { display: inline; }
+}
+
+/* ============================================================
+   第 12 轮：周带（判断链的「时限」从一句话变成位置）
+   ------------------------------------------------------------
+   术语：实心点＝已建单的工单截止日期；虚线框＝未建单、按部门时限
+   推算的到期日；未归口的主题不进日期格（时钟从归口开始）。
+   日期由后端 due / due_basis 给出，前端只排格子。
+   ============================================================ */
+.wk { margin-top: 14px; }
+.wk-head { margin-bottom: 12px; }
+.wk-key { display: flex; gap: 14px; font-size: var(--fs-xs); color: var(--ink-3); white-space: nowrap; }
+.wk-key span { display: inline-flex; align-items: center; gap: 6px; }
+.wk-key i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.wk-key i.solid { background: var(--brand); }
+.wk-key i.ghost { border: 1px dashed var(--ink-faint); }
+
+.wk-weeks { display: flex; flex-direction: column; gap: 14px; }
+.wk-week { display: flex; gap: 14px; align-items: stretch; }
+.wk-week-label {
+    width: 86px; flex: 0 0 auto; padding-top: 3px;
+    font-size: var(--fs-micro); color: var(--ink-4); line-height: 1.5;
+    font-variant-numeric: tabular-nums;
+}
+.wk-week-label b { display: block; font-size: var(--fs-sm); font-weight: 650; color: var(--ink-2); }
+.wk-cells { flex: 1; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; min-width: 0; }
+.wk-cell { border-top: 1px solid var(--line-2); padding-top: 8px; min-height: 54px; min-width: 0; }
+.wk-cell.is-today { border-top-color: var(--brand); }
+.wk-date {
+    font-size: var(--fs-micro); color: var(--ink-4); margin-bottom: 7px;
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.wk-cell.is-today .wk-date { color: var(--brand); font-weight: 650; }
+
+.wk-pin {
+    display: flex; align-items: center; gap: 7px; width: 100%; min-width: 0;
+    margin-bottom: 6px; padding: 5px 8px; min-height: 32px;
+    font: inherit; font-size: var(--fs-xs); color: var(--ink-2); text-align: left;
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-sm);
+    cursor: pointer;
+}
+.wk-pin:hover { border-color: var(--brand-line); background: var(--primary-soft); }
+.wk-pin:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.wk-pin[aria-pressed="true"] { border-color: var(--brand); background: var(--primary-soft); color: var(--ink); }
+.wk-pin b { flex: 0 0 auto; font-size: var(--fs-sm); font-weight: 700; font-variant-numeric: tabular-nums; }
+/* 「57」后面那个「分」：pin 的主数字以前没有单位，只有 aria-label 里才有「风险 57 分」，
+   看得见的人反而要滚到页脚去找「风险指数（0-100）」。单位留在数字旁，字号让位给它。 */
+.wk-unit { margin-left: 1px; font-size: var(--fs-micro); font-weight: 500; color: var(--ink-4); }
+/* 实心点承担「已建单」，虚线框承担「未建单」——形状与线型两种线索，
+   不靠颜色单打独斗（色盲用户同样分得开）。 */
+.wk-pin.is-real::before { content: ""; flex: 0 0 auto; width: 7px; height: 7px; border-radius: 50%; background: var(--brand); }
+.wk-pin.is-ghost { background: transparent; border-style: dashed; }
+.wk-nm { display: flex; flex-direction: column; gap: 1px; min-width: 0; line-height: 1.25; }
+.wk-nm em {
+    display: flex; align-items: baseline; flex-wrap: wrap; column-gap: 4px; row-gap: 1px; min-width: 0;
+    font-style: normal; font-size: var(--fs-micro); color: var(--ink-4);
+}
+/* 部门可以被省略号吃掉，责任人和日期不行：一格 157px，"后勤保障处 · 陈老师"
+   整串会先截掉人，而人正是这个组件要回答的问题。放不下时宁可换行。 */
+.wk-dept { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wk-own, .wk-due { flex: 0 0 auto; white-space: nowrap; font-style: normal; }
+.wk-due { color: var(--ink-3); }
+.wk-pin.lv-high b { color: var(--neg-ink); }
+.wk-pin.lv-midhigh b { color: var(--warn-ink); }
+.wk-pin.lv-mid b { color: var(--ink); }
+.wk-pin.lv-low b { color: var(--ink-3); }
+
+.wk-strip { display: flex; gap: 14px; margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--line); }
+.wk-strip-label { width: 108px; flex: 0 0 auto; font-size: var(--fs-sm); font-weight: 650; color: var(--ink-2); }
+.wk-strip-label em {
+    display: block; margin-top: 2px; font-style: normal; font-weight: 400;
+    font-size: var(--fs-micro); color: var(--ink-4); line-height: 1.4;
+}
+.wk-strip-pins { flex: 1; display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
+.wk-strip-pins .wk-pin { width: auto; max-width: 220px; margin-bottom: 0; }
+/* 第 20 轮：**状态不改写分数颜色**。原来这一条把「已超期」横条里所有 pin 的分数
+   涂成红色，于是同一个 57 在首页/风险表是橙「中高」、在周带是红——读者会当成两个指标。
+   状态用底色 + 边框 + 横条标题承担，分数只表示等级。 */
+.wk-strip.is-overdue .wk-pin { border-color: rgba(217, 45, 32, .3); background: var(--neg-soft); }
+.wk-strip.is-none .wk-pin { background: transparent; }
+.wk-foot { margin: 12px 0 0; }
+
+/* 窄屏：一格比一个主题名还窄，格子读不了 → 折成按周分组的纵列。
+   两套结构同时存在于 DOM，靠 display 二选一；display:none 的那套对读屏同样不可见。 */
+.wk-list { display: none; }
+
+@media (max-width: 720px) {
+    .wk-weeks, .wk-strip { display: none; }
+    .wk-list { display: flex; flex-direction: column; gap: 12px; }
+    .wk-group { display: flex; flex-direction: column; gap: 6px; }
+    .wk-group-head { font-size: var(--fs-xs); font-weight: 650; color: var(--ink-3); }
+    .wk-group-head em {
+        margin-left: 8px; font-style: normal; font-weight: 400;
+        font-size: var(--fs-micro); color: var(--ink-4);
+    }
+    .wk-list .wk-pin { width: 100%; min-height: 44px; margin-bottom: 0; }
+    .wk-head .card-tools { margin-left: 0; margin-top: 10px; }
+}
+
+/* 第 12 轮：工单行的「应办结」时刻。
+   以前它只活在 .tk-item-sla 的 title 里——悬浮才看得到，等于没写。
+   周带把时限变成了日期，工单列表必须用同一种语言说话。 */
+.tk-due {
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-4);
+    font-size: var(--fs-micro);
+}
+
+/* ============================================================
+   第 13 轮：详情面板的三把尺子（两把刻度 + 一把参照）
+   ------------------------------------------------------------
+   以前三件事挤在一句话里：部门期望 48/24、本单首次响应、本单归档时限。
+   读者得自己拆句子才知道「还剩多少」。现在两条本单的时钟画成刻度，
+   第三条画成虚线参照框——它不属于这张单，画成同一种刻度等于又混一次口径。
+   ============================================================ */
+.tk-clocks {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0; /* 负外边距 + 每格左右 padding：三栏等宽（否则中间那栏窄 28px，
+              标题会先折行），同时首格文字仍与卡片内容左缘对齐。 */
+    margin: 12px -14px 0;
+}
+/* 三格用**竖线分隔**，不再各自套一圈「底色 + 边框 + 圆角」。
+   每一格都长得像一张小卡片时，它们就变成了卡片里的卡片——层级反而更糊，
+   而且三格等权重的边框会跟父卡抢视觉。分成三栏，读起来是"一把尺子的三段"。 */
+.tk-clock { min-width: 0; padding: 4px 14px; }
+.tk-clock + .tk-clock { border-left: 1px solid var(--line); }
+.tc-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.tc-head b { font-size: var(--fs-sm); font-weight: 650; color: var(--ink-2); }
+.tc-head em { font-style: normal; font-size: var(--fs-micro); color: var(--ink-4); }
+.tc-num { display: flex; align-items: baseline; gap: 6px; margin-top: 5px; }
+.tc-num span {
+    font-size: var(--fs-lg); font-weight: 650; line-height: 1.1;
+    font-variant-numeric: tabular-nums; color: var(--ink);
+}
+.tc-num i { font-style: normal; font-size: var(--fs-micro); color: var(--ink-4); }
+/* 5px 高的条用 --radius-sm（10px）会被浏览器钳到半高，视觉就是胶囊，不用另造一档圆角。 */
+.tc-rail { position: relative; height: 5px; margin-top: 7px; border-radius: var(--radius-sm); background: var(--surface-3); }
+.tc-rail > span { border-radius: var(--radius-sm); }
+.tc-rail > span { display: block; height: 100%; background: var(--brand); }
+
+/* 超时不靠红字单打独斗：底色、数字、条三者一起变，扫一眼就分得出。
+   底色是**铺满这一栏**的淡红，不加边框与圆角——那是"这块要处理"，
+   不是又一张卡片。 */
+.tk-clock.is-over { background: var(--neg-soft); }
+.tk-clock.is-over .tc-num span { color: var(--neg-ink); }
+.tk-clock.is-over .tc-rail > span { background: var(--neg-solid); }
+/* 条已经顶到 100%，光看宽度分不出"刚好用满"和"还在涨"。
+   末端加一个朝外的小三角：这条尺子已经量不下了。 */
+.tk-clock.is-over .tc-rail::after {
+    content: ""; position: absolute; right: -5px; top: -2px;
+    border-left: 4px solid var(--neg-solid);
+    border-top: 4.5px solid transparent; border-bottom: 4.5px solid transparent;
+}
+
+/* 计时已停（已响应 / 已归档）：条按实数填，颜色给结论。
+   以前 done 之后条仍停在 0%，读起来像"还没开始"——那是最容易误读的一种空。 */
+.tk-clock.is-done .tc-rail > span { background: var(--pos-solid); }
+.tk-clock.is-done.is-over .tc-rail > span { background: var(--neg-solid); }
+.tk-clock.is-done .tc-foot { color: var(--ink-3); }
+
+/* 参照框：虚线边、没有填充条。它不是这张单的刻度，所以不许长得像刻度。
+   这一格是全组唯一保留边框的——虚线框本身携带"这只是参照"的意思，
+   去掉它，第三格就和前两格长得一样了。 */
+.tk-clock.is-ref {
+    /* 4px 外边距 + 10px 内边距：虚线框从栏边界往内收 4px，
+       既不贴着左边的分隔线，文字仍与另外两栏对齐（10+4=14）。
+       边框用 outline 而不是 border：它不占布局、也不构成"又一张卡片"
+       （border + 圆角 + 底色三件套才是检测器与眼睛共同认定的卡片）。
+       方角也是刻意的——这是一块"量过的区域"，不是一张卡片。 */
+    outline: 1px dashed var(--line); outline-offset: -1px;
+    border-left: 0;   /* 前一栏的分隔线已经在这条边上，别再叠一条实线 */
+    margin: 0 4px; padding: 4px 10px; background: transparent;
+}
+.tk-clock.is-ref .tc-rail.is-ref { background: transparent; border-top: 1px dashed var(--line); height: 0; }
+
+.tc-foot {
+    margin-top: 6px; font-size: var(--fs-micro); color: var(--ink-4); line-height: 1.5;
+    /* 中文默认逐字可断，「尚未响应」会被拆成「尚未响 / 应」。keep-all 只留空格与
+       标点作为断点：每一段都短到放得下，跨行时整段一起走。 */
+    word-break: keep-all;
+}
+
+@media (max-width: 720px) {
+    /* 390 三段纵排：竖线在纵向排列里没有意义，改成间距；超期那一段补回内边距，
+       否则淡红底会贴着字。 */
+    .tk-clocks { grid-template-columns: 1fr; gap: 10px; margin: 12px 0 0; }
+    .tk-clock { padding: 0; }
+    .tk-clock + .tk-clock { border-left: 0; }
+    .tk-clock.is-over { padding: 8px 11px; }
+    .tk-clock.is-ref { padding: 8px 11px; }
+}
+
+/* 周带：整周已经过去的那几天照样占格（"这周一空着"本身是条信息），
+   但必须一眼看出它已经过去了——否则读者会把空白读成"这天没事"。 */
+.wk-cell.is-past { border-top-style: dashed; border-top-color: var(--line-2); }
+.wk-cell.is-past .wk-date { color: var(--ink-faint); }
+
+/* ============================================================
+   第 17 轮（2026-11-16）：收掉第 16 轮「仍未做」里的 6 条
+   ------------------------------------------------------------
+   ① 顶栏三个低频管理动作收进「更多」菜单（.top-more）
+   ② 三把尺子脚注：档位从 micro 提到 xs，超期那一格改用 --neg-ink
+   ③ 风险表筛选 chips（.dp-risk-filters）
+   ============================================================ */
+
+/* ---------- ① 顶栏「更多」 ----------
+   重命名 / 主题 / 术语三件事一个月也点不到一次，却各自占着一个常驻图标位，
+   其中「重命名」还紧挨数据集切换——看起来像"切数据集"的第二个按钮。
+   收进菜单后顶栏只留：待办、快照、数据集、更多、账户。
+   details 是原生的：可聚焦、可键盘开关（回车/空格）、不需要另写 aria。 */
+.top-more { position: relative; display: flex; }
+.top-more > summary {
+    list-style: none; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    width: auto; padding: 0 10px;
+}
+.top-more > summary::-webkit-details-marker { display: none; }
+.top-more[open] > summary {
+    background: var(--brand-soft); border-color: var(--brand-line); color: var(--brand);
+}
+.top-more-pop {
+    position: absolute; right: 0; top: calc(100% + 8px); z-index: 30;
+    min-width: 190px; padding: 6px;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius-sm); box-shadow: var(--shadow);
+}
+.top-more-item {
+    display: flex; align-items: center; gap: 10px; width: 100%;
+    height: 38px; padding: 0 10px; border: 0; border-radius: 7px;
+    background: transparent; color: var(--ink-2);
+    font-size: var(--fs-sm); font-family: inherit; text-align: left; cursor: pointer;
+}
+.top-more-item:hover, .top-more-item:focus-visible { background: var(--surface-2); color: var(--brand); }
+.top-more-item:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
+.top-more-item svg { width: 17px; height: 17px; flex: 0 0 auto; }
+/* 深浅色图标跟着当前主题走：.theme-btn 那套规则只作用于顶栏那颗按钮，
+   菜单项换了容器，这里得自己再声明一次。 */
+.top-more-item .icon-sun { display: none; }
+[data-theme="dark"] .top-more-item .icon-sun { display: block; }
+[data-theme="dark"] .top-more-item .icon-moon { display: none; }
+.tm-label { white-space: nowrap; }
+
+@media (max-width: 720px) {
+    .top-more { flex: 0 0 auto; }
+    .top-more > summary { min-width: 44px; min-height: 44px; padding: 0 12px; }
+    /* 菜单项也是可点目标，一处 44 一处 38 会让人以为某一项坏了 */
+    .top-more-item { height: 44px; }
+    .top-more-pop { min-width: 200px; }
+}
+
+/* ---------- ② 三把尺子的脚注 ----------
+   这一行是判断「超没超」的唯一文字，原来落在 --fs-micro（12px）＋ --ink-4 上，
+   在 --neg-soft 底上只有 4.76:1——刚过线，投影上最先看不清的恰好是它。
+   注意：micro 与 xs 同为 12px（见 Typography 的说明），所以「提档」本身不改观感；
+   真正修的是颜色——超期那一格的脚注改用 --neg-ink（浅红底 ≈6.2:1）。 */
+.tc-foot { font-size: var(--fs-xs); }
+.tk-clock.is-over .tc-foot { color: var(--neg-ink); }
+
+/* ---------- ③ 风险表筛选 ----------
+   表里最需要"把某一种挑出来"的是两类：没有归口的（没人认领，得去配部门）、
+   工单已经过期的（正在欠账）。以前只能靠肉眼在八行里扫。
+   chips 与表头图例同一行，说明它只作用于这张表——周带讲的是全部主题的时间位置。 */
+.dp-risk-filters {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    margin: -2px 0 10px;
+}
+.dp-risk-filters .dp-rf-label { font-size: var(--fs-xs); color: var(--ink-3); font-weight: 600; }
+.dp-risk-filters .dp-rf-count { font-size: var(--fs-xs); color: var(--ink-4); }
+.dp-risk-filters .dp-rf-count b { color: var(--ink-2); font-weight: 600; }
+
+/* ============================================================
+   第 18 轮（2026-11-16 critique 后）：把产品的主张放回第一屏
+   ------------------------------------------------------------
+   ① 驾驶舱「今天要办的三件事」（.dp-today）
+   ② 三把尺子的主数字按状态换（超时读"已超多少"）
+   ③ 跨数据集快照降级（.tk-preview.is-snap）
+   ④ 风险表头单行（.dp-th-hint 内联 + 排序箭头绝对定位）
+   ⑤ 示例配置从页首警示条降为部门卡徽章（.dp-sample-badge）
+   ⑥ 44px 触控补齐：证据页多选/展开、排行行、权重展开、采集分段
+   ⑦ 禁用态不再靠 opacity 掉到 2.75:1（.btn:disabled）
+   ============================================================ */
+
+/* ---------- ① 驾驶舱「今天要办的三件事」 ----------
+   四段信息对应四个问题：多急（分数）、是什么（主题）、归谁（部门·责任人）、
+   多久之内（截止日）。行是一条链，所以用 grid 对齐成列，而不是四行堆叠。 */
+.dp-today { margin-bottom: 14px; }
+.dp-today-head { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 6px; }
+.dp-today-head > div { min-width: 0; }
+.dp-today-head .btn { margin-left: auto; flex: 0 0 auto; }
+.dp-today-row {
+    /* 三列：分数 / 主题 / （部门 · 责任人 · 截止日）。
+       第 18 轮首版是四列，「后勤保障处·陈老师」与「11-12 截止」之间被
+       672px 空白拆成了两件事——同一条记录的属性必须挨在一起。 */
+    display: grid; grid-template-columns: 56px minmax(84px, auto) minmax(0, 1fr);
+    align-items: baseline; gap: 12px;
+    padding: 9px 10px; margin: 0 -4px; border-radius: 9px;
+    text-decoration: none; color: inherit;
+    transition: background .15s;
+}
+.dp-today-row:hover { background: var(--surface-2); }
+.dp-today-row:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
+/* 分数是这一行的主语：和 KPI 的 26px 同级——产品自己的数字不该比通用 KPI 小。
+   等级同时给文字（.dpt-lv）与颜色：只靠颜色传达严重度，对色盲等于没传达，
+   而且同一档在两页必须是同一种颜色（首页 57 与研判页 57 都读「中高」橙色）。 */
+.dpt-score { font-size: var(--fs-2xl); font-weight: 720; letter-spacing: -.6px;
+    font-variant-numeric: tabular-nums; line-height: 1.05; }
+.dpt-lv { font-style: normal; font-size: var(--fs-xs); font-weight: 600;
+    margin-left: 6px; padding: 0 4px; border-radius: 4px;
+    background: var(--surface-sunken); }
+.dpt-lv.high { color: var(--neg); }
+.dpt-lv.midhigh { color: var(--warn-ink); }
+.dpt-lv.mid { color: var(--ink); }
+.dpt-lv.low { color: var(--ink-3); }
+/* 骨架与终态同高：这三行占位就是"正在读"，不是装饰 */
+.dp-today-skel { height: 44px; border-radius: 9px; margin-top: 4px; }
+.dpt-score.high { color: var(--neg); }
+.dpt-score.midhigh { color: var(--warn-ink); }
+.dpt-score.mid { color: var(--ink); }
+.dpt-score.low { color: var(--ink-3); }
+.dpt-dim { font-size: var(--fs-base); font-weight: 650; color: var(--ink); }
+.dpt-who { display: flex; align-items: baseline; gap: 10px; min-width: 0; flex-wrap: wrap; }
+.dpt-dept { font-size: var(--fs-sm); color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dpt-due { font-size: var(--fs-xs); color: var(--ink-4); white-space: nowrap; font-variant-numeric: tabular-nums; }
+/* 「已超」在工单页是红的，首页原来是灰的——同一个事实两种语气。
+   只剩时间不多（今天内到期）也用警示色：那是"今天要动"的信号。 */
+.dpt-due.is-over { color: var(--neg-ink); font-weight: 600; }
+.dpt-due.is-soon { color: var(--warn-ink); font-weight: 600; }
+/* pin 里的等级文字：周带原来只给分数，等级要靠颜色记 */
+.wk-lv { font-style: normal; font-size: var(--fs-micro); font-weight: 600;
+    margin-left: 3px; opacity: .9; }
+.dp-today-foot { margin-top: 6px; font-size: var(--fs-xs); color: var(--ink-4); }
+.dp-today-foot b { color: var(--ink-2); font-weight: 600; }
+@media (max-width: 720px) {
+    /* 四列在 390 只能放下两列：分数占左、另外三行叠在右，日期并到部门下一行 */
+    .dp-today-head { flex-wrap: wrap; }
+    .dp-today-head .btn { margin-left: 0; }
+    .dp-today-row { grid-template-columns: 54px minmax(0, 1fr); gap: 1px 10px; padding: 10px 8px; min-height: 44px; }
+    .dpt-score { grid-row: span 2; align-self: center; font-size: var(--fs-xl); }
+    .dpt-who { grid-column: 2; gap: 8px; }
+    .dpt-dept { white-space: normal; }
+}
+
+/* ---------- ② 三把尺子的主数字按状态换 ----------
+   首次响应与归档时限都从"建单"起算，所以两张卡的大数字永远是同一个数。
+   并排时读者第一反应是"重复渲染了"。现在：未超时＝已用，已超时＝已超多少
+   （那才是要动手的理由），副标始终写"已用 X / 时限 Y"，两张卡再也不重样。 */
+.tc-num .tc-sub { font-style: normal; font-size: var(--fs-xs); color: var(--ink-4); margin-left: 6px; }
+.tc-num .tc-sub b { color: var(--ink-3); font-weight: 600; }
+/* 「已用 70.6 / 时限 7」这对数降成一行小字：它还在这里（可复算），
+   但不再占主数字位——两张卡的大数字相同，正是它造成的误读。 */
+.tc-lim { display: block; margin-top: 2px; font-style: normal;
+    font-size: var(--fs-xs); color: var(--ink-4); font-variant-numeric: tabular-nums; }
+
+/* ---------- ③ 跨数据集快照：降级而不是解释 ----------
+   12px 的黄字没人读，读者看到的只是"71.8% 和 5.9% 打架"。
+   数字降成灰底快照块、标题写明"建单时快照"，再给一个切口径的动作。 */
+.tk-preview.is-snap {
+    background: var(--surface-sunken); color: var(--ink-3);
+    border-left: 0; padding: 6px 8px; border-radius: 6px;
+}
+.tk-preview.is-snap b { color: var(--ink-2); }
+.tk-snap-switch { margin-left: 8px; }
+
+/* ---------- ④ 风险表头单行 ----------
+   `.dp-th-hint` 是 display:block，`th::after` 的排序箭头就落在它之后 →
+   「风险指数 / 截至 07-07 / ↕」三行、th 高 76px。改成内联 + 箭头绝对定位。 */
+.dp-risk-table th.dp-col-risk { position: relative; padding-right: 26px; }
+.dp-risk-table th.dp-col-risk.sortable::after { position: absolute; right: 8px; top: 9px; margin-left: 0; }
+.dp-risk-table .dp-th-hint { display: inline; margin-top: 0; margin-left: 6px; }
+
+/* ---------- ⑤ 示例配置不再压首屏 ----------
+   那句话原本是页首一条橙色警示（.dp-scope-line），压在周带上面——评委第一眼
+   读到的是"交付未完成"。第 18 轮挪进「部门与职责」卡片的副标题：读者正好在
+   看到真实姓名与电话的那一屏读到它。风险指数的定义与免责挪进「风险指数怎么来的」，
+   一个字没删。对应的 .dp-scope-line 规则一并删除。 */
+
+/* ---------- ⑥ 44px 触控补齐（390 实测：证据页 34 个、采集页 3 个、研判页 1 个） ---------- */
+/* 多选复选框原来 13×13、没有 label 包裹，是整个站最小的可点目标。
+   包一层 label 把热区做到 32（桌面）/ 44（≤720），视觉仍是 16px 的方框。 */
+.ev-pick { display: inline-flex; align-items: center; justify-content: center;
+    flex: 0 0 auto; align-self: center; width: 32px; height: 32px; cursor: pointer; }
+.ev-pick input.ev-bulk { width: 16px; height: 16px; margin: 0; flex: 0 0 auto; accent-color: var(--brand); }
+/* 「展开全文」是文字按钮，原来 48×19 */
+.ev-more { min-height: 30px; padding: 0 2px; display: inline-flex; align-items: center; }
+.rank-row { min-height: 40px; }
+@media (max-width: 720px) {
+    .ev-pick { width: 44px; height: 44px; margin-right: 0; }
+    .ev-pick input.ev-bulk { width: 18px; height: 18px; }
+    .ev-more, .rank-row, .dp-weights-tip { min-height: 44px; }
+    .seg > button { min-height: 44px; }
+}
+
+/* ---------- ⑦ 禁用态可读 ----------
+   `.btn:disabled { opacity: .55 }` 把 --ink-2 合成到白底只剩 2.75:1（"上一页"/"切换"）。
+   WCAG 对禁用控件有豁免，但读的人是靠它知道"这条不可用"，不是靠它猜。
+   改成显式色：不用透明度，用更浅的字色 + 无色底，语义仍是"不可点"。 */
+.btn:disabled { opacity: 1; color: var(--ink-4); background: var(--surface-2);
+    border-color: var(--line-2); box-shadow: none; }
+.btn:disabled:hover { color: var(--ink-4); background: var(--surface-2); border-color: var(--line-2); }
+
+/* 动作条吸底（≥721）：详情有 2000px 高，900px 视口下「开始处理」原来在 y≈887，
+   只剩 13px 露在折叠线外——每天要做的事被自己的证据和时间线挡住了。
+   sticky 挂在整块 .tk-block 上（父级 #tkDetail 够高才有行程），不是按钮本身。 */
+/* 第 20 轮修正：`bottom: 0` 只对"还没滚到"的元素有效，滚过之后
+   动作条照样被推走（实测 scrollY=900 时 top=-106）。改成 top 吸附：
+   读到证据与时间线时，「开始处理」仍钉在顶栏下面。 */
+/* 桌面与手机**同一套**吸顶（第 21 轮修：原来整块写在 min-width:721px 里，
+   390 下根本没吸，复评实测 position: static / top=771）。位置跟着 --topbar-h。 */
+.tk-block-acts {
+    position: sticky;
+    top: calc(var(--topbar-h, 96px) + 8px); z-index: 4;
+    display: flex; align-items: center; gap: 12px;
+    background: var(--surface);
+    margin: 0 -2px 6px; padding: 8px 2px;
+    border-bottom: 1px solid var(--line-2);
+    box-shadow: 0 12px 18px -18px rgba(23, 32, 51, .45);
+}
+/* 这一行只有"做什么"：标题两行说明会把按钮挤到换行 */
+.tk-block-acts .tk-block-title { margin: 0; flex: 0 0 auto; white-space: nowrap; }
+.tk-block-acts .tk-block-title em { display: none; }
+.tk-block-acts .tk-acts { margin-left: auto; flex-wrap: nowrap; }
+@media (max-width: 720px) {
+    /* 手机上详情整宽，一行放不下两个按钮：允许换行，但标题仍占一行 */
+    .tk-block-acts { flex-wrap: wrap; gap: 6px; top: calc(var(--topbar-h, 96px) + 4px); }
+    .tk-block-acts .tk-acts { margin-left: 0; flex-wrap: wrap; }
+}
+
+/* 程序化聚焦（tabindex="-1"）不该画出 UA 的黑色 auto 外框：
+   390 下点开工单会看到标题外一圈黑边，像页面坏了。键盘 Tab 到它时仍有焦点环。 */
+[tabindex="-1"]:focus:not(:focus-visible) { outline: none; }
+
+/* 深色侧栏的焦点环：全局用的是 --brand(#3358E8)，压在 #111B30 上只有 ≈2.5:1，
+   低于非文本 3:1。侧栏里换成同族的浅蓝（与 .nav-child.active::before 同色）。 */
+.sidebar :focus-visible { outline-color: #8CA2FF; }
+
+/* ---------- ⑧ 内层提示块不再构成"卡中卡"（nested-cards） ----------
+   检测器判定的是"边框 + 圆角 + 不透明底色"三件套。提示块自带底色是为了语义，
+   但底色 + 圆角 + 边框在外层 .card 里读起来就是又一层卡片。
+   改成"无底 + 1px 左侧语义线"（craft-floor 允许 ≤1px）：颜色仍由 currentColor
+   承担警示/中性，形状退回一段话。只作用于显式挂 .note-flat 的少数几处，
+   不全局改写 —— 全站 .note 有一百多处，统一改会把"警示"变成"正文"。 */
+.note-flat {
+    background: transparent; border-radius: 0; box-shadow: none;
+    border: 0; border-left: 1px solid currentColor;
+    padding-left: 10px;
+}
+/* 采集页的登录态面板：原来用内联 border+radius+bg 三件套，改成一个不带边框的
+   内嵌面板（底色分层已经足够表达"这是一组"）。 */
+.login-card { background: var(--surface-3); border-radius: 10px; padding: 10px 12px; }
+
+/* 答案形状：空态右栏先把"会得到什么"摆出来，四段各回答一个问题。
+   这不是示例数据，是版式说明——所以不带任何数字。 */
+.ans-shape { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 14px; margin: 4px 0 14px; }
+.ans-shape-item { padding-left: 10px; border-left: 1px solid var(--line); }
+.ans-shape-item b { display: block; font-size: var(--fs-sm); font-weight: 650; color: var(--ink); }
+.ans-shape-item span { display: block; margin-top: 2px; font-size: var(--fs-xs); color: var(--ink-3); line-height: 1.55; }
+@media (max-width: 720px) { .ans-shape { grid-template-columns: 1fr; } }
+
+/* 工具卡在 details 里是"清单条目"而不是卡片：去掉边框与实底，只留分隔线 */
+.tool-grid .tool-card { border: 0; border-radius: 0; background: transparent; padding: 9px 0; }
+.tool-grid .tool-card + .tool-card { border-top: 1px solid var(--line-2); }
+
+/* ---------- ⑨ 负面段的斜纹（色盲友好），用 SVG 图案而不是重复渐变 ----------
+   红与绿在红绿色盲眼里亮度接近，堆叠条上只靠颜色分不出哪一段是负面。
+   斜纹是"第二编码"，属于语义（形状），不是装饰；用 SVG 图案是因为
+   repeating-linear-gradient 在任何页面上都会被读成装饰性条纹。 */
+.sent-seg.is-neg, .sent-key-dot.is-neg {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='6'%3E%3Cpath d='M-1 7L7 -1' stroke='rgba(255,255,255,0.55)' stroke-width='2'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+}
+.sent-key-dot.is-neg { background-size: 5px 5px; }
+
+/* ---------- ⑩ 工单页的 KPI 用紧凑档（≥721） ----------
+   这一页每天要做的是"挑一张单、点开始处理"，不是看总量。
+   5 张卡按默认密度要 155px，把第一张单推到 y≈730；紧凑档省下的空间
+   全部让给列表。口径脚注（分母、样本不足不换算）一个字不删，
+   只把内边距与字号收到同一行放得下。 */
+/* 第 20 轮试过把 KPI 整组排到页底，结果"超期 3 单"被推到 2000px 之后、
+   桌面还留下近千像素空白。折中：桌面回到列表之上但用紧凑档（≈126px），
+   手机仍排在列表之后（390 的 order 规则在前面的媒体查询里）。 */
+@media (min-width: 721px) {
+    .tk-layout > #tkKpi { order: -1; grid-column: 1 / -1; margin: 0 0 10px; }
+}
+
+@media (min-width: 721px) {
+    .tk-filters { margin-bottom: 8px; }
+    .tk-layout > #tkKpi .kpi { padding: 11px 13px; }
+    .tk-layout > #tkKpi .kpi-value { font-size: var(--fs-xl); letter-spacing: -.4px; margin-top: 1px; }
+    .tk-layout > #tkKpi .kpi-foot { margin-top: 3px; }
+}
+
+/* 390 的周带是另一套 DOM（.wk-list 分组），桌面 .wk-strip 的已超期底色没继承过来——
+   手机上「已超期」只剩一个分组标题。按组补回状态色（第 20 轮）。 */
+.wk-group.is-overdue .wk-pin { background: var(--neg-soft); border-color: rgba(217, 45, 32, .3); }

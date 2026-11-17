@@ -575,6 +575,61 @@ def run(app):
 
     check("AC-M3-15", "同 rule 重复建单被拒并指出已有工单", dup_rule)
 
+    def delete_permission_and_audit():
+        """删除只给管理员，且删完审计还在。"""
+        body = {"title": "待删除靶子", "priority": "P2"}
+        tid = analyst.post("/api/tickets", json=body).get_json()["data"]["ticket_id"]
+        # 分析师能建单、能驳回，但不该能让一张单从系统里消失
+        r = analyst.delete(f"/api/tickets/{tid}", json={"reason": "分析师尝试删除"})
+        assert r.status_code == 403, f"分析师删除应为 403，实际 {r.status_code}"
+        # 原因必填：只弹一个"确定删除吗"的确认框，三个月后没人说得清为什么删
+        r = admin.delete(f"/api/tickets/{tid}", json={"reason": "短"})
+        assert r.status_code == 400, f"原因过短应 400，实际 {r.status_code}"
+        r = admin.delete(f"/api/tickets/{tid}", json={"reason": "演示时误建的重复单"})
+        assert r.status_code == 200, f"管理员删除失败 {r.status_code}"
+        assert admin.get(f"/api/tickets/{tid}").status_code == 404, "删除后详情仍可访问"
+        with app.app_context(), As(who("admin", "u_del_probe")):
+            evs = tickets.list_events(tid)
+        dels = [e for e in evs if e["type"] == "delete"]
+        assert len(dels) == 1, f"审计里没有删除事件（{len(dels)} 条）"
+        assert "原因" in dels[0]["note"], f"删除事件没写原因：{dels[0]['note']}"
+        return f"分析师 403 / 原因必填 / 删后 404 / 审计留 1 条：{dels[0]['note'][:28]}…"
+
+    check("AC-M3-16", "删除工单：仅管理员、原因必填、审计留痕", delete_permission_and_audit)
+
+    def group_closed():
+        """列表筛选：「已完成」只认已归档。
+
+        驳回归「全部」，不归「已完成」——被驳回的单意味着"这张单不成立"，
+        算进完成量会让处置数虚高，也会让人以为那个主题已经处理过了。
+        这里现开一张单走完六步，不复用 AC-M3-01 那张：它在后面的
+        「重开」用例里已经被重新打开了，拿它当靶子会假红。
+        """
+        tid = analyst.post("/api/tickets", json={
+            "title": "归档筛选靶子", "priority": "P2"}).get_json()["data"]["ticket_id"]
+        seq = [("triage", {"priority": "P2"}, admin),
+               ("assign", {"owner_id": h_uid}, admin),
+               ("start", {}, handler),
+               ("respond", {"note": "已完成窗口调整并公示，观察一周无复现"}, handler),
+               ("approve", {"note": "处置到位，归档"}, admin)]
+        for action, extra, client in seq:
+            r = client.post(f"/api/tickets/{tid}/transition", json={"action": action, **extra})
+            assert r.status_code == 200, f"{action} → {r.status_code}"
+        target = admin.get(f"/api/tickets/{tid}").get_json()["data"]["code"]
+
+        d = admin.get("/api/tickets?status_group=closed&limit=100").get_json()["data"]
+        codes = {x["code"] for x in d["tickets"]}
+        assert target in codes, f"刚归档的 {target} 不在「已完成」里"
+        assert all(x["status"] == "closed" for x in d["tickets"]), \
+            f"已完成里混进非归档状态：{sorted({x['status'] for x in d['tickets']})}"
+        o = admin.get("/api/tickets?status_group=open&limit=100").get_json()["data"]
+        assert not any(x["status"] in ("closed", "rejected") for x in o["tickets"]), \
+            f"进行中混进终态：{sorted({x['status'] for x in o['tickets']})}"
+        return (f"{target} 已进「已完成」（共 {d['total']} 单，全为已归档）；"
+                f"进行中 {o['total']} 单不含 closed/rejected")
+
+    check("AC-M3-17", "列表筛选：已完成只含已归档", group_closed)
+
     print("\n" + "=" * 68)
     if FAIL:
         print(f"{RED}结果：{PASS}/{PASS + FAIL} 通过，失败 {FAIL} 项：{'、'.join(FAILED)}{RESET}")

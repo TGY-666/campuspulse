@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}时间趋势分析{% endblock %}
+{% block page_title %}时间趋势分析{% endblock %}
+{% block page_sub %}这页能回答：什么时候讨论最集中、负面率怎么变化、一天和一周里的活跃规律{% endblock %}
+
+{% block head_extra %}
+<style>
+    /* 宽屏让「AI 结论」与「图表」并排，窄屏回到单列；DOM 顺序不变。
+       实测（1440 / 1100 全页截图）：校历带精简掉重复长句后，右列内容只剩
+       图例 + 一张走势图 + 一句口径，stretch 把它拉到与 AI 卡等高时，
+       卡内图表下方空出 179px / 251px，看起来像图表没加载完。
+       改成按内容高度收缩（start），右下那块无边框留白由紧接其后的
+       「24 小时活跃度 / 周内分布」两卡自然接住。主题页两图纵向堆叠本就等高，仍用 stretch。 */
+    @media (min-width: 1100px) {
+        .content { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 14px; align-items: start; }
+        .content > * { grid-column: 1 / -1; margin-top: 0 !important; margin-bottom: 0 !important; }
+        .content > .ai-lead { grid-column: 1; }
+        .content > .chart-lead { grid-column: 2; align-self: start; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="crumb" aria-label="当前位置">
+    <a href="/insights{{ nav_query }}">数据洞察中心</a><span aria-hidden="true"> / </span><span>时间趋势分析</span>
+</nav>
+<div id="filterBar"></div>
+
+<div class="card ai-lead" style="margin-bottom:14px;">
+    <div class="card-head">
+        <div>
+            <h2 class="card-title">AI 趋势分析</h2>
+        </div>
+        <div class="card-tools"><span class="badge badge-brand" id="piBadge">生成中</span></div>
+    </div>
+    <div class="ai-basis-slot" id="piBasis"></div>
+    <div id="pageInsight">
+        <div class="skeleton" style="height:64px"></div>
+    </div>
+    <div id="piNotice" class="note note-muted is-hidden" style="margin-top:10px;"></div>
+</div>
+
+<div class="card chart-lead" style="margin-bottom:14px;">
+    <div class="card-head">
+        <div>
+            <h2 class="card-title">评论量与负面率走势</h2>
+            <div class="card-sub" id="trendSub">柱：评论量（正面/中性/负面堆叠）；线：负面率</div>
+        </div>
+        <div class="card-tools">
+            <div class="chip-group" id="granTabs">
+                <button class="chip on" data-gran="auto">自动</button>
+                <button class="chip" data-gran="month">月</button>
+                <button class="chip" data-gran="week">周</button>
+                <button class="chip" data-gran="day">日</button>
+            </div>
+        </div>
+    </div>
+    <div class="chart chart-lg" id="chartTrendFlow"></div>
+    <div id="trendNote" class="note note-muted scope-line is-hidden" style="margin-top:8px;"><span></span></div>
+</div>
+
+<div class="grid g-2">
+    <div class="card">
+        <div class="card-head"><div><h2 class="card-title">24 小时活跃度</h2>
+            <div class="card-sub">按评论发布时间统计（北京时间 UTC+8），看舆情在一天里的发酵节奏</div></div></div>
+        <div class="chart" id="chartHour"></div>
+    </div>
+    <div class="card">
+        <div class="card-head"><div><h2 class="card-title">周内分布</h2>
+            <div class="card-sub">周一至周日评论量</div></div></div>
+        <div class="chart" id="chartWeek"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block vendor %}
+<script src="{{ static_url('vendor/echarts.min.js') }}"></script>
+<script>
+    if (typeof window.echarts === 'undefined') {
+        document.currentScript.insertAdjacentHTML('afterend',
+            '<p class="note note-muted" style="margin:12px 0;padding:10px;"><span>图表组件未加载，请确认本地静态资源完整</span></p>');
+    }
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ static_url('cp/insights.js') }}"></script>
+{% endblock %}

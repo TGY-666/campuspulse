@@ -28,7 +28,8 @@ class TenantLeakError(RuntimeError):
 
 # 受租户隔离保护的表。碰它们却不带 tenant_id，等于把两所学校的数据混在一起。
 PROTECTED_TABLES = ("datasets", "comments", "reports", "agent_runs", "guard_events",
-                    "tickets", "ticket_events", "ticket_links")
+                    "tickets", "ticket_events", "ticket_links",
+                    "departments", "risk_runs", "app_settings")
 
 # 这些语句天然不需要租户条件：DDL、事务控制、PRAGMA
 _SKIP_PREFIX = ("create ", "alter ", "drop ", "pragma ", "begin", "commit",
@@ -253,6 +254,17 @@ def init_db():
     conn.executescript(SCHEMA)
     conn.commit()
     _migrate()
+    _seed_departments()
+
+
+def _seed_departments():
+    """示例部门只在库为空时写一次（写进默认租户，不依赖请求上下文）。"""
+    from . import departments
+    try:
+        departments.seed_defaults(config.DEFAULT_TENANT_ID)
+    except Exception:
+        # 种子数据不该阻断启动：表可能还没建好，或者用户自己清空过。
+        logger.exception("示例部门写入失败")
 
 
 def _migrate():
@@ -353,6 +365,15 @@ def list_datasets(tenant=None):
     return rows
 
 
+def rename_dataset(dataset_id, name, tenant=None):
+    """只改展示名。名字不参与任何统计口径，所以不动 data_version——
+    动了的话所有以 data_version 为键的缓存都会白重建一遍。"""
+    conn = get_conn()
+    conn.execute("UPDATE datasets SET name = ? WHERE dataset_id = ? AND tenant_id = ?",
+                 (name, dataset_id, tenant or tid()))
+    conn.commit()
+
+
 def get_dataset(dataset_id, tenant=None):
     row = query_one(
         "SELECT * FROM datasets WHERE dataset_id = ? AND tenant_id = ?",
@@ -387,9 +408,17 @@ def cleanup_dataset_rows(dataset_id, tenant=None):
 
 
 def delete_dataset(dataset_id, tenant=None):
+    """删数据集连同它派生出的业务行。
+
+    历史报告、AI 运行记录、研判快照都以 dataset_id 归属：数据集没了还留着，
+    就是一批点进去查不到证据的孤儿。安全审计（guard_events）不删——
+    它记录的是"谁在什么时候问了什么"，不该跟着业务数据一起消失。
+    """
     conn = get_conn()
     t = tenant or tid()
-    conn.execute("DELETE FROM comments WHERE dataset_id = ? AND tenant_id = ?", (dataset_id, t))
+    for table in ("comments", "reports", "agent_runs", "risk_runs"):
+        conn.execute(f"DELETE FROM {table} WHERE dataset_id = ? AND tenant_id = ?",
+                     (dataset_id, t))
     conn.execute("DELETE FROM datasets WHERE dataset_id = ? AND tenant_id = ?", (dataset_id, t))
     conn.commit()
 

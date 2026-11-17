@@ -85,6 +85,16 @@ type CPCore = {
     num(v: any): string;
     pct(v: any): string;
     dateShort(d: any): string;
+    /** 工作小时：全站唯一的时长写法（SLA 单位是工作小时，不是自然小时）。
+     *  业务文案里「48h」这种裸写法一律禁止，统一走这里 */
+    workHours(v: any): string;
+    /** 工作小时 → 工作天数。perDay 取 meta.sla.workday_hours，别写死 7 */
+    workdays(v: any, perDay: any): string;
+    /** 按时归档率的脚注：样本 < min 单只说分子分母，不换算百分比（研判页与工单页共用） */
+    onTimeFoot(ot: any, min?: number): string;
+    /** 同一份计算的拆开版：value 给大数字位、note 给脚注位。
+     *  工单页那张「按时归档」KPI 用 value，研判页用 onTimeFoot，两页同源 */
+    onTimeParts(ot: any, min?: number): { value: string, note: string };
     toast(msg: string, kind?: 'ok' | 'err'): void;
     /** 统一 API 信封处理；失败抛 CPError */
     api(path: string, params?: Record<string, any> | null, opts?: RequestInit): Promise<any>;
@@ -105,11 +115,50 @@ type CPCore = {
     themeBase(): any;
     axisCommon(): any;
     renderFilterBar(container: any, opts?: any): { sync(): void; apply(): void };
+    /** 页面脚本改完 state.filters 后同步筛选栏的可见状态（下钻/榜单点击用） */
+    syncFilterBar(): void;
+    /** 打开模态：焦点送进首个可见输入框，Tab 在内部循环，Esc 交给 onEsc */
+    openModal(mask: any, opts?: { onEsc?: () => void; back?: any }): void;
+    /** 关闭模态并把焦点还给打开它的元素 */
+    closeModal(mask: any): void;
+    /** 危险操作统一确认框：标题/说明/警示块，默认焦点在「取消」上，返回是否确认。
+     *  需要 <b> 强调时传 subHtml / noteHtml（core.js 按富文本插入，调用方负责转义） */
+    confirmModal(opt?: {
+        title?: string; sub?: string; note?: string;
+        subHtml?: string; noteHtml?: string;
+        okLabel?: string; cancelLabel?: string; danger?: boolean;
+    }): Promise<boolean>;
+    /** 给图表容器一句人话（role=img + aria-label）；canvas 读屏读不到 */
+    describeChart(el: any, text: string): void;
+    /** 图表字号：与 app.css :root 的 9 档同源，图表 canvas 读不到 CSS 变量，下限 12px */
+    CHART_FS: { micro: number; xs: number; sm: number; base: number };
+    /** 负面段的 45° 细斜纹（色盲友好）：所有堆叠柱的负面系列共用同一个 */
+    NEG_DECAL: Record<string, any>;
+    /** 双 live region 播报；kind 省略为 polite */
+    announce(msg: string, kind?: 'polite' | 'assertive'): void;
+    /** 给图表容器写 aria-label（describeChart 的别名，页面脚本两个名字都在用） */
+    labelChart(el: any, text: string): void;
+    /** 当前**筛选**的人话串（不含数据集名），无筛选时为空串 */
+    scopeText(): string;
+    /** 当前数据集的人话名字，取不到返回空串 */
+    datasetLabel(): string;
+    /** 完整口径串：`数据集 X · 筛选`，两者都没有时返回「全部数据」 */
+    scopeLine(): string;
+    /** AI 卡依据行（已转义 HTML）。kind 决定分母口径；未传 / 未知值按 mixed。
+     *  opts.state 为 'pending' / 'failed' 时保留口径行、只换第二行说明 */
+    aiBasis(d?: any, kind?: 'ratio' | 'sum' | 'word-side' | 'mixed',
+            opts?: { state?: 'pending' | 'failed' }): string;
+    /** 打印、截图或「显示全部图表」时，把还没画的图一次性建出来 */
+    flushAllCharts(): void;
+    /** 标记某图表容器渲染真失败（is-failed），与纯懒加载区分 */
+    markChartFailed(el: any): void;
     init(opts?: any): Promise<void>;
     loadHealth(): Promise<any>;
     loadTicketBadge(): Promise<any>;
     loadDatasets(): Promise<CPDataset[]>;
     renderDatasetSelect(): void;
+    /** 切换数据集（全局唯一入口）：四个入口共用，避免各写一份漏清筛选 */
+    switchDataset(id: string): Promise<{ dataset_id: string; name: string }>;
     themeColors(): { ink: string; ink2: string; ink3: string; ink4: string; line: string; line2: string; surface: string; dark: boolean };
     getTheme(): 'light' | 'dark';
     applyTheme(t: string, opts?: any): string;

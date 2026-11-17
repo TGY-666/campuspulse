@@ -1,4 +1,4 @@
-/* PAGE-02 AI 智能分析工作台 */
+/* PAGE-02 AI 舆情助手 */
 /**
  * 这个页面是整套前端里最复杂的一块：SSE 流式 + 工具步骤实时点亮 + 引用核验角标。
  * 类型信息集中放在下面这几个 typedef 里，函数签名只引用名字，避免注释淹掉逻辑。
@@ -30,13 +30,12 @@
     'use strict';
     const { $, $$, esc, num, api, state, toast, setState } = CP;
 
+    /* 左栏只留三条。右侧空态已经给了三个入口，两处各列六条等于九个选项——
+       而这一屏真正该做的判断只有一个：问什么。 */
     const RECS = [
-        '当前数据集中，正面和负面评论各有多少？请看图。',
-        '食堂餐饮方面最常见的负面问题是什么？给出相关评论依据。',
-        '请比较抖音和小红书对宿舍住宿的评价差异。',
-        '请显示最近一年的负面评论变化趋势。',
-        '招生报考相关讨论里，学生和家长最在意什么？',
-        '有哪些数据支持你的结论？'
+        '正面和负面评论各有多少？',
+        '比较抖音和小红书对宿舍住宿的评价差异',
+        '招生报考讨论里，学生和家长最在意什么？'
     ];
 
     let history = [];      // 多轮上下文（只保留最近几轮，P1 能力）
@@ -98,7 +97,7 @@
         if (!steps || !steps.length) return '';
         return `<div class="card">
             <div class="card-head">
-                <div><div class="card-title">工具调用过程</div>
+                <div><div class="card-title" role="heading" aria-level="3">工具调用过程</div>
                 <div class="card-sub">以下步骤由后端记录，反映模型真实调用与执行耗时</div></div>
                 <div class="card-tools"><span class="badge">${steps.length} 次调用</span></div>
             </div>
@@ -136,9 +135,21 @@
 
     /* 回答文本：去掉残留 markdown，把 [CMT-xxxx] 渲染成可点芯片（点开就是原文证据） */
     const REF_RE = /\[\s*(CMT-[0-9A-Za-z]+)\s*\]/g;
+    let refSeq = 0;
     function mdText(s) {
         const raw = String(s || '').replace(/\*\*/g, '').replace(/`/g, '');
-        return esc(raw).replace(REF_RE, (m, ref) => `<a class="ref-chip" data-ref="${ref}">${ref}</a>`);
+        // 句子里塞 12 位机器码（CMT-05D55FF542）会把一句话切成三段，读的人得跳过去。
+        // 改成上标序号 [1][2]，完整 ID 放进 title 与 aria-label，点开就是那条原文。
+        // 序号每次渲染从 1 开始——mdText 每次拿到的都是完整答案，流式重绘也不会错位。
+        refSeq = 0;
+        // 用 <button> 而不是 <a>：<a> 没有 href 就不可聚焦，键盘用户 Tab 一辈子上不去，
+        // "每句结论都能点开原文"对他们等于不存在。样式在 CSS 里按 .ref-chip 挂着，不用改。
+        return esc(raw).replace(REF_RE, (m, ref) => {
+            refSeq += 1;
+            return `<button type="button" class="ref-chip" data-ref="${ref}"`
+                + ` title="第 ${refSeq} 条引用 · ${ref}"`
+                + ` aria-label="查看第 ${refSeq} 条引用（${ref}）">${refSeq}</button>`;
+        });
     }
     function bindRefs(root) {
         $$('.ref-chip', root || document).forEach(el => {
@@ -155,7 +166,7 @@
         if (!items || !items.length) return '';
         return `<div class="card">
             <div class="card-head">
-                <div><div class="card-title">评论证据</div>
+                <div><div class="card-title" role="heading" aria-level="3">评论证据</div>
                 <div class="card-sub">已脱敏，仅保留内部引用 ID 与必要文本；点击查看详情</div></div>
                 <div class="card-tools"><span class="badge badge-brand">${items.length} 条</span></div>
             </div>
@@ -234,7 +245,7 @@
             : '';
         return `<div class="card">
             <div class="card-head">
-                <div><div class="card-title">引用核验</div>
+                <div><div class="card-title" role="heading" aria-level="3">引用核验</div>
                 <div class="card-sub">${esc(c.note || '')}</div></div>
                 <div class="card-tools">${citationBadge(c)}</div>
             </div>
@@ -248,14 +259,20 @@
         const c = rag.candidates || {};
         const trace = rag.trace || {};
         const stats = rag.stats || {};
+        /* 这一块以前默认铺开，一次回答整页 3695px，而「召回片段 / 候选池 / 融合分」
+           是给做检索的人看的，不是给校办老师看的。默认收起来，摘要那一行说人话：
+           他在几条评论里挑、挑了几段、其中几段真被写进答案。 */
         return `<div class="card">
             <div class="card-head">
-                <div><div class="card-title">检索片段（RAG）</div>
-                <div class="card-sub">${esc(trace.fusion || '混合检索')} · 召回：词项 ${num(c.bm25)} / 同义扩展 ${num(c.expand)} / 向量 ${num(c.vector)} → 候选池 ${num(c.filtered_docs)} 条评论</div></div>
+                <div><div class="card-title" role="heading" aria-level="3">检索过程</div>
+                <div class="card-sub">在 ${num(c.filtered_docs)} 条候选评论里取出最相关的 ${rag.items.length} 段原文，其中 ${cited.size} 条被写进上面的答案</div></div>
                 <div class="card-tools"><span class="badge badge-brand">Top ${rag.items.length}</span>
                     <span class="badge">${num(rag.elapsed_ms)} ms</span></div>
             </div>
             ${rag.filters_relaxed ? `<div class="note note-warn" style="margin-bottom:8px;">结构化筛选命中过少，已放宽到全库检索</div>` : ''}
+            <details class="rag-details">
+            <summary>展开这 ${rag.items.length} 段原文与检索参数</summary>
+            <div class="note note-muted" style="margin:8px 0;">${esc(trace.fusion || '混合检索')} · 词项 ${num(c.bm25)} / 同义扩展 ${num(c.expand)} / 向量 ${num(c.vector)} → 候选 ${num(c.filtered_docs)} 条</div>
             ${rag.items.map(it => `
             <div class="evidence-item" data-ref="${esc(it.comment_ref)}">
                 <div class="ev-snippet">${esc(it.snippet)}</div>
@@ -275,6 +292,7 @@
                 检索语料：${num(stats.docs)} 条有效评论 · 词表 ${num(stats.vocab)} · 平均长度 ${esc(String(stats.avg_doc_len || '—'))} ·
                 向量维度 ${num(stats.vector_dim)} · 索引构建 ${num(stats.build_ms)} ms
             </div>
+            </details>
         </div>`;
     }
 
@@ -289,13 +307,13 @@
         const chips = (c.chips || [])
             .map(x => `<span class="chip">${esc(x.label)}：${esc(x.value)}</span>`).join('');
         const dsChip = c.dataset_changed
-            ? `<span class="chip is-ds" title="驾驶舱将切换到本轮所用的数据集">数据集：${esc(c.dataset_id)}</span>`
+            ? `<span class="chip is-ds" title="舆情总览将切换到本轮所用的数据集">数据集：${esc(c.dataset_id)}</span>`
             : '';
         return `<div class="carry-bar">
             <span class="carry-label">本轮口径</span>
             ${dsChip}${chips}
             <span class="carry-gap"></span>
-            <a class="btn btn-sm btn-primary" href="${esc(c.dashboard_url)}">在驾驶舱展开这组筛选 →</a>
+            <a class="btn btn-sm btn-primary" href="${esc(c.dashboard_url)}">在舆情总览展开这组筛选 →</a>
             <a class="btn btn-sm" href="${esc(c.insights_url)}">去数据洞察</a>
         </div>`;
     }
@@ -303,15 +321,15 @@
     function boundsBlock(r) {
         return `<div class="card">
             <div class="card-head">
-                <div><div class="card-title">本轮查询口径</div>
-                <div class="card-sub">同一口径在驾驶舱、洞察页与 Agent 之间保持一致</div></div>
+                <div><div class="card-title" role="heading" aria-level="3">本轮查询口径</div>
+                <div class="card-sub">同一口径在舆情总览、洞察页与 Agent 之间保持一致</div></div>
             </div>
             <dl class="kv">
                 <dt>数据集</dt><dd>${esc(r.dataset_name || '')}（${esc(r.dataset_id)}）</dd>
                 <dt>筛选条件</dt><dd>${esc(r.filters_text || '全部数据')}</dd>
                 <dt>统计样本</dt><dd>${num(r.sample_size)} 条有效评论</dd>
                 <dt>时间范围</dt><dd>${esc((r.time_span || []).join(' ~ ') || '—')}</dd>
-                <dt>数据版本</dt><dd>${esc(r.data_version || '—')}</dd>
+                <dt>入库时间</dt><dd>${esc(String(r.data_version || '—').slice(0, 16))}</dd>
             </dl>
             ${carryBlock(r)}
         </div>`;
@@ -321,9 +339,9 @@
        因为这些东西根本没产生，画出来就是编 */
     function renderBlocked(r) {
         const b = r.blocked || {};
-        $('#resultEmpty').style.display = 'none';
+        $('#resultEmpty').classList.add('is-hidden');
         const box = $('#resultBody');
-        box.style.display = 'block';
+        box.classList.remove('is-hidden');
         const sgs = (b.suggestions || []).map(q =>
             `<button class="chip" data-suggest="${esc(q)}">${esc(q)}</button>`).join('');
         box.innerHTML = `
@@ -342,7 +360,7 @@
             ${sgs ? `<div class="guard-acts"><span class="guard-acts-label">换个问法：</span>${sgs}</div>` : ''}
         </div>
         <div class="card" style="margin-top:12px;">
-            <div class="card-head"><div class="card-title">这道闸是怎么工作的一句话说清</div></div>
+            <div class="card-head"><div class="card-title" role="heading" aria-level="3">这道闸是怎么工作的一句话说清</div></div>
             <div class="note note-muted">提问在<b>进入模型之前</b>先过四道检查：长度、频次、意图（注入／越权／套提示词）、
             以及回答出门前的脱敏。命中即拒绝，模型全程没有被调用——所以这里既没有费用也没有数据泄露的可能。</div>
         </div>`;
@@ -357,6 +375,33 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    /* 028 单列（≤720）时长对话把结果推到屏外：出结果后给一枚吸底锚，点一下
+       滚回结果区。样式组只在窄屏给 .jump-result 视觉，这里也只在窄屏插，
+       桌面本来就是双栏、结果就在右侧，不需要一枚多余的按钮。 */
+    function mountJumpResult() {
+        const stack = $('#resultStack');
+        if (!stack) return;
+        stack.classList.add('agent-result');
+        if (!window.matchMedia('(max-width: 720px)').matches) { removeJumpResult(); return; }
+        if (document.querySelector('.jump-result[data-cp-jump]')) return;   // 幂等，不重复建
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'jump-result btn btn-sm';
+        btn.setAttribute('data-cp-jump', '1');
+        btn.textContent = '↓ 跳到分析结果';
+        btn.addEventListener('click', () => {
+            const body = $('#resultBody');
+            const target = body && !body.classList.contains('is-hidden') ? body : stack;
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+        stack.appendChild(btn);
+    }
+
+    function removeJumpResult() {
+        const old = document.querySelector('.jump-result[data-cp-jump]');
+        if (old) old.remove();
+    }
+
     /**
      * 渲染一轮完整结果：回答正文 → 图表 → 证据 → 引用核验 → 检索与口径披露。
      * @param {any} r 后端 /api/agent/chat 的响应体（见 docs/P2能力扩展需求规格说明书 第 7 章）
@@ -364,9 +409,9 @@
     function renderResult(r) {
         lastQuestion = r.question || lastQuestion;
         if (r.blocked) { renderBlocked(r); return; }
-        $('#resultEmpty').style.display = 'none';
+        $('#resultEmpty').classList.add('is-hidden');
         const box = $('#resultBody');
-        box.style.display = 'block';
+        box.classList.remove('is-hidden');
 
         const engineBadge = r.engine === 'deepseek'
             ? `<span class="badge badge-brand">${esc(r.engine_label || 'DeepSeek 工具调用')}</span>`
@@ -381,7 +426,7 @@
         box.innerHTML = `
         <div class="card">
             <div class="card-head">
-                <div><div class="card-title">分析结论</div>
+                <div><div class="card-title" role="heading" aria-level="3">分析结论</div>
                 <div class="card-sub">${esc(r.dataset_name || '')} · ${esc(r.question || '')}</div></div>
                 <div class="card-tools">
                     <button class="btn btn-sm" id="btnRetry">重新提问</button>
@@ -400,17 +445,17 @@
             ${g.passed ? '' : `<div class="note note-warn" style="margin-top:8px;">${esc(g.note || '')}</div>`}
         </div>
 
-        ${r.metrics && r.metrics.length ? `<div class="card"><div class="card-head"><div class="card-title">关键指标</div></div>${metricChips(r.metrics)}</div>` : ''}
+        ${r.metrics && r.metrics.length ? `<div class="card"><div class="card-head"><div class="card-title" role="heading" aria-level="3">关键指标</div></div>${metricChips(r.metrics)}</div>` : ''}
 
         ${r.charts && r.charts.length ? `<div class="card">
             <div class="card-head">
-                <div><div class="card-title">动态图表</div>
+                <div><div class="card-title" role="heading" aria-level="3">动态图表</div>
                 <div class="card-sub">数值来自工具返回结果，由前端标准组件渲染</div></div>
             </div>
             <div class="grid ${r.charts.length > 1 ? 'g-2' : ''}" id="agCharts">
                 ${r.charts.map((c, i) => `
                     <div>
-                        <div style="font-size:12.5px;font-weight:600;color:var(--ink-2);margin-bottom:2px;">${esc(c.title)}</div>
+                        <div style="font-size:var(--fs-sm);font-weight:600;color:var(--ink-2);margin-bottom:2px;">${esc(c.title)}</div>
                         <div class="card-sub" style="margin-bottom:4px;">${esc(c.caption || '')}</div>
                         <div class="chart" id="agChart${i}" style="height:${r.charts.length > 1 ? 240 : 280}px"></div>
                     </div>`).join('')}
@@ -424,7 +469,7 @@
         ${evidenceBlock(r.evidence)}
 
         <div class="card">
-            <div class="card-head"><div class="card-title">分析局限与继续追问</div></div>
+            <div class="card-head"><div class="card-title" role="heading" aria-level="3">分析局限与继续追问</div></div>
             ${(r.limitations || []).map(t => `<div class="note note-muted" style="margin-bottom:6px;">${esc(t)}</div>`).join('')}
             <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;">
                 ${(r.followups || []).map(q => `<button class="chip" data-follow="${esc(q)}">${esc(q)}</button>`).join('')}
@@ -451,6 +496,7 @@
         const toIns = $('#btnToInsights');
         if (toIns) toIns.setAttribute('href', '/insights?' + CP.qs());
 
+        mountJumpResult();
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -463,12 +509,20 @@
             toast('证据加载失败：' + e.message, 'err');
             return;
         }
+        /* 走通用的 CP.openModal，而不是自己拼一个 .modal-mask：
+           手写版只有 class，没有 role="dialog" / aria-modal / 焦点圈定 / 关闭后焦点回位，
+           Esc 靠一个全局 keydown 兜——同一站上另外四个弹窗都是好的，唯独
+           "最需要读内容的那一个"成了键盘黑洞（Tab 会跑到背后的页面上）。 */
         const mask = document.createElement('div');
         mask.className = 'modal-mask';
+        mask.hidden = true;
+        mask.setAttribute('role', 'dialog');
+        mask.setAttribute('aria-modal', 'true');
+        mask.setAttribute('aria-labelledby', 'evDlgTitle');
         mask.innerHTML = `<div class="modal">
             <div style="display:flex;align-items:flex-start;gap:10px;">
                 <div>
-                    <div class="modal-title">评论证据详情</div>
+                    <div class="modal-title" id="evDlgTitle">评论证据详情</div>
                     <div class="card-sub">${esc(d.comment_ref)} · 已脱敏</div>
                 </div>
                 <button class="btn btn-sm btn-ghost" style="margin-left:auto" data-close>关闭</button>
@@ -480,7 +534,7 @@
                 <dt>平台</dt><dd>${esc(d.platform)}</dd>
                 <dt>发布时间</dt><dd>${esc(d.comment_time || d.comment_date || '')}</dd>
                 <dt>情感</dt><dd>${esc(d.sentiment_label)}</dd>
-                <dt>业务维度</dt><dd>${esc((d.dimensions || []).join(' / ') || d.dimension || '—')}</dd>
+                <dt>业务主题</dt><dd>${esc((d.dimensions || []).join(' / ') || d.dimension || '—')}</dd>
                 <dt>点赞数</dt><dd>${d.like_count == null ? '未提供' : num(d.like_count)}</dd>
                 ${d.negative_reason ? `<dt>负面原因</dt><dd>${esc(d.negative_reason)}</dd>` : ''}
             </dl>
@@ -491,26 +545,24 @@
             </div>
         </div>`;
         document.body.appendChild(mask);
-        const close = () => mask.remove();
+        const close = () => CP.closeModal(mask);
         mask.addEventListener('click', e => {
             const t = /** @type {Element} */ (e.target);
             if (t === mask || t.closest('[data-close]')) close();
         });
-        document.addEventListener('keydown', function onEsc(ev) {
-            if (ev.key === 'Escape') { close(); document.removeEventListener('keydown', onEsc); }
-        });
+        CP.openModal(mask, { back: document.activeElement });
     }
 
     /* ---------------- 实时执行面板（流式） ---------------- */
     function startRunPanel() {
-        $('#resultEmpty').style.display = 'none';
+        $('#resultEmpty').classList.add('is-hidden');
         const box = $('#resultBody');
-        box.style.display = 'block';
+        box.classList.remove('is-hidden');
         box.innerHTML = `
         <div class="card">
             <div class="card-head">
                 <div>
-                    <div class="card-title">执行过程
+                    <div class="card-title" role="heading" aria-level="3">执行过程
                         <span class="badge badge-run" id="liveBadge">运行中</span></div>
                     <div class="card-sub" id="liveStage">正在理解问题…</div>
                 </div>
@@ -796,7 +848,7 @@
             } else {
                 $('#sessionInfo').textContent =
                     `已进行 ${rounds} 轮 · `
-                    + `${payload.engine === 'deepseek' ? 'DeepSeek' : '规则模式'} · `
+                    + `${payload.engine === 'deepseek' ? 'AI · DeepSeek' : '规则模式'} · `
                     + `${payload.duration_ms}ms`;
             }
             // 单会话轮次上限：上下文越长越容易串味，也越容易被人用长会话做慢速注入
@@ -818,8 +870,8 @@
         history = [];
         lastPayload = null;
         $('#chatLog').innerHTML = '';
-        $('#resultBody').style.display = 'none';
-        $('#resultEmpty').style.display = '';
+        $('#resultBody').classList.add('is-hidden');
+        $('#resultEmpty').classList.remove('is-hidden');
         $('#sessionInfo').textContent = '会话未开始';
         $('#qInput').value = '';
         $('#qInput').focus();
@@ -838,20 +890,39 @@
     async function loadTools() {
         try {
             const d = await api('/api/agent/tools');
+            // 中文能力名当标题，函数名降为等宽副文本：这屏的读者是学工处老师，
+            // 他们要判断的是"这个助手能查什么"，不是"这个函数收了几个参数"。
             $('#toolCards').innerHTML = d.tools.map(t => `
-                <div style="border:1px solid var(--line);border-radius:11px;padding:11px 12px;background:var(--surface-3);">
-                    <div style="font-size:12.5px;font-weight:600;color:var(--ink);">${esc(t.name)}</div>
-                    <div style="font-size:11.5px;color:var(--ink-3);line-height:1.6;margin-top:4px;">${esc(t.description)}</div>
-                    <div style="margin-top:6px;">${t.params.map(p => `<span class="arg-chip">${esc(p)}</span>`).join('')}</div>
+                <div class="tool-card">
+                    <div class="tool-label">${esc(t.label || t.name)}</div>
+                    <div class="tool-name">${esc(t.name)}</div>
+                    <div class="tool-desc">${esc(t.description)}</div>
+                    <div class="tool-args">${t.params.map(p => `<span class="arg-chip">${esc(p)}</span>`).join('')}</div>
                 </div>`).join('');
         } catch (e) {
             $('#toolCards').innerHTML = '<div class="note note-warn">工具清单加载失败：' + esc(e.message) + '</div>';
         }
     }
 
+    /* 空态的三张示例卡：点一下等于把这句话打进输入框并发送。
+       "不知道能问什么"是这一页最大的流失点，而推荐问题在左栏底部只露出一条。 */
+    function mountPrompts() {
+        // 模板组已移除 #demoPrompts（推荐问题统一留在左栏 #recList）。
+        // 容器不在时直接返回：CP.$$ 返回空数组本就不抛错，这里再显式守一层，
+        // 免得以后有人给宿主元素本身加属性时踩到 null。
+        const host = $('#demoPrompts');
+        if (!host) return;
+        CP.$$('#demoPrompts [data-q]').forEach(b => b.addEventListener('click', () => {
+            $('#qInput').value = b.dataset.q;
+            $('#qInput').focus();
+            send();
+        }));
+    }
+
     document.addEventListener('cp:ready', () => {
         renderRecs();
         loadTools();
+        mountPrompts();
         loadGuard();
         mountVoice();
         const meta = state.datasetMeta;
@@ -865,14 +936,21 @@
         renderResult(lastPayload);
     });
 
+    // 桌面把窗口拖窄到单列时，结果锚要跟着出现（样式组只在 ≤720 给吸底视觉）
+    window.addEventListener('resize', () => {
+        const body = $('#resultBody');
+        if (lastPayload && body && !body.classList.contains('is-hidden')) mountJumpResult();
+    });
+
     document.addEventListener('cp:dataset', () => {
         history = [];
         const meta = state.datasetMeta;
         $('#chatDataset').textContent = meta ? `${meta.name}（${num(meta.valid_count)} 条有效评论）` : '—';
         pushMsg('sys', '已切换数据集，会话上下文已重置');
         $('#sessionInfo').textContent = '会话已重置';
-        $('#resultBody').style.display = 'none';
-        $('#resultEmpty').style.display = '';
+        $('#resultBody').classList.add('is-hidden');
+        $('#resultEmpty').classList.remove('is-hidden');
+        removeJumpResult();
         toast('已切换数据集，历史对话不再作为上下文', 'ok');
     });
 
@@ -881,11 +959,33 @@
         if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
     });
     $('#btnClear').addEventListener('click', () => {
+        if (!history.length) {
+            toast('还没有可清空的对话', 'ok');
+            return;
+        }
+        // 一键清空是不可逆的，而它就在发送键旁边。清空后留一条可撤销的入口，
+        // 而不是给一个 5 秒后就消失的 toast——读屏用户根本来不及找到它。
+        const prevHistory = history.slice();
+        const prevLog = $('#chatLog').innerHTML;
+        const prevSession = $('#sessionInfo').textContent;
         history = [];
-        $('#chatLog').innerHTML = '<div class="msg bot">会话已清空。可以继续提问，例如"负面评论集中在哪些原因"。</div>' +
+        $('#chatLog').innerHTML =
+            '<div class="msg bot" id="clearMsg">会话已清空。可以继续提问，例如"负面评论集中在哪些原因"。' +
+            '<button class="btn btn-sm" type="button" id="btnUndoClear" style="margin-left:10px;">撤销清空</button></div>' +
             `<div class="msg sys">当前数据集：<span>${esc(state.datasetMeta ? state.datasetMeta.name : '—')}</span></div>`;
-        $('#resultBody').style.display = 'none';
-        $('#resultEmpty').style.display = '';
+        $('#resultBody').classList.add('is-hidden');
+        $('#resultEmpty').classList.remove('is-hidden');
+        removeJumpResult();
         $('#sessionInfo').textContent = '会话未开始';
+        CP.announce('会话已清空，可以在页面上的撤销按钮恢复');
+        $('#btnUndoClear').addEventListener('click', () => {
+            // 已经接着问了新问题就不再恢复，否则会把新一轮对话覆盖掉
+            if (history.length) { toast('已经开始了新对话，无法恢复', 'err'); return; }
+            history = prevHistory;
+            $('#chatLog').innerHTML = prevLog;
+            $('#sessionInfo').textContent = prevSession;
+            toast('已恢复清空前的对话', 'ok');
+            CP.announce('已恢复清空前的对话');
+        });
     });
 })();

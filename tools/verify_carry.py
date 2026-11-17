@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """S7「对话即筛选」闭环验证：
 
-    Agent 提问 → 读出本轮口径 → 点击「在驾驶舱展开这组筛选」→ 落地页筛选真的生效
+    Agent 提问 → 读出本轮口径 → 点击「在舆情总览展开这组筛选」→ 落地页筛选真的生效
 
 验证的不是"按钮能点"，而是三件必须同时成立的事：
     1. 携带的 chips 与 Agent 回答里的筛选一致；
@@ -69,14 +69,14 @@ def main():
             browser.close()
             return 1
 
-        # ---------- 2. 点击「在驾驶舱展开这组筛选」 ----------
-        target = next((x for x in links if "在驾驶舱" in x["text"]), None)
+        # ---------- 2. 点击「在舆情总览展开这组筛选」 ----------
+        target = next((x for x in links if "在舆情总览" in x["text"]), None)
         if not target:
-            print("FAIL >> 找不到驾驶舱跳转按钮")
+            print("FAIL >> 找不到舆情总览跳转按钮")
             browser.close()
             return 1
 
-        page.click(".carry-bar a.btn:has-text('在驾驶舱')")
+        page.click(".carry-bar a.btn:has-text('在舆情总览')")
         page.wait_for_url(lambda u: "dimension=" in u or "sentiment=" in u, timeout=30000)
         page.wait_for_selector("#scopeNote", timeout=30000)
         page.wait_for_timeout(3000)          # 等 5 个接口都回来

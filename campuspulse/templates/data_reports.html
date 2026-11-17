@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block chain %}{% endblock %}
+{% block title %}AI 分析报告{% endblock %}
+{% block page_title %}AI 分析报告{% endblock %}
+{% block page_sub %}基于当前数据集的真实聚合统计生成 · 含来源、时间范围与生成标识{% endblock %}
+
+{% block content %}
+<nav class="crumb" aria-label="当前位置">
+    <a href="/data{{ nav_query }}">数据中心</a><span aria-hidden="true"> / </span><span>报告</span>
+</nav>
+<div class="card" id="reportCard">
+    <div class="card-head">
+        <div><h2 class="card-title">当前数据集报告</h2>
+            <div class="card-sub" id="reportSub">生成后可在下方历史里随时重开</div></div>
+        <div class="card-tools">
+            <button class="btn btn-sm is-hidden" id="btnMarkdown"
+                    title="导出为 .md：可粘进周报 / Word，数字与口径一起带走">导出 Markdown</button>
+            <button class="btn btn-sm is-hidden" id="btnPrint">导出 PDF / 打印</button>
+            <button class="btn btn-primary btn-sm" id="btnReport">生成报告</button>
+        </div>
+    </div>
+    <div id="reportBody">
+        <div class="state" style="min-height:100px;">
+            <div class="state-title">还没有打开报告</div>
+            <div>点右上角「生成报告」生成一份（统计接口 + DeepSeek 撰写，AI 不可用时降级为规则版并标注）；
+                也可以在下方「历史报告」里重开之前的存档——重开不会重算数字。</div>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-top:14px;">
+    <div class="card-head"><div><h2 class="card-title">历史报告</h2>
+        <div class="card-sub">按生成时刻的数据版本存档；之后重新导入数据不会改写已生成的报告，所以有效评论数会逐份不同</div></div></div>
+    <div class="table-scroll-hint" hidden>左右滑动查看更多列 →</div>
+    <div id="historyBody" class="table-scroll"><div class="state">暂无历史报告</div></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ static_url('cp/data_reports.js') }}"></script>
+{% endblock %}

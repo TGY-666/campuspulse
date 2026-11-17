@@ -1,16 +1,13 @@
-# CampusPulse 生产镜像
+# CampusPulse 生产镜像（含全部功能依赖）
 #
-# 构建（仅核心，约 350MB）：
+# 构建（镜像约 1.2GB，包含截图 OCR / MCP / 实时采集）：
 #     docker build -t campuspulse:1.0 .
-# 构建（含截图 OCR + MCP，约 1.2GB）：
-#     docker build --build-arg WITH_EXT=1 -t campuspulse:1.0-full .
 # 运行：
 #     docker run -d --name campuspulse -p 8000:8000 \
-#         -e CP_AUTH=1 -v $(pwd)/data:/app/data campuspulse:1.0-full
+#         -e CP_AUTH=1 -v $(pwd)/data:/app/data campuspulse:1.0
 #
-# 为什么默认不装扩展依赖：onnxruntime 一家就 200MB，
-# 而核心功能（分析 / 检索 / Agent / 工单）一个都不需要它。
-# 让镜像大小反映真实依赖，而不是"反正都装上一劳永逸"。
+# requirements.txt 默认引入 requirements-ext.txt，镜像内功能与
+# start.bat 的本地环境保持一致，不再区分“核心版 / 扩展版”。
 
 FROM python:3.12-slim
 
@@ -25,16 +22,13 @@ WORKDIR /app
 # libgl1/libglib2.0-0：opencv（rapidocr 依赖）运行时需要
 # libgomp1：onnxruntime 的 OpenMP 运行时
 # curl：HEALTHCHECK 用
-# 即便不开 WITH_EXT 也一起装——共约 30MB，但能避免
-# "开了扩展却栽在 ImportError: libGL.so.1" 这种环境坑。
 RUN apt-get update && apt-get install -y --no-install-recommends \
         libgl1 libglib2.0-0 libgomp1 curl \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt requirements-ext.txt ./
-ARG WITH_EXT=0
 RUN pip install -r requirements.txt "gunicorn>=21.0,<23" \
-    && if [ "$WITH_EXT" = "1" ]; then pip install -r requirements-ext.txt; fi
+    && python -m playwright install --with-deps chromium
 
 COPY . .
 

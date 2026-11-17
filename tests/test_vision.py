@@ -147,18 +147,40 @@ def test_pipeline():
     keep = draft_rows[:2]
     keep[1]["content"] = keep[1]["content"].replace("味道不错", "味道很不错")
 
-    r = cli.post("/api/vision/commit", json={"session_id": sid, "rows": keep})
+    r = cli.post("/api/vision/preview", json={"session_id": sid, "rows": keep})
     body = r.get_json()
     ok = r.status_code == 200 and body.get("ok")
-    check("POST /api/vision/commit 建数据集", ok,
+    check("POST /api/vision/preview 生成待确认批次", ok,
+          json.dumps(body.get("error"), ensure_ascii=False) if not ok else "")
+    if not ok:
+        return
+
+    batch = body["data"]
+    batch_sid = batch["session_id"]
+    check("预览阶段不建数据集", db.get_dataset(batch["dataset_id"]) is None,
+          str(batch["dataset_id"]))
+    check("只保留复核通过的 2 条", batch["valid_count"] == 2, f"{batch['valid_count']} 条")
+    check("返回里带截图来源条数", batch.get("screenshot_count") == 2, str(batch.get("screenshot_count")))
+
+    # 逐条核对视图：形状与实时采集的 rows 接口一致，前端共用一套表格
+    r = cli.get(f"/api/import/{batch_sid}/rows?status=all&limit=10")
+    rows_view = (r.get_json() or {}).get("data") or {}
+    check("逐条核对可翻到 2 条", rows_view.get("total") == 2, str(rows_view.get("total")))
+    check("明细带清洗结论", all(x.get("cleaning_status") for x in rows_view.get("rows") or []))
+
+    # 由人点确认，才真正入库
+    r = cli.post(f"/api/import/{batch_sid}/commit", json={"name": "截图测试集"})
+    body = r.get_json()
+    ok = r.status_code == 200 and body.get("ok")
+    check("POST /api/import/<sid>/commit 建数据集", ok,
           json.dumps(body.get("error"), ensure_ascii=False) if not ok else "")
     if not ok:
         return
 
     data = body["data"]
     ds_id = data["dataset_id"]
-    check("只入库复核保留的 2 条", data["valid_count"] == 2, f"{data['valid_count']} 条")
-    check("返回里带截图来源条数", data.get("screenshot_count") == 2, str(data.get("screenshot_count")))
+    check("入库名称采用用户输入", data["name"] == "截图测试集", data["name"])
+    check("重复提交被拒", cli.post(f"/api/import/{batch_sid}/commit", json={}).status_code >= 400)
 
     ds = db.get_dataset(ds_id)
     check("数据集标记为非演示数据", ds and ds["is_demo"] == 0)
@@ -180,18 +202,21 @@ def test_pipeline():
     check("详情页带识别引擎", detail.get("ocr_engine") == "rapidocr", str(detail.get("ocr_engine")))
 
     # 复核会话用掉即焚，重复提交必须失败（否则同一批截图能被导入两次）
-    r = cli.post("/api/vision/commit", json={"session_id": sid, "rows": keep})
-    check("同一会话不能重复提交", r.status_code >= 400, str(r.status_code))
+    r = cli.post("/api/vision/preview", json={"session_id": sid, "rows": keep})
+    check("同一复核会话不能重复提交", r.status_code >= 400, str(r.status_code))
 
     # 非法输入
     r = cli.post("/api/vision/recognize", data={
         "files": (io.BytesIO(b"not-an-image"), "x.txt"),
     }, content_type="multipart/form-data")
     check("非图片被拒绝", r.status_code == 400, str(r.status_code))
-    r = cli.post("/api/vision/commit", json={"session_id": "../etc/passwd", "rows": keep})
+    r = cli.post("/api/vision/preview", json={"session_id": "../etc/passwd", "rows": keep})
     check("session_id 做格式校验", r.status_code >= 400, str(r.status_code))
 
     db.delete_dataset(ds_id)
+    # 数据集行删了，源文件目录还在：不一起清，每跑一次就在 data/uploads 里留一个
+    # 时间戳目录，久了分不清哪个是演示用的
+    shutil.rmtree(os.path.join(config.UPLOAD_DIR, ds_id), ignore_errors=True)
     print(f"  · 已清理测试数据集 {ds_id}")
 
 

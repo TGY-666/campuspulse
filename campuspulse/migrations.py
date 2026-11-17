@@ -39,7 +39,8 @@ from . import config
 BACKUP_DIR = os.path.join(config.DATA_DIR, "backups")
 
 # 需要租户隔离的业务表（v1.0 已有的 + M3 会新增的）
-TENANT_TABLES = ["datasets", "comments", "reports", "agent_runs", "guard_events"]
+TENANT_TABLES = ["datasets", "comments", "reports", "agent_runs", "guard_events", "departments",
+                 "risk_runs", "app_settings"]
 
 # 只增列、不删列。全新库由 db.SCHEMA 直接建好，老库靠这里补。
 # 每一列都必须自带默认值或允许 NULL：SQLite 的 ADD COLUMN 在已有 1800 行数据的表上
@@ -49,6 +50,14 @@ NEW_COLUMNS = [
     ("comments", "ocr_confidence", "REAL"),
     ("comments", "ocr_engine", "TEXT"),
     ("comments", "time_inferred", "INTEGER NOT NULL DEFAULT 0"),
+    # 归口部门。存 id + 名称快照：部门改名或被删掉之后，
+    # 历史工单上仍然要能读出"当初派给了谁"，不能变成一个悬空 id。
+    ("tickets", "department_id", "TEXT"),
+    ("tickets", "department_name", "TEXT"),
+    # 账号归属的部门。只有 role='dept' 的账号会有值，其余角色为 NULL。
+    # 存 id 而不是部门名：部门改名后账号的范围不该跟着断开，
+    # 名称由 session 装载时现查（见 tenancy.session_to_ctx）。
+    ("users", "department_id", "TEXT"),
 ]
 
 NEW_TABLES = {
@@ -73,6 +82,7 @@ NEW_TABLES = {
             status       TEXT NOT NULL DEFAULT 'active',
             last_login   TEXT,
             created_at   TEXT NOT NULL,
+            department_id TEXT,
             UNIQUE (tenant_id, username)
         )""",
     "auth_events": """
@@ -98,6 +108,8 @@ NEW_TABLES = {
             priority          TEXT NOT NULL DEFAULT 'P2',
             status            TEXT NOT NULL DEFAULT 'draft',
             dimension         TEXT,
+            department_id     TEXT,
+            department_name   TEXT,
             dataset_id        TEXT,
             filters           TEXT,
             reporter_id       TEXT,
@@ -133,6 +145,81 @@ NEW_TABLES = {
             link_ref  TEXT NOT NULL,
             PRIMARY KEY (ticket_id, link_type, link_ref)
         )""",
+    # ---- 学校部门：舆情归口与风险研判的责任主体 ----
+    # duties 存人话（页面直接展示、也喂给模型做归口判断），
+    # dimensions / keywords 存 JSON 数组：前者是一级归口（主题唯一对应），
+    # 后者用于同主题多部门时的细分打分（例如宿舍的「电费」归能源科）。
+    # 部门是配置数据而非业务流水，删除用 status='archived' 软删：
+    # 历史工单存了 department_name 快照，但研判记录和审计还要能查到它。
+    "departments": """
+        CREATE TABLE IF NOT EXISTS departments (
+            dept_id     TEXT PRIMARY KEY,
+            tenant_id   TEXT NOT NULL,
+            name        TEXT NOT NULL,
+            duties      TEXT,
+            owner_name  TEXT,
+            owner_title TEXT,
+            contact     TEXT,
+            dimensions  TEXT,
+            keywords    TEXT,
+            sla_hours   INTEGER,
+            status      TEXT NOT NULL DEFAULT 'active',
+            sort_order  INTEGER NOT NULL DEFAULT 0,
+            is_seed     INTEGER NOT NULL DEFAULT 0,
+            created_at  TEXT NOT NULL,
+            updated_at  TEXT NOT NULL,
+            UNIQUE (tenant_id, name)
+        )""",
+    # ---- 定期研判记录：按时间段研判的"存档"----
+    # 为什么必须落库而不是算完就丢：这段研判可能被人拿去建单，
+    # 三个月后有人问"这张单凭什么开"，答案只能在当期那条研判记录里。
+    # topics 存整份 JSON 快照（含风险拆解、归口、建议、证据），
+    # 不存 ID 引用——评论会被重新导入/清理，引用会失效，快照不会。
+    #
+    # UNIQUE (tenant_id, dataset_id, period)：一个数据集一段区间只有一条。
+    # 定时任务每次启动都会问"上个月跑了没"，靠这个唯一约束而不是靠内存标记；
+    # 重跑就是覆盖（force），不会堆出一串重复记录。
+    #
+    # ticket_mode 是历史字段：早先有"自动建单 / 待人工确认"两种模式，
+    # 现在研判只出结论、建单一律由人点，新记录固定写 'manual'。
+    # 保留列是为了老记录还能读出当时的口径，删列会让历史快照缺一块。
+    "risk_runs": """
+        CREATE TABLE IF NOT EXISTS risk_runs (
+            run_id        TEXT PRIMARY KEY,
+            tenant_id     TEXT NOT NULL,
+            dataset_id    TEXT NOT NULL,
+            period        TEXT NOT NULL,
+            date_from     TEXT NOT NULL,
+            date_to       TEXT NOT NULL,
+            requested     TEXT,
+            trigger_by    TEXT NOT NULL DEFAULT 'manual',
+            ticket_mode   TEXT NOT NULL DEFAULT 'manual',
+            status        TEXT NOT NULL DEFAULT 'done',
+            engine        TEXT,
+            summary       TEXT,
+            sample        INTEGER NOT NULL DEFAULT 0,
+            negative      INTEGER NOT NULL DEFAULT 0,
+            topics        TEXT,
+            tickets       INTEGER NOT NULL DEFAULT 0,
+            ticket_codes  TEXT,
+            error         TEXT,
+            created_at    TEXT NOT NULL,
+            finished_at   TEXT,
+            UNIQUE (tenant_id, dataset_id, period)
+        )""",
+    # 轻量配置表（键值），给"改完立刻生效、不用重启"的配置项用——
+    # 环境变量做不到这一点。早先定期研判的门槛/单次上限/建单模式放在这里，
+    # 那几项随"研判不设门槛"一起删了，所以**目前表里没有读取方**。
+    # 保留空表而不是删表：迁移删列/删表在老库上做起来风险大，
+    # 而它只是一个带主键的键值表，留着不占什么。
+    "app_settings": """
+        CREATE TABLE IF NOT EXISTS app_settings (
+            tenant_id  TEXT NOT NULL,
+            key        TEXT NOT NULL,
+            value      TEXT,
+            updated_at TEXT,
+            PRIMARY KEY (tenant_id, key)
+        )""",
 }
 
 # append-only 用数据库触发器兜住，而不是靠"我们不写那行代码"。
@@ -165,6 +252,8 @@ TENANT_INDEXES = [
     ("idx_tickets_code", "tickets", "tenant_id, code"),
     ("idx_ticket_events", "ticket_events", "ticket_id, created_at"),
     ("idx_ticket_links", "ticket_links", "tenant_id, ticket_id"),
+    ("idx_departments_tenant", "departments", "tenant_id, status, sort_order"),
+    ("idx_risk_runs_tenant", "risk_runs", "tenant_id, dataset_id, period"),
 ]
 
 # S1 之后才允许删的旧索引（现在留着，见文件头第 3 条）

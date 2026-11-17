@@ -1,7 +1,8 @@
 # ============================================================
 # CampusPulse .gitignore
-# 原则：密钥、数据、生成物、大体积素材一律不入库；
-#       clone 后只需 requirements.txt + comparison_data/ 即可复现。
+# 原则：密钥、日志、上传、生成物、打包件一律不入库；
+#       演示数据库 data/campuspulse.db 与预设数据集 datasets/ 随仓库走，
+#       clone 后装好依赖即可直接启动，不必先重新清洗入库。
 # ============================================================
 
 # ---- 密钥与账号（绝不能进公开仓库）----
@@ -9,7 +10,26 @@
 .env.local
 data/.session_key
 data/demo_accounts.txt
-data/initial_admin.txt
+data/dept_accounts.txt
+# 实时采集的平台登录态（用户自己的 cookie）
+data/crawl_auth.json
+
+# ---- 运行时数据：上传 / 日志 / 备份 / 临时库 ----
+# 例外：data/campuspulse.db 是唯一的演示库，已入库。
+# 其余 data/ 下的东西（含测试用的 cp_rXX.db 副本与 WAL 附属文件）一律忽略。
+data/uploads/
+data/logs/
+data/backups/
+data/tmp/
+data/*.bak
+data/*.bak-*
+data/*.preS0.bak
+data/cp_*.db
+data/*.db-shm
+data/*.db-wal
+data/tmp_stream.txt
+flask.log
+*.log
 
 # ---- 虚拟环境与编辑器 ----
 .venv/
@@ -25,25 +45,40 @@ __pycache__/
 *.egg-info/
 .pytest_cache/
 
-# ---- 运行时数据：数据库 / 备份 / 上传 / 日志 / 临时 ----
-# data/ 目录由 campuspulse/config.py 启动时自动创建，无需入库
-data/
-raw_data/
-
 # ---- 生成物与中间产物 ----
 output/
+output_excel/
 cleaned_data/
-flask.log
-*.log
+# raw_data/ 是旧系统的输入目录，新流程读 datasets/，本地留档不入库
+raw_data/
 
 # ---- 大体积素材（演示截图 23MB，随答辩材料单独提交，不进代码仓库）----
 screenshots/
+demo_data/
 
 # ---- 本地工具工作目录（记忆 / 缓存 / 备份，46MB）----
 .workbuddy/
 
+# ---- 提交包与归档（本地留档，不进仓库）----
+*.zip
+CampusPulse_提交包_v*/
+_archive/
+
 # ---- 本机专用脚本（含本机绝对路径，换机器需重建）----
 推送GitHub.bat
+
+# ---- 本机临时审计与截图产物（不随提交包走）----
+/_probe*.py
+/_shot*.py
+/_uitest_*.py
+/_m*.json
+/_crop_*.png
+/ui_monthly.png
+/tools/_*.py
+/.impeccable/
+/.smoke_start*
+/11.4  问题.txt
+/新需求.txt
 
 # ---- 系统文件 ----
 .DS_Store
@@ -52,3 +87,6 @@ desktop.ini
 
 # ---- 前端工具链（TypeScript 只用于类型检查）----
 node_modules/
+
+# ---- 类型检查缓存 ----
+tsconfig.tsbuildinfo

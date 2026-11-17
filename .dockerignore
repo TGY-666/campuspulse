@@ -16,7 +16,8 @@ node_modules/
 # ---- 运行时数据：绝不能进镜像 ----
 # data/ 由 config.py 启动时自动创建，内容随卷挂载
 data/
-raw_data/
+# datasets/ 是 4 个预设数据集的来源（约 16MB），必须随镜像走，
+# 否则容器首次启动会静默少数据集
 output/
 output_excel/
 cleaned_data/

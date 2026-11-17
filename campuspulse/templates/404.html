@@ -1,13 +1,44 @@
 {% extends "base.html" %}
 {% block title %}页面不存在{% endblock %}
 {% block page_title %}页面不存在{% endblock %}
-{% block page_sub %}请从左侧导航进入分析视图{% endblock %}
+{% block page_sub %}请从导航进入分析视图{% endblock %}
+{% block head_extra %}
+<style>
+    /* 404 页不需要数据集切换、快照与待办角标，也不显示副标题。
+       用本页独有的 #404Page 把规则限定在错误页作用域内，不再用全局裸 ID + !important，
+       避免压死 core.js 对这些控件的状态控制；样式只在本页 head_extra 加载。 */
+    body:has(#404Page) #dsSelect,
+    body:has(#404Page) #dsRename,
+    body:has(#404Page) #snapshotBadge,
+    body:has(#404Page) #ticketBadge,
+    body:has(#404Page) .page-sub { display: none; }
+</style>
+{% endblock %}
+{% block topbar_extra %}{% endblock %}
+{% block chain %}{% endblock %}
 {% block content %}
-<div class="card">
-    <div class="state" style="min-height:240px;">
-        <div class="state-title" style="font-size:15px;">404 · 找不到这个页面</div>
-        <div>链接可能已失效，或者地址输入有误。</div>
-        <a class="btn btn-primary btn-sm" href="/" style="margin-top:6px;">返回智能驾驶舱</a>
+{# 错误页要和正常页长得不一样：以前它与其它页面同色同结构，
+   人第一眼以为"内容是空的"，第二眼才发现是 404。左边加一道状态色，
+   标题旁边挂一枚"错误页"徽标——这两处就够，不必整页改配色。 #}
+<div class="card is-error" id="404Page">
+    <div class="card-head">
+        <div>
+            <h2 class="card-title">404 · 找不到这个页面</h2>
+            {# 404 有两种来源：地址真的不存在，和"这个账号/这个模式没开放"。
+               以前一律写"链接可能已失效，或者地址输入有误"，把配置问题说成用户失误——
+               人接着会反复核对地址，而地址从来没错。有 reason 时就说真话。 #}
+            <div class="card-sub">
+                {% if reason %}{{ reason }}{% else %}链接可能已失效，或者地址输入有误。{% endif %}
+            </div>
+        </div>
+        <div class="card-tools"><span class="badge badge-warn">错误页</span></div>
+    </div>
+    <div class="state" style="min-height:160px;">
+        <div>可以从下面两处继续：</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:8px;">
+            <button class="btn btn-primary btn-sm" type="button" onclick="history.back()">返回上一页</button>
+            <a class="btn btn-sm" href="/">回首页</a>
+        </div>
     </div>
 </div>
 {% endblock %}

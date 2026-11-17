@@ -2,15 +2,12 @@ services:
   campuspulse:
     build:
       context: .
-      args:
-        # 想启用截图 OCR + MCP 通道就改成 "1"（镜像会大到 1.2GB）
-        WITH_EXT: "1"
     image: campuspulse:1.0
     container_name: campuspulse
     ports:
       - "8000:8000"
     environment:
-      # 开了登录才有四角色权限矩阵可演示，评审账号见 docs/部署指南.md
+      # 开了登录才有四角色权限矩阵可演示，账号说明见 README 5.5
       CP_AUTH: "1"
       # 工单跟随 CP_AUTH 自动开启，这里显式写出来便于阅读
       CP_TICKETS: "1"

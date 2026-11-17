@@ -51,6 +51,10 @@ if __name__ == "__main__":
     if os.environ.get("CP_WARMUP", "1") != "0":
         from campuspulse import warmup
         warmup.run_async(quiet=False)
+    # 定期研判定时器：后台每小时问一次「上个月的研判跑了没」，跑了就跳过。
+    # CP_MONTHLY=0 可整体关掉；它只写研判记录与工单，不改评论数据。
+    from campuspulse import monthly
+    monthly.start_scheduler(quiet=False)
     if os.environ.get("AUTO_OPEN_BROWSER") == "1" and host.startswith("127."):
         threading.Timer(1.5, lambda: webbrowser.open(url)).start()
     app.run(host=host, port=port, debug=False, use_reloader=False, threaded=True)

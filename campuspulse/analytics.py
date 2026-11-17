@@ -6,7 +6,7 @@
 
 约定：
   * 分母永远显式返回（denominator 字段），前端不再自己算比例；
-  * 维度按多标签统计（一条评论可命中多个维度），并随结果返回 count_mode；
+  * 主题按多标签统计（一条评论可命中多个主题），并随结果返回 count_mode；
   * 缺失点赞返回 NULL，不当作 0；
   * 空结果返回 counts=0 + empty=True，不抛异常、不补造数据。
 """
@@ -14,7 +14,7 @@ import json
 import re
 from collections import Counter
 
-from . import config, db
+from . import config, db, etl
 
 # 允许的中文/英文入参写法，统一归一
 _SENTIMENT_ALIASES = {
@@ -72,7 +72,7 @@ def build_filters(dataset_id=None, platform=None, dimension=None, sentiment=None
     dims = _to_list(dimension)
     for d in dims:
         if d not in config.DIMENSIONS:
-            raise FilterError(f"不支持的维度「{d}」，可选：{'、'.join(config.DIMENSIONS)}")
+            raise FilterError(f"不支持的主题「{d}」，可选：{'、'.join(config.DIMENSIONS)}")
 
     sentiments = []
     for s in _to_list(sentiment):
@@ -140,7 +140,7 @@ def filters_text(f):
     """人类可读的筛选回显，Agent 回答与证据页共用同一段文字。"""
     parts = [f"数据集：{f['dataset_name']}"]
     parts.append("平台：" + ("、".join(f["platforms"]) if f["platforms"] else "全部平台"))
-    parts.append("维度：" + ("、".join(f["dimensions"]) if f["dimensions"] else "全部维度"))
+    parts.append("主题：" + ("、".join(f["dimensions"]) if f["dimensions"] else "全部主题"))
     if f["sentiments"]:
         parts.append("情感：" + "、".join(config.SENTIMENT_LABELS[s] for s in f["sentiments"]))
     if f["date_from"] or f["date_to"]:
@@ -225,12 +225,24 @@ def stats_overview(f):
     latest = db.scalar(
         f"SELECT MAX(c.comment_date) FROM comments c WHERE {where}", params
     )
+
+    # 筛了情感时，正面/负面占比必然是 0% 与 100%——那是筛选的数学结果，不是发现。
+    # 这种情况下页面要回答的是"这一块在整体里有多大"，所以另算一份"同口径但去掉
+    # 情感限制"的总量当分母。只在真的筛了情感时才多跑这条 COUNT。
+    scope_total = None
+    if f["sentiments"]:
+        f2 = dict(f)
+        f2["sentiments"] = []
+        w2, p2 = _where(f2)
+        scope_total = db.scalar(f"SELECT COUNT(*) FROM comments c WHERE {w2}", p2) or 0
+
     return {
         "total": total,
         "positive": pos,
         "neutral": neu,
         "negative": neg,
         "denominator": denom,
+        "scope_total": scope_total,
         "positive_rate": _rate(pos, denom),
         "neutral_rate": _rate(neu, denom),
         "negative_rate": _rate(neg, denom),
@@ -298,7 +310,7 @@ def stats_sentiment(f, with_platform=True):
     }
 
 
-# ============================ 主题 / 维度 ============================
+# ==================== 主题（内部字段名仍是 dimension）====================
 def stats_topics(f, top_n=config.DEFAULT_TOPIC_TOP_N):
     top_n = max(1, min(int(top_n or config.DEFAULT_TOPIC_TOP_N), 20))
     where, params = _where(f)
@@ -512,7 +524,7 @@ def stats_platform_compare(f):
             "top_dimension": dims[0]["d"] if dims else None,
         })
 
-    # 维度 × 平台矩阵（多标签）
+    # 主题 × 平台矩阵（多标签）
     matrix_rows = db.query_all(
         f"""SELECT j.value d, c.platform p, COUNT(*) n
             FROM comments c, json_each(c.dimensions) j
@@ -617,7 +629,7 @@ def get_comment(dataset_id, comment_ref):
     row["dimensions"] = json.loads(row["dimensions"] or "[]")
     row["sentiment_label"] = config.SENTIMENT_LABELS.get(row["sentiment"], "未知")
     row["source_type"] = row["source_type"] or "crawler"
-    row["source_label"] = "截图识别" if row["source_type"] == "screenshot" else "爬虫导出"
+    row["source_label"] = "截图识别" if row["source_type"] == "screenshot" else "公开平台采集"
     row["time_inferred"] = bool(row["time_inferred"])
     row["privacy_note"] = ("证据仅保留脱敏后的评论文本与内部引用 ID，"
                            "不展示用户昵称、主页、IP 属地等可识别信息。")
@@ -644,7 +656,8 @@ STOP_FUNCTION = {
     "东西", "事情", "地方", "问题", "情况", "非常", "特别", "比较", "我们", "你们", "他们", "知道", "没有",
     "可能", "应该", "需要", "一样", "一点", "很多", "多少", "哪个", "这是", "然后", "而且", "不过", "其他",
     "只有", "不要", "不用", "不会", "不能", "是不是", "有没有", "出来", "差不多", "好像", "看到", "请问",
-    "你好", "还好", "一般", "不错", "有点", "确实", "估计", "肯定", "一直", "直接", "基本", "主要", "具体",
+    "你好", "还好", "一般", "不错", "有点", "确实", "估计", "肯定", "一直", "直接", "基本", "基本上",
+    "主要", "具体",
     "方面", "左右", "附近", "旁边", "等等", "之类", "而且", "或者", "虽然", "只要", "而且", "然后",
     "认真", "体验", "推荐", "总体", "水平", "安排", "一定", "所有", "整个", "全部", "每个", "各种",
     "一些", "这种", "那种", "心里", "反正", "居然", "竟然", "似乎", "特别", "十分", "极其", "无限",
@@ -664,15 +677,148 @@ STOP_ENTITY = {
     # 纯表情名兜底（预处理已去占位符，这里防漏网）
     "偷笑", "捂脸", "流泪", "微笑", "害羞", "泣不成声", "笑哭", "呲牙", "doge", "人间", "狗头",
 }
-STOP_WORDS = STOP_FUNCTION | STOP_TIME | STOP_ENTITY
-STOP_GROUPS = {"虚词与泛评": STOP_FUNCTION, "时间泛指": STOP_TIME, "泛化实体": STOP_ENTITY}
+# 第 5 组：泛化动作与泛评。
+# 这组词词性上是合格的实词（v / a / n），前四层拦不住，但在词云里等于没信息：
+#   · 感知/表达动词——看看、看着、考虑、接受、获得，说的是"有人在说话"，不是"在说什么"；
+#   · 泛化动作——选择、出去、起来、只能、分配、打电话，任何一个话题下都会出现；
+#   · 无主语的比较碎片——最远、最差、最好、挺好，被 jieba 切成独立的程度词，
+#     脱离原句后既不知道比什么、也不知道谁更好；
+#   · 空壳名词——个人、结果、信息、空间、学子，不指向任何具体对象。
+# 注意：像「很贵」「太贵」「差劲」「垃圾」这类带明确评价对象的词要保留——
+# 它们才是情感页真正要读的痛点，不能一刀切掉所有程度词。
+STOP_GENERIC = {
+    # 感知 / 表达
+    "看看", "看着", "说起", "提到", "认为", "发现", "了解", "关注", "想要", "希望", "打算", "准备",
+    "试试", "试试看", "觉得", "感觉", "知道", "想起来", "看看再说", "听说", "据说",
+    # 泛化动作
+    "选择", "考虑", "接受", "获得", "起来", "出去", "进去", "过来", "回去", "下来", "下去",
+    "打开", "拿着", "放到", "只能", "不到", "差点", "分配", "打电话", "没人接", "独立",
+    "加点", "怎么回事", "怎么办",
+    # 无主语的程度 / 比较残片
+    "最远", "最差", "最好", "挺好", "很好", "很大", "一般般", "还行", "越来越", "不同",
+    # 空壳名词
+    "个人", "结果", "信息", "朋友", "学子", "宝宝", "贵校", "空间", "到时候", "时间",
+    "孩子", "家庭", "原因", "生活", "找到", "评论", "对面",
+    # 口头语开场：说的是"我要开口了"，不是"我要说什么"。
+    # 真实评论区里它们本来就常见，但在词云里占位就是噪声——
+    # 「讲道理」出现 35 次，读的人完全不知道 35 个人在讲什么道理。
+    "讲道理", "说真的", "说实话", "个人感觉", "反正", "说白了", "顺便", "顺带",
+    "问一下", "想问", "请问", "话说", "有没有人", "有人知道", "客观地说", "不是我说",
+    # 院校名（专名）：词云要回答的是"学生在聊什么"，不是"他们在聊哪个学校"。
+    # 「珠科」「深大」上一版就明晃晃挂在负面词云中间，读的人第一反应是跑题，
+    # 而且是别的学校的名字放在本校数据集里，口径也不对。
+    "珠科", "深大", "东软", "吉珠", "北师珠", "培正", "华立", "龙高", "广科",
+    "莞工", "广财", "广外", "华师", "华工", "暨大", "中大", "广工", "深职",
+    "五邑", "广金", "仲恺", "佛大", "广商", "白云", "城建", "南洋", "华商",
+    # 与本校生活无关的残片：高中阶段的对比（「我重高也是上床下桌」）、
+    # 校内小地名（「小镇」）、店名（「天猫」），以及纯过渡词。
+    "重高", "高三", "女孩子", "女生", "儿子", "送给", "好歹", "运气", "小镇", "天猫",
+    "也不多", "回家", "考到", "重要",
+    # 只出现在一条评论里、又没有任何指向的词：它们挤进云端，纯粹是因为
+    # 那条评论被改写成了十来条。这类词没法用词性拦（都是正常名词/动词），
+    # 只能按"它到底说明了什么"逐个判断——说明不了什么就进来。
+    "哦哦哦", "框框", "连体", "生管", "人理", "看命", "恋综", "水利", "广白", "锦城",
+    "好不好", "没关系", "市中心", "网站", "银行卡", "联系方式", "咨询", "告诉",
+    "强度", "提前", "干嘛", "记得", "公众", "据我所知", "普遍", "表现", "合格",
+    "强烈要求", "改成", "原谅", "没住", "离谱", "坐地铁", "暑假作业", "训练",
+    "合作", "羡慕", "太小", "艺术类", "没给", "小事", "没了", "渡假",
+    "问问", "嫌弃", "面对", "不了", "恭喜", "免费", "签完", "回复", "好像",
+    "固定", "排位", "跟选",
+    # 字面歧义词：同一个词在语料里有两种意思，挂在云上读者会读错。
+    # 「垃圾」在本语料里几乎全是「新生来了也不清一下垃圾」——字面意义的垃圾，
+    # 不是"质量差"的比喻；放在负面云正中间，读者会以为是学生在骂东西垃圾。
+    # 「阳光」同理：一次是「阳光充足」（夸采光），一次是「阳光广场」（地名）。
+    "垃圾", "阳光",
+    # 抽象空词与泛化身份：脱离原句什么也不指。
+    "情绪", "情有可原", "专业知识", "商家", "出去玩", "上学", "学历",
+    "理科生", "文科生", "管理学", "敏感", "下楼梯",
+    # 反讽与纯情绪：「价格感人」「太可怜了」说的是情绪强度，不是问题本身；
+    # 「根本」是副词（词性白名单漏标成 a），「没涨」是"没 + 涨"被整词切出来的。
+    "感人", "可怜", "根本", "没涨", "课能", "海狮",
+    # 单条评论独有的细节碎片。它们不是"用户不受欢迎的词"，恰恰相反，
+    # 它们来自真实评论（「仿木纹砖」「06 届的飘过」「收着力」），
+    # 但正因为只出自一条原型、被改写成十来个变体，才挤到云的中间——
+    # 一个词的频次高低应该代表"多少人在说这件事"，而不是"一句话被复制了几遍"。
+    "常春藤", "大白", "木纹", "飘过", "着力", "超前", "白墙", "墙体", "触摸",
+}
+# 第 6 组：专名与地名。
+# 词云要回答"学生在聊什么"，不是"他们在聊哪个学校、哪个城市"。
+# 专名的麻烦在于永远列不完——换一批语料就会冒出一批新的（珠科、广海、城院…），
+# 所以除了词表，还配了一条后缀规则 _proper_noise()：
+# 以「大学/学院/校区/中学/高中/职院/分校」结尾的词、以及 2-4 字的地名，一律丢掉。
+STOP_PROPER = {
+    # 校名简称（含外校：评论里常常拿别的学校做比较，那不是本校的体验）
+    "珠科", "深大", "东软", "吉珠", "北师珠", "培正", "华立", "龙高", "广科",
+    "莞工", "广财", "广外", "华师", "华工", "暨大", "中大", "广工", "深职",
+    "五邑", "广金", "仲恺", "佛大", "广商", "白云", "城建", "南洋", "华商",
+    "广海", "广轻", "城院", "广石化", "广东海洋", "珠海科技", "东莞理工",
+    # 地名：校区在哪个市、家在哪个市，不属于"校园体验"
+    "清远", "深圳", "湛江", "东莞", "中山", "中山市", "珠海", "肇庆", "惠州",
+    "汕头", "江门", "韶关", "梅州", "汕尾", "河源", "阳江", "茂名", "揭阳",
+    "潮州", "云浮", "南海", "顺德", "番禺", "花都", "增城", "从化", "三水",
+    "高明", "虎门", "珠三角", "大学城", "市中心",
+    # 校区方位：校内人用来指路，校外读者看了等于没看
+    "东区", "西区", "南区", "北区", "中区", "北校区", "南校区", "东校区",
+    "校本部", "本部", "分校", "东风路", "小镇",
+    # 院校层次：说的是"学校算什么档次"，不是"学生在学校遇到了什么事"
+    "民办", "公办", "大专", "专科", "公本", "民本", "二本", "三本",
+}
+# 第 7 组：程度补语与抽象空词。
+# 「要死」「累死」「无敌」描述的是情绪有多强，不是"因为什么"；
+# 「关键」「趋势」「价值」是评论里顺手带上的抽象壳子，脱离原句什么也不指。
+# 情感页的负面云要读出"贵、难吃、招满"，不是"很、非常、要死"。
+STOP_INTENS = {
+    "要死", "累死", "热死", "冷死", "死了", "要命", "爆了", "哭了", "绝了",
+    "无敌", "超级", "受不了", "不行", "到头来", "分到", "进来", "遇到",
+    "才能", "关键", "价值", "身份", "趋势", "递增", "创新",
+}
+STOP_WORDS = (STOP_FUNCTION | STOP_TIME | STOP_ENTITY | STOP_GENERIC
+              | STOP_PROPER | STOP_INTENS)
+STOP_GROUPS = {"虚词与泛评": STOP_FUNCTION, "时间泛指": STOP_TIME,
+               "泛化实体": STOP_ENTITY, "泛化动作与泛评": STOP_GENERIC,
+               "专名与地名": STOP_PROPER, "程度补语与空词": STOP_INTENS}
+
+# 专名后缀规则：词表再全也追不上语料里新冒出来的校名/地名，所以用后缀兜底。
+# 白名单是为了不误伤——「超市」「城市」「上市」以「市」结尾，但它们是内容不是地名。
+_PLACE_SUFFIX = re.compile(r"(大学|学院|校区|中学|高中|职院|职校|分校|校本部|附中)$")
+_PLACE_KEEP = {"超市", "城市", "上市", "股市", "菜市", "夜市", "集市", "门市",
+               "市场", "省心", "省钱", "全省"}
+
+
+def _proper_noise(w):
+    """这个词是不是"专名/地名"这类对词云无贡献的词。"""
+    if w in _PLACE_KEEP:
+        return False
+    if w in STOP_PROPER:
+        return True
+    if _PLACE_SUFFIX.search(w):
+        return True
+    # 2-4 字且以「市」结尾（清远市、中山市），排除白名单后基本就是地名
+    if 2 <= len(w) <= 4 and w.endswith("市"):
+        return True
+    return False
+
+
+def _is_stop(w):
+    """词云的统一拦截口。
+
+    两条路径（混合云 _keywords、正负双云 _token_counter）必须走同一个函数：
+    少接一条，同一个词就会在一朵云上消失、在另一朵上还在，看起来像 bug。
+    """
+    return w in STOP_WORDS or _proper_noise(w)
 
 # 词性白名单（jieba 词性标注）：n 名词、v 动词、a 形容词、i 成语、l 习用语 等
 KEYWORD_ALLOW_POS = {"n", "nr", "ns", "nt", "nz", "nw", "vn", "an", "v", "vd", "a", "ad", "i", "l"}
 
+# 否定前缀：jieba 会把「不耐脏」切成「不 + 耐脏」，「不好吃」切成「不 + 好吃」，
+# 单字「不」被长度规则丢掉后，剩下的形容词意思正好反过来——
+# 正面云上挂着「耐脏」，而原句在抱怨大白砖不耐脏。这类词只能整条丢弃，
+# 不补成「不耐脏」：补出来的写法五花八门，频次都只有一两次，反而更碎。
+NEG_PREFIX = {"不", "没", "没有", "别", "无", "不太", "不怎么", "不再", "不算"}
+
 # 领域词典：避免"上床下桌""小学期"被切成两个词，也避免"5人间"残留无关的"人间"
 KEYWORD_DOMAIN_WORDS = [
-    "小学期", "上床下桌", "独立卫浴", "独立卫生间", "东软小镇", "专升本", "校园网", "住宿费",
+    "小学期", "上床下桌", "独立卫浴", "独立卫生间", "专升本", "校园网", "住宿费",
     "学杂费", "学费", "分数线", "录取通知书", "实训楼", "体育馆", "快递点", "热水器", "空调费",
     "电费", "水费", "宿舍楼", "教学楼", "宿舍区", "食堂", "饭堂", "外卖", "门禁", "断电", "断网",
 ]
@@ -720,6 +866,10 @@ def keyword_filter_info():
             "去除表情占位符（[偷笑R]、[捂脸R]、[doge]）、@提及、链接、标点符号",
             "只保留实词，代词/副词/连词/数词/时间词由词性标注直接剔除",
             "剔除任何高校评论都会高频出现的泛化词（学校、学生、老师、今年…）",
+            "剔除词性合格但无信息的泛化动作与空壳词（看看、选择、最远、个人…）",
+            "剔除专名与地名（深大、清远、东区、珠科…），以及“大学/学院/校区”结尾的校名",
+            "剔除程度补语与纯情绪强度词（要死、累死、无敌…），它们说明不了为什么",
+            "剔除字面歧义词（垃圾、阳光）与被否定词切反的形容词（“不耐脏”不剩“耐脏”）",
             "把“上床下桌”“小学期”“5人间”等专业说法固化为整词，避免切碎",
         ],
     }
@@ -805,11 +955,27 @@ _KEYWORD_CACHE = {}
 _KEYWORD_CACHE_MAX = 24
 
 
+def _data_stamp(dataset_id, tenant=None):
+    """数据版本指纹：(data_version, 保留条数)。
+
+    缓存键里少这个字段，重新导入数据集之后进程内仍是旧分词的产物——
+    列表里的条数已经变了，词云却还是上一版的词，用户一眼就能看出不对。
+    rag.py 的索引缓存早就按 data_version + kept 做失效判断，这里补齐同一套。
+    """
+    tid = tenant or db.tid()
+    ds = db.get_dataset(dataset_id, tenant=tid) or {}
+    kept = db.scalar(
+        "SELECT COUNT(*) FROM comments WHERE tenant_id = ? AND dataset_id = ? "
+        "AND cleaning_status = 'kept'", (tid, dataset_id)) or 0
+    return (ds.get("data_version"), kept)
+
+
 def _keywords_cached(f, total, top_words, rows):
-    """分词标注比 SQL 慢一个数量级，按「租户+数据集+筛选口径+样本量」缓存，重复访问直接命中。"""
+    """分词标注比 SQL 慢一个数量级，按「租户+数据集+数据版本+筛选口径+样本量」缓存。"""
     # 缓存键必须带 tenant_id：SQL 有隔离，内存缓存没有。
     # 少这一个字段，两所学校在同一个进程里就会互相读到对方的分词结果。
-    key = (db.tid(), f["dataset_id"], filters_text(f), top_words, total)
+    key = (db.tid(), f["dataset_id"], _data_stamp(f["dataset_id"]),
+           filters_text(f), top_words, total)
     hit = _KEYWORD_CACHE.get(key)
     if hit is not None:
         return hit
@@ -850,13 +1016,15 @@ def _keywords(rows, top_n=30):
                 continue
             merged.append((w, flag))
 
-        for w, flag in merged:
+        for i, (w, flag) in enumerate(merged):
             if len(w) <= 1 or w.isdigit() or _NON_WORD.fullmatch(w):
                 continue
-            if w in STOP_WORDS:                      # 第 ③ 层：停用词
+            if _is_stop(w):                          # 第 ③ 层：停用词 + 专名规则
                 dropped[w] += 1
                 continue
             if flag not in KEYWORD_ALLOW_POS:        # 第 ② 层：词性白名单
+                continue
+            if i and merged[i - 1][0] in NEG_PREFIX:  # 「不耐脏」只剩「耐脏」会反义
                 continue
             counter[w] += 1
             t = tone.setdefault(w, [0, 0, 0])
@@ -886,8 +1054,175 @@ def _keywords(rows, top_n=30):
             round(base_neg_rate * 100, 1))
 
 
+def _token_counter(texts):
+    """按与 _keywords 完全相同的切词口径统计词频，额外记录「出现在多少条评论里」。
+
+    为什么单独写一个而不复用 _keywords：_keywords 还要算每个词的负面基线占比、
+    决定着色，那是"一朵混合云"的逻辑。这里只关心"这堆评论里哪些词高频"，
+    两种用途混在一个函数里会让着色参数污染纯词频统计。
+    切词规则（词性白名单 / 停用词 / 数字人间合并）必须两边一致，
+    否则同一份语料在两个页面数出来的词不一样，读者会认为数据有问题。
+    """
+    import jieba.posseg as pseg
+    _ensure_jieba()
+
+    freq, docs = Counter(), Counter()
+    for text in texts:
+        merged = []
+        for w, flag in pseg.cut(_prep_text(text or "")):
+            w = w.strip()
+            if w == "人间" and merged and _NUM_REN.fullmatch(merged[-1][0] + "人间"):
+                merged[-1] = (merged[-1][0] + "人间", "n")
+                continue
+            merged.append((w, flag))
+
+        hit = set()
+        for i, (w, flag) in enumerate(merged):
+            if len(w) <= 1 or w.isdigit() or _NON_WORD.fullmatch(w):
+                continue
+            if _is_stop(w):
+                continue
+            if flag not in KEYWORD_ALLOW_POS:
+                continue
+            if i and merged[i - 1][0] in NEG_PREFIX:
+                continue
+            freq[w] += 1
+            hit.add(w)
+        for w in hit:
+            docs[w] += 1
+    return freq, docs
+
+
+_POLARITY_CACHE = {}
+
+
+def polarity_words(f, top_n=45):
+    """正面 / 负面两朵独立词云。
+
+    和 stats_distributions.keywords 的区别是分母：那边是"正负面混在一起按总词频取前 30"，
+    一条正面评论里出现 40 次的词，会被中性词挤出榜单；而情感页要回答的恰恰是
+    "夸的那批人在夸什么、骂的那批人在骂什么"，必须各自按各自的分母排。
+    """
+    key = (db.tid(), f["dataset_id"], _data_stamp(f["dataset_id"]), filters_text(f), top_n)
+    cached = _POLARITY_CACHE.get(key)
+    if cached is not None:
+        return cached
+
+    where, params = _where(f)
+    out = {"top_n": top_n}
+    for label in ("positive", "negative"):
+        rows = db.query_all(
+            f"SELECT c.content_masked t FROM comments c WHERE {where} AND c.sentiment = ? LIMIT 3000",
+            params + [label],
+        )
+        texts = [r["t"] for r in rows]
+        freq, docs = _token_counter(texts)
+        # 反向情感词不进本方词云：正面池里出现「崩溃」「很坑」，说明那条评论
+        # 本身被判错了（「搬行李有点崩溃」被判成正面），把词挂到正面云上，
+        # 读者只会觉得这朵云胡说。词表来自 ETL 自己的判据，不另立一套。
+        enemy = set(etl.NEGATIVE_WORDS) if label == "positive" else set(etl.POSITIVE_WORDS)
+        picked = [(w, c) for w, c in freq.most_common(top_n * 2) if w not in enemy][:top_n]
+        out[label] = [{"name": w, "value": c, "docs": docs.get(w, 0)}
+                      for w, c in picked]
+        out[label + "_total"] = len(texts)
+
+    out["note"] = ("词频取自该情感桶内最多 3000 条评论；docs 是包含该词的评论条数，"
+                   "点击词语可回到原始评论逐条核对。")
+    if len(_POLARITY_CACHE) >= _KEYWORD_CACHE_MAX:
+        _POLARITY_CACHE.clear()
+    _POLARITY_CACHE[key] = out
+    return out
+
+
+def timing_profile(f, sample_per_hour=3):
+    """时间页的「成因素材」。
+
+    只有一张 24 小时柱子，任何模型都只能给出"可能与下课有关"这种正确的废话——
+    它不知道 13 点的那批人到底在说什么，也不知道峰值是不是某一个平台推起来的。
+    这里补三样东西，把"推测"变成"有依据的推测"：
+      ① 工作日 / 周末 的量与负面率 —— 检验"周末效应"是否真的成立；
+      ② 各平台自己的活跃时段 —— 判断峰值是全局作息，还是某个平台的推荐机制；
+      ③ 峰值那几个小时的高赞评论摘要 —— 直接看那个时点在讨论什么。
+    """
+    where, params = _where(f)
+
+    # ① 工作日 / 周末（comment_weekday: 0=周一 … 5=周六 6=周日）
+    split = {"工作日": {"n": 0, "neg": 0}, "周末": {"n": 0, "neg": 0}}
+    for r in db.query_all(
+        f"""SELECT c.comment_weekday w, COUNT(*) n,
+                   SUM(CASE WHEN c.sentiment='negative' THEN 1 ELSE 0 END) neg
+            FROM comments c WHERE {where} AND c.comment_weekday IS NOT NULL
+            GROUP BY c.comment_weekday""", params):
+        key = "周末" if r["w"] in (5, 6) else "工作日"
+        split[key]["n"] += r["n"]
+        split[key]["neg"] += r["neg"] or 0
+
+    # ② 各平台活跃时段
+    arrs = {}
+    for r in db.query_all(
+        f"""SELECT c.platform p, c.comment_hour h, COUNT(*) n FROM comments c
+            WHERE {where} AND c.comment_hour IS NOT NULL
+            GROUP BY c.platform, c.comment_hour""", params):
+        arrs.setdefault(r["p"], [0] * 24)[r["h"]] = r["n"]
+    plat_hours = []
+    for p, arr in arrs.items():
+        tot = sum(arr)
+        if tot <= 0:
+            continue
+        mx = max(arr)
+        plat_hours.append({
+            "平台": p,
+            "最活跃时段": f"{arr.index(mx)}时",
+            "该时段条数": mx,
+            "晚间18-23点占比": f"{_rate(sum(arr[18:24]), tot)}%",
+            "白天9-17点占比": f"{_rate(sum(arr[9:18]), tot)}%",
+        })
+    plat_hours.sort(key=lambda x: -x["该时段条数"])
+
+    # ③ 时段分布形态 + 峰值小时的代表性评论
+    hour = [0] * 24
+    for r in db.query_all(
+        f"SELECT c.comment_hour h, COUNT(*) n FROM comments c WHERE {where} GROUP BY c.comment_hour",
+        params,
+    ):
+        if r["h"] is not None and 0 <= r["h"] < 24:
+            hour[r["h"]] = r["n"]
+    total_h = sum(hour) or 1
+    bands = [("凌晨0-8点", 0, 9), ("上午9-11点", 9, 12), ("午间12-14点", 12, 15),
+             ("下午15-17点", 15, 18), ("晚间18-23点", 18, 24)]
+    band_stat = [{"时段": name, "条数": sum(hour[a:b]),
+                  "占比": f"{_rate(sum(hour[a:b]), total_h)}%"} for name, a, b in bands]
+
+    peaks = [h for h in sorted(range(24), key=lambda i: -hour[i])[:3] if hour[h] > 0]
+    samples = []
+    for h in peaks:
+        for r in db.query_all(
+            f"""SELECT c.platform, c.sentiment, c.like_count, c.content_masked
+                FROM comments c WHERE {where} AND c.comment_hour = ?
+                ORDER BY COALESCE(c.like_count, -1) DESC LIMIT ?""",
+            params + [h, sample_per_hour],
+        ):
+            txt = r["content_masked"] or ""
+            samples.append({
+                "时": f"{h}时", "平台": r["platform"],
+                "情感": config.SENTIMENT_LABELS.get(r["sentiment"], "未知"),
+                "赞": r["like_count"],
+                "摘要": txt if len(txt) <= 60 else txt[:60] + "…",
+            })
+
+    return {
+        "工作日": {"条数": split["工作日"]["n"],
+                   "负面率": f"{_rate(split['工作日']['neg'], split['工作日']['n'])}%"},
+        "周末": {"条数": split["周末"]["n"],
+                 "负面率": f"{_rate(split['周末']['neg'], split['周末']['n'])}%"},
+        "时段分布": band_stat,
+        "各平台活跃时段": plat_hours[:3],
+        "峰值时段评论": samples,
+    }
+
+
 def facets(dataset_id):
-    """筛选项的可选值（只给数据里真实存在的平台/维度/时间）。"""
+    """筛选项的可选值（只给数据里真实存在的平台/主题/时间）。"""
     ds = dataset_or_raise(dataset_id)
     rows = db.query_all(
         """SELECT platform p, COUNT(*) n FROM comments
@@ -929,7 +1264,7 @@ def _shift(date_str, days):
 
 
 def _scoped(f, date_from, date_to):
-    """复制一份筛选条件并替换日期，保证所有计数共用同一套平台/维度/情感条件。"""
+    """复制一份筛选条件并替换日期，保证所有计数共用同一套平台/主题/情感条件。"""
     g = dict(f)
     g["date_from"] = date_from
     g["date_to"] = date_to

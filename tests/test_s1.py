@@ -194,7 +194,11 @@ def main():
                 analytics.stats_distributions(f, top_words=8)
             keys = [k for k in analytics._KEYWORD_CACHE if k[1] == ds_id]
             assert keys, "关键词缓存里没有该数据集"
-            assert all(len(k) == 5 and isinstance(k[0], str) and k[0] for k in keys), \
+            # 键长现在是 6：最后一位是 _data_stamp(dataset_id)=(data_version, kept 条数)，
+            # 重新导入数据后同一个数据集必须换一份缓存。这里只认"首字段是租户"，
+            # 不再把长度写死成 5——那会在加 stamp 之后误报，而误报的方向是
+            # 让人把 stamp 删掉，等于把"改完数据页面不变"的老 bug 放回来。
+            assert all(len(k) >= 5 and isinstance(k[0], str) and k[0] for k in keys), \
                 f"缓存键首字段不是租户：{keys[:1]}"
             return f"键首字段 = 租户 ID（{keys[0][0]}）"
 

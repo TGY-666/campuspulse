@@ -5,6 +5,7 @@
 所有接口返回统一信封 {"ok": true, "data": ...} / {"ok": false, "error": {...}}，
 前端只需处理一种结构，异常也能给出可读提示。
 """
+import contextvars
 import gzip
 import json
 import logging
@@ -19,8 +20,9 @@ from flask import (Flask, Response, g, jsonify, redirect, render_template, reque
                    send_from_directory, url_for)
 from flask_cors import CORS
 
-from . import (agent, analytics, config, db, etl, guard, migrations, rag, reports,
-               taxonomy, tenancy, tickets, toolbus, tools, vision, warmup)
+from . import (agent, analytics, config, crawl, db, departments, etl, guard, intake,
+               migrations, monthly, rag, reports, taxonomy, tenancy, tickets, toolbus, tools,
+               vision, warmup)
 
 logger = logging.getLogger("campuspulse")
 
@@ -66,12 +68,41 @@ def _int_arg(name, default):
 
 # ============================ 页面 ============================
 PAGES = [
-    {"id": "dashboard", "path": "/", "name": "智能驾驶舱", "code": "PAGE-01"},
-    {"id": "agent", "path": "/agent", "name": "AI 智能分析工作台", "code": "PAGE-02"},
-    {"id": "insights", "path": "/insights", "name": "数据洞察中心", "code": "PAGE-03"},
+    {"id": "dashboard", "path": "/", "name": "舆情总览", "code": "PAGE-01"},
+    # 数据洞察中心拆成「总览 + 三个分析视角」。
+    # 原先 11 张图挤在一页里约 2100px 高，而且主题/情感/时间三条线索互相穿插，
+    # 读者不知道该先看什么。拆开后每页只回答一个问题，页面本身就是阅读顺序。
+    # 平台饼图、长度分布、点赞概况、平台指标表这几张既不是主题也不是情感时间，
+    # 留在总览页作为「数据画像」——顺带让总览页不是空壳目录。
+    # 注意：舆情总览已有「双平台概况」（dashboard.html），那四张图不要往总览页搬，
+    # 否则同一个 platform-compare 接口会在两个页面各画一遍，表格 id 还会撞。
+    {"id": "insights", "path": "/insights", "name": "数据洞察中心", "code": "PAGE-03",
+     "children": [
+         {"id": "insights-topics", "path": "/insights/topics", "name": "主题热度分析", "code": "3.1"},
+         {"id": "insights-sentiment", "path": "/insights/sentiment", "name": "情感分析", "code": "3.2"},
+         {"id": "insights-timeline", "path": "/insights/timeline", "name": "时间趋势分析", "code": "3.3"},
+     ]},
     {"id": "evidence", "path": "/evidence", "name": "热点与证据中心", "code": "PAGE-04"},
-    {"id": "data", "path": "/data", "name": "数据与报告中心", "code": "PAGE-05"},
-    {"id": "tickets", "path": "/tickets", "name": "处置工单", "code": "PAGE-06"},
+    # 数据页原来一屏塞了六个板块（数据集 / 文件导入 / 截图识别 / 质量链路 / 报告 / 历史报告），
+    # 要生成报告得先滚过两屏导入区。按数据流拆开：进来（采集与导入）→ 管好（数据集与质量）
+    # → 出去（报告）。父项本身就是「数据集与质量」，不另设空壳总览——
+    # 空目录页比长页面更浪费时间，点进去什么都没有。
+    {"id": "data", "path": "/data", "name": "数据与报告中心", "code": "PAGE-05",
+     "children": [
+         {"id": "data-collect", "path": "/data/collect", "name": "数据采集与导入", "code": "5.1"},
+         {"id": "data-reports", "path": "/data/reports", "name": "AI 分析报告", "code": "5.2"},
+     ]},
+    # 研判与工单合成一个一级目录：父项（总览）回答"这事该谁管、有多急"，
+    # 子项回答"这件事办到哪一步"。之前是两个并列的一级项，在工单页想问
+    # "这单为什么该他们管"要跳出去，在研判页建的单一转身就找不到了——
+    # 这两步本来就是同一条工作流，层级应当反映流程而不是模块。
+    # 父项 path 仍指向 /departments：URL 是既有文档与截图引用的地址，不跟着改名。
+    {"id": "disposal", "path": "/departments", "name": "风险研判与处置中心", "code": "PAGE-06",
+     "children": [
+         {"id": "tickets", "path": "/tickets", "name": "处置工单", "code": "6.1"},
+     ]},
+    # 问答入口放在最后：导航顺序按「先看全局 → 再看细节 → 最后提问」排。
+    {"id": "agent", "path": "/agent", "name": "AI 舆情助手", "code": "PAGE-02"},
 ]
 
 TICKET_PERMS = ("ticket_manage", "ticket_create", "ticket_handle")
@@ -88,14 +119,68 @@ def can_see_tickets():
     return any(tenancy.has_perm(role, perm) for perm in TICKET_PERMS)
 
 
+def tickets_readonly():
+    """工单模块关掉时，是否给一版只读列表。
+
+    CP_TICKETS=0 的用途是"这个演示态不开放写操作"，不是"假装系统里没有工单"。
+    可是研判页那句「下一步在子页『处置工单』里闭环」是写在页面上的承诺，
+    承诺了就得有落点：没有这一版，侧栏子项是死链，建完单（或看到别人建的单）
+    无处核对，读者拿到的只有一句"地址输入有误"——那是把配置问题说成用户失误。
+    只读列表让这条链能讲完，同时一个写接口都不开。
+    """
+    return not config.CP_TICKETS
+
+
 def visible_pages():
     """导航只列当前身份真能进的页面。
 
     留一个点进去就 403 的入口，比不显示更糟：人会以为是系统坏了。
+
+    「风险研判与处置中心」是两级两权限：父项（总览）要 view_analysis 或 dept_scope，
+    子项（工单）要工单权限。处置员 handler 只有后者——若按"父项不可见就整枝砍掉"
+    处理，他会连自己要办的工单都失去入口（工单页本身是 200，只是没有导航能到）。
+    所以这种情况把工单提回一级显示，名字与代码用原来的。
+
+    部门账号（dept）走另一条路：它只做"看归口 → 办工单"这一条链，
+    舆情总览/洞察/证据/数据页对它既没有权限也没有意义。导航只留这一枝，
+    而不是把所有页面都列出来再让人一个个撞 404。
     """
-    if can_see_tickets():
-        return PAGES
-    return [p for p in PAGES if p["id"] != "tickets"]
+    dept_ok = departments.can_view()
+    tk_ok = can_see_tickets()
+    dept_only = tenancy.is_dept_role()
+    pages = []
+    for p in PAGES:
+        if p["id"] != "disposal":
+            if not dept_only:
+                pages.append(p)
+            continue
+        if dept_ok:
+            pages.append(dict(p, children=[
+                c for c in p["children"]
+                if c["id"] != "tickets" or tk_ok or tickets_readonly()]))
+        elif tk_ok:
+            pages.append({"id": "tickets", "path": "/tickets",
+                          "name": "处置工单", "code": "PAGE-06"})
+    return pages
+
+
+# 部门账号能进的页面（id）。与 visible_pages 是同一件事的两个方向：
+# 导航决定"看不看得见"，这里决定"直接敲地址进不进得去"。
+# 只靠导航收窄是不够的——地址栏里敲一个 /insights 就绕过了。
+DEPT_ALLOWED_PAGES = {"disposal", "tickets"}
+
+
+def me_label(ctx):
+    """顶栏那行身份文案。
+
+    部门账号的 display_name 就是部门名，再拼一次会显示成
+    「后勤保障处 · 部门账号 · 后勤保障处」——看着像系统重复渲染了。
+    """
+    label = config.ROLE_LABELS.get(ctx.get("role") or "", "")
+    name = ctx.get("department_name") or ""
+    if name and name != (ctx.get("display_name") or ""):
+        label = f"{label} · {name}" if label else name
+    return label
 
 
 def create_app():
@@ -155,6 +240,20 @@ def create_app():
             except Exception:
                 pass
         resp.direct_passthrough = False
+        return resp
+
+    @app.after_request
+    def _security_headers(resp):
+        """补最基本的浏览器侧防护。
+
+        演示环境同样要加：这些头不改变页面行为，只关掉三类默认风险——
+        MIME 嗅探、Referrer 外泄、被别的站点 iframe 套壳。
+        不放 CSP：页面有内联主题脚本与 ECharts canvas，收紧 script-src
+        需要先拆内联，收益低于这次改动的风险。
+        """
+        resp.headers.setdefault("X-Content-Type-Options", "nosniff")
+        resp.headers.setdefault("Referrer-Policy", "same-origin")
+        resp.headers.setdefault("X-Frame-Options", "DENY")
         return resp
 
     @app.after_request
@@ -266,8 +365,18 @@ def create_app():
     # ---------------- 登录 ----------------
     @app.route("/login")
     def login_page():
+        # 免登录模式下以前直接 302 回首页：演示时一句"看看登录和权限"，
+        # 点进去看到的是驾驶舱，等于当场说什么都没有。现在照常渲染登录页，
+        # 只是把表单换成一句"演示模式·无需登录"，页面的构图与说明仍然可讲。
         if not config.CP_AUTH:
-            return redirect("/")
+            return render_template(
+                "login.html",
+                next=_safe_next(request.args.get("next")),
+                version=__import__("campuspulse").__version__,
+                dev=config.CP_DEV,
+                demo=True,
+                default_tenant=config.DEFAULT_TENANT_ID,
+            )
         if tenancy.is_authed():
             return redirect(_safe_next(request.args.get("next")))
         return render_template(
@@ -275,6 +384,7 @@ def create_app():
             next=_safe_next(request.args.get("next")),
             version=__import__("campuspulse").__version__,
             dev=config.CP_DEV,
+            demo=False,
             default_tenant=config.DEFAULT_TENANT_ID,
         )
 
@@ -307,6 +417,7 @@ def create_app():
             "user": {"id": user["user_id"], "name": user.get("display_name") or user["username"],
                      "username": user["username"], "role": user["role"],
                      "role_label": config.ROLE_LABELS.get(user["role"], user["role"]),
+                     "department_id": user.get("department_id") or "",
                      "must_change": bool(user.get("must_change"))},
             "tenant": {"id": user["tenant_id"]},
             "mode": "auth",
@@ -334,6 +445,53 @@ def create_app():
         resp.delete_cookie(tenancy.COOKIE_NAME, path="/")
         return resp
 
+    # 口令最小长度：8 位。不强制大小写/符号混排——那类规则会把用户推回
+    # "Passw0rd!" 这种可预测口令，反而更差；这里只挡住 3 位、abc 这类明显过短的。
+    PWD_MIN_LEN = 8
+
+    @app.route("/api/auth/change-password", methods=["POST"])
+    def api_change_password():
+        """修改自己的密码。
+
+        `users.must_change` 这个标记一直在库里、也一直返回给前端，但此前没有任何
+        改密入口——等于"系统会要求你改密码，却不给你改的地方"。这个接口就是补上它。
+        """
+        if not config.CP_AUTH:
+            return _err("当前未启用登录（CP_AUTH=0）", 400, error_code="auth_disabled")
+        ctx = tenancy.current()
+        if ctx.get("mode") != "auth" or not ctx.get("user_id"):
+            return _err("请先登录", 401, error_code="unauthorized")
+
+        body = request.get_json(silent=True) or {}
+        old_pwd = str(body.get("old_password") or "")
+        new_pwd = str(body.get("new_password") or "")
+
+        user = tenancy.get_user_by_id(ctx["user_id"], ctx["tenant_id"])
+        if not user:
+            return _err("账号不存在", 401, error_code="unauthorized")
+        # 必须验原密码：否则 cookie 一旦泄露就等于账号被直接接管
+        if not tenancy.verify_password(old_pwd, user.get("pwd_hash")):
+            tenancy.record_auth_event("pwd_change_fail", ctx, ip=_client_ip(),
+                                      detail="bad_old_password")
+            return _err("原密码不正确", 400, error_code="bad_password")
+        if len(new_pwd) < PWD_MIN_LEN:
+            return _err(f"新密码至少 {PWD_MIN_LEN} 位", 400, error_code="weak_password")
+        if new_pwd == old_pwd:
+            return _err("新密码不能与原密码相同", 400, error_code="weak_password")
+
+        tenancy.set_password(ctx["user_id"], new_pwd)
+        tenancy.record_auth_event("password_change", ctx, ip=_client_ip())
+
+        # 会话里带着签发时的 must_change 快照，改完必须重签，否则页面仍显示"待改密"
+        fresh = tenancy.get_user_by_id(ctx["user_id"], ctx["tenant_id"])
+        resp = _ok({"msg": "密码已修改", "must_change": False})
+        resp.set_cookie(
+            tenancy.COOKIE_NAME, tenancy.issue_session(fresh),
+            max_age=None, httponly=True, samesite="Lax", path="/",
+            secure=bool(os.environ.get("CP_HTTPS") == "1"),
+        )
+        return resp
+
     @app.route("/api/auth/me")
     def api_me():
         ctx = tenancy.current()
@@ -350,16 +508,61 @@ def create_app():
                         "short_name": tenant.get("short_name")}
                        if tenant else None),
             "permissions": sorted(tenancy.PERMS.get(ctx["role"], set())),
+            # 部门账号归口：前端顶栏显示"后勤保障处"，页面文案据此从"全校"改成"本部门"。
+            # 其他角色为 null，前端不必判断角色名。
+            "department": ({"id": ctx.get("department_id"),
+                            "name": ctx.get("department_name") or ""}
+                           if tenancy.is_dept_role() else None),
         })
 
     # ---------------- 页面路由 ----------------
-    def _render(page_id, template):
-        return render_template(template, pages=visible_pages(), current=page_id,
-                               version=__import__("campuspulse").__version__)
+    def _render(page_id, template, **extra):
+        ctx = tenancy.current()
+        # 部门账号直接敲 /、/insights、/evidence 这类地址：一律按"页面不存在"返回。
+        # 不用 403——它的导航里根本没有这些页面，403 反而在提示"这里有个你不该来的地方"。
+        if tenancy.is_dept_role() and page_id not in DEPT_ALLOWED_PAGES:
+            return render_template("404.html", pages=visible_pages(), current="",
+                                   dev=config.CP_DEV,
+                                   reason="这个账号只开放「风险研判与处置中心」"
+                                          "与「处置工单」，其余页面不在职责范围内。"), 404
+        # 导航链接在服务端就把当前查询串带上（"口径双向流动"：驾驶舱选的筛选，
+        # 点侧栏到工作台提问时 Agent 只在同一范围内回答）。
+        # 客户端 syncUrl() 也会补一遍，但那是 JS 跑起来之后的事——首屏这段时间里
+        # 用户点侧栏，href 里没有 dataset_id，后端只能回落到默认数据集，
+        # 表现就是"切了数据集，一点别的页面又变回全量历史样本"。
+        # 不想要这些条件的用户，在落地页点紧挨关键词的「清除筛选」一次清空即可。
+        nav_query = ("?" + request.query_string.decode("utf-8")) if request.query_string else ""
+        return render_template(template, pages=visible_pages(), current=page_id, nav_query=nav_query,
+                               version=__import__("campuspulse").__version__,
+                               # 子页面包屑要判断"父项这个人能不能进"：
+                               # 处置员（handler）没有 view_analysis，给他一个指向 404 的
+                               # 「风险研判与处置中心」链接，等于在页面上放了个坏入口。
+                               dept_page=departments.can_view(),
+                               # 开发模式标记：左栏底部的引擎状态、版本号、快照声明只给开发者看，
+                               # 正式使用时这些是杂讯，而且会暴露模型供应商与技术栈
+                               dev=config.CP_DEV,
+                               me=ctx,
+                               # 顶栏待办角标：先按权限占住位置，数字由 core.js 再填。
+                               # 不占位的话它在数据回来时宽 90px 地出现，1280 长标题页
+                               # 会把顶栏挤成两行（/evidence 实测 88 → 107px）。
+                               tk_badge=can_see_tickets(),
+                               # 部门账号顶栏显示「部门账号 · 后勤保障处」：
+                               # 光写"部门账号"等于没说清这个账号管哪一摊，
+                               # 演示时换账号最容易被问的就是"这是哪个部门"。
+                               me_role_label=(me_label(ctx)
+                                              if ctx.get("mode") == "auth" else ""),
+                               # 工单只在演示态是只读的：页面文案要跟着少承诺一件事，
+                               # 不该写着"点建单"而按钮根本不存在
+                               tk_readonly=tickets_readonly(),
+                               # 页面级的额外上下文（只读工单列表等）由调用方按需传，
+                               # 不给每个模板都塞一堆用不上的变量
+                               **extra)
 
     @app.route("/")
     def page_dashboard():
-        return _render("dashboard", "dashboard.html")
+        # 工单概览条由 JS 在首帧后插入；先告诉模板这个人能不能看，
+        # 才能用同高度的占位条把位置占住，避免首屏内容整体下移。
+        return _render("dashboard", "dashboard.html", ticket_strip=can_see_tickets())
 
     @app.route("/agent")
     def page_agent():
@@ -369,20 +572,62 @@ def create_app():
     def page_insights():
         return _render("insights", "insights.html")
 
+    # 洞察中心三个分析视角。父项 current 传子页 id，侧边栏据此高亮子项、
+    # 同时让父项知道自己处在展开状态（见 base.html 的 nav-children）。
+    @app.route("/insights/topics")
+    def page_insights_topics():
+        return _render("insights-topics", "insights_topics.html")
+
+    @app.route("/insights/sentiment")
+    def page_insights_sentiment():
+        return _render("insights-sentiment", "insights_sentiment.html")
+
+    @app.route("/insights/timeline")
+    def page_insights_timeline():
+        return _render("insights-timeline", "insights_timeline.html")
+
     @app.route("/evidence")
     def page_evidence():
         return _render("evidence", "evidence.html")
 
     @app.route("/data")
     def page_data():
+        # 父项 = 数据集与质量：切数据集、看清洗链路、重算。这三件事回答
+        # "我现在手上的数据到底是什么"，是后面两页的前提。
         return _render("data", "data.html")
+
+    @app.route("/data/collect")
+    def page_data_collect():
+        return _render("data-collect", "data_collect.html")
+
+    @app.route("/data/reports")
+    def page_data_reports():
+        return _render("data-reports", "data_reports.html")
 
     @app.route("/tickets")
     def page_tickets():
+        # 演示态（CP_TICKETS=0）：给一版只读列表，让"研判 → 建单 → 核对"这条
+        # 叙事有落点。写接口仍然一个都不开，页面上写清"仅展示"。
+        if tickets_readonly():
+            return _render("tickets", "tickets_readonly.html",
+                           readonly_rows=tickets.readonly_list())
         # 直接敲地址也要挡：页面对只读角色是空壳，进去只会看到"加载失败"
         if not can_see_tickets():
-            return render_template("404.html", pages=visible_pages(), current=""), 404
+            return render_template("404.html", pages=visible_pages(), current="",
+                                   dev=config.CP_DEV,
+                                   reason="当前账号没有工单权限"
+                                          "（需要 ticket_manage / ticket_create / ticket_handle 之一）。"), 404
         return _render("tickets", "tickets.html")
+
+    @app.route("/departments")
+    def page_departments():
+        if not departments.can_view():
+            return render_template("404.html", pages=visible_pages(), current="",
+                                   dev=config.CP_DEV,
+                                   reason="当前账号没有研判权限（需要 view_analysis 或部门归属）。"), 404
+        # current 传父项 id：侧栏据此高亮「风险研判与处置中心」本身（总览页），
+        # 子项「处置工单」传 tickets，两者互不干扰。
+        return _render("disposal", "departments.html")
 
     @app.route("/favicon.ico")
     def favicon():
@@ -407,7 +652,22 @@ def create_app():
     @app.route("/api/health")
     def health():
         ctx = tenancy.current()
+        minimal = {
+            "status": "ok",
+            "version": __import__("campuspulse").__version__,
+            "server_time": db.now_str(),
+        }
+        # 这个路径在 PUBLIC_PATHS 里（登录页要用它判断服务是否活着），
+        # 所以未认证时只回最小信息。完整版含服务器绝对路径、模型供应商、
+        # 租户数与权限模式，匿名访问者没有知道的必要。
+        if config.CP_AUTH and ctx.get("mode") != "auth":
+            return _ok(minimal)
+
         leak = db.leak_stats()
+        # 工具通道里带的是本机绝对路径，对外只保留脚本名，排障够用且不暴露部署结构
+        channel = dict(toolbus.stats())
+        if channel.get("server"):
+            channel["server"] = os.path.basename(str(channel["server"]))
         return _ok({
             "status": "ok",
             "version": __import__("campuspulse").__version__,
@@ -429,9 +689,13 @@ def create_app():
             },
             # 工具通道：local / mcp。mcp 模式下把失败与降级次数也报出来——
             # "支持 MCP"和"这一轮实际走的是 MCP"是两件事，health 里必须能分辨。
-            "tool_channel": toolbus.stats(),
+            "tool_channel": channel,
             "vision": {"enabled": bool(config.CP_VISION),
                        "engine": vision.engine_status().get("active")},
+            # 实时采集：能不能跑取决于三件事——开关、playwright、平台登录态。
+            # 排障时"页面上写着引擎就绪但采不到数据"多半是登录态过期，
+            # 这一行能直接把问题定到具体环节。
+            "crawl": crawl.health(),
         })
 
     # ---------------- 元数据 ----------------
@@ -501,81 +765,169 @@ def create_app():
             "data_version": ds["data_version"],
         })
 
-    @app.route("/api/datasets/import", methods=["POST"])
-    def import_dataset():
-        files = request.files.getlist("files") or request.files.getlist("file")
-        files = [f for f in files if f and f.filename]
-        if not files:
-            return _err("未接收到文件，请选择抖音或小红书的爬虫 JSON", 400)
-        if len(files) > config.MAX_UPLOAD_FILES:
-            return _err(f"一次最多上传 {config.MAX_UPLOAD_FILES} 个文件", 400)
+    # ---------------- 实时采集（P3 · 真实平台直连）----------------
+    # 四个状态机动作分开：发起 / 轮询 / 停止 / 清洗 / 入库。
+    # 不做成"一个接口跑到底"——采集本身要几十秒，同步返回会让页面像卡死；
+    # 而清洗必须是**人看完候选集之后**的独立动作，否则"清洗"就退化成
+    # "采集成功后自动发生的事"，页面上那一步复核也就没有意义了。
+    def _crawl_err(e, default=400):
+        code = {"not_found": 404, "busy": 429, "forbidden": 403,
+                "disabled": 503}.get(e.code, default)
+        return _err(str(e), code, detail=getattr(e, "detail", None), error_code=e.code)
 
-        stamp = time.strftime("%Y%m%d_%H%M%S")
-        dataset_id = f"ds_up_{stamp}_{uuid.uuid4().hex[:4]}"
-        target = os.path.join(config.UPLOAD_DIR, dataset_id)
-        os.makedirs(target, exist_ok=True)
+    @app.route("/api/crawl/status")
+    def crawl_status():
+        # 不给 403：没有导入权限的角色也要能看见"这功能存在但你不能用"，
+        # 否则页面上会是一片空白，看起来像功能坏了。
+        return _ok(crawl.engine_status())
 
-        def _drop_upload_dir():
-            """失败路径必须把自己建的目录清掉。
+    @app.route("/api/crawl/login/start", methods=["POST"])
+    def crawl_login_start():
+        """打开有头浏览器登录窗口：用户扫码/手机号登录，我们只等 cookie。
 
-            不清理的后果是实打实的：项目里一度攒了 87 个空的 ds_up_* 目录，
-            全是"清洗后无有效评论"留下的，名字还都带时间戳——
-            看上去像 87 次成功导入，实际一个数据集都没有。人不敢删，因为分不清哪个在用。
-            """
-            try:
-                shutil.rmtree(target, ignore_errors=True)
-            except Exception:
-                pass
-
-        saved, rejected = [], []
-        for f in files:
-            name = os.path.basename(f.filename)
-            if not name.lower().endswith(".json"):
-                rejected.append({"file": name, "reason": "只支持 .json 格式"})
-                continue
-            blob = f.read()
-            if len(blob) > config.MAX_UPLOAD_BYTES:
-                rejected.append({"file": name, "reason": "文件超过 20MB 限制"})
-                continue
-            try:
-                json.loads(blob.decode("utf-8-sig"))
-            except Exception as e:
-                rejected.append({"file": name, "reason": f"JSON 解析失败：{e}"})
-                continue
-            path = os.path.join(target, name)
-            with open(path, "wb") as out:
-                out.write(blob)
-            saved.append(path)
-
-        if not saved:
-            _drop_upload_dir()
-            return _err("没有可用的数据文件", 400, detail=rejected, error_code="invalid_file")
-
+        不做账号密码表单——密码一旦进我们的接口，就得过我们的日志与数据库，
+        而收益只是少点一次窗口。这条边界写在这里，避免以后被"顺手优化掉"。
+        """
+        if not crawl.can_collect():
+            return _err("当前角色没有数据导入权限", 403, error_code="forbidden")
+        body = request.get_json(silent=True) or {}
         try:
-            meta, quality = etl.build_dataset(
-                dataset_id, f"上传数据集 · {time.strftime('%m-%d %H:%M')}", saved,
-                source_label="用户上传的爬虫导出文件", note="通过数据与报告中心导入",
-                is_demo=False,
-            )
-        except Exception as e:
-            logger.exception("导入失败")
-            _drop_upload_dir()
-            return _err(f"清洗失败：{e}", 500, error_code="etl_failed")
+            return _ok(crawl.start_login(body.get("platform")))
+        except crawl.CrawlError as e:
+            return _crawl_err(e)
 
-        if not meta["valid_count"]:
-            db.delete_dataset(dataset_id)
-            _drop_upload_dir()
-            return _err(
-                "清洗后没有有效评论：请确认评论内容为校园相关文本，且 create_time 可解析。",
-                400, detail=quality.get("stages"), error_code="empty_dataset")
+    @app.route("/api/crawl/login/status")
+    def crawl_login_state():
+        return _ok(crawl.login_status())
 
-        return _ok({
-            "dataset_id": dataset_id, "name": meta["name"], "raw_count": meta["raw_count"],
-            "valid_count": meta["valid_count"],
-            "effective_rate": quality["effective_rate"],
-            "time_span": [meta["time_start"], meta["time_end"]],
-            "platforms": meta["platforms"], "quality": quality, "rejected": rejected,
-        })
+    @app.route("/api/crawl/login/focus", methods=["POST"])
+    def crawl_login_focus():
+        try:
+            return _ok(crawl.focus_login())
+        except crawl.CrawlError as e:
+            return _crawl_err(e)
+
+    @app.route("/api/crawl/login/cancel", methods=["POST"])
+    def crawl_login_cancel():
+        return _ok(crawl.cancel_login())
+
+    @app.route("/api/crawl/login", methods=["POST"])
+    def crawl_login_save():
+        if not crawl.can_collect():
+            return _err("当前角色没有数据导入权限", 403, error_code="forbidden")
+        body = request.get_json(silent=True) or {}
+        try:
+            info = crawl.save_login(body.get("platform"), body.get("cookie"))
+        except crawl.CrawlError as e:
+            return _crawl_err(e)
+        return _ok({"login": info, "status": crawl.engine_status()})
+
+    @app.route("/api/crawl/login", methods=["DELETE"])
+    def crawl_login_clear():
+        if not crawl.can_collect():
+            return _err("当前角色没有数据导入权限", 403, error_code="forbidden")
+        platform = request.args.get("platform")
+        return _ok({"status": crawl.clear_login(platform), "engine": crawl.engine_status()})
+
+    @app.route("/api/crawl/start", methods=["POST"])
+    def crawl_start():
+        if not crawl.can_collect():
+            return _err("当前角色没有数据导入权限，不能发起采集", 403, error_code="forbidden")
+        body = request.get_json(silent=True) or {}
+        try:
+            sess = crawl.start(body.get("keyword"), body.get("platforms"),
+                               body.get("target"), body.get("max_seconds"),
+                               body.get("date_from"), body.get("date_to"))
+        except crawl.CrawlError as e:
+            return _crawl_err(e)
+        return _ok(sess)
+
+    @app.route("/api/crawl/<sid>")
+    def crawl_session(sid):
+        try:
+            return _ok(crawl.view(sid, _int_arg("cursor", 0)))
+        except crawl.CrawlError as e:
+            return _crawl_err(e)
+
+    @app.route("/api/crawl/<sid>/stop", methods=["POST"])
+    def crawl_stop(sid):
+        try:
+            return _ok(crawl.stop(sid))
+        except crawl.CrawlError as e:
+            return _crawl_err(e)
+
+    @app.route("/api/crawl/<sid>/clean", methods=["POST"])
+    def crawl_clean(sid):
+        if not crawl.can_collect():
+            return _err("当前角色没有数据导入权限", 403, error_code="forbidden")
+        try:
+            return _ok(crawl.clean(sid))
+        except crawl.CrawlError as e:
+            return _crawl_err(e)
+
+    @app.route("/api/crawl/<sid>/rows")
+    def crawl_rows(sid):
+        try:
+            return _ok(crawl.records_view(sid, request.args.get("status") or "all",
+                                          _int_arg("offset", 0), _int_arg("limit", 50)))
+        except crawl.CrawlError as e:
+            return _crawl_err(e)
+
+    @app.route("/api/crawl/<sid>/commit", methods=["POST"])
+    def crawl_commit(sid):
+        if not crawl.can_collect():
+            return _err("当前角色没有数据导入权限", 403, error_code="forbidden")
+        body = request.get_json(silent=True) or {}
+        try:
+            return _ok(crawl.commit(sid, body.get("name"), body.get("target_dataset_id"),
+                                    body.get("select_mode"), body.get("refs")))
+        except crawl.CrawlError as e:
+            return _crawl_err(e)
+
+    # ---------------- 导入批次（文件 / 截图共用）----------------
+    # 三步分开，和实时采集同构：预览（清洗，不入库）→ 逐条核对 → 确认 / 放弃。
+    # 不做成"上传即入库"：清洗会剔掉重复、短评和非校园主题，用户得先看见剔了谁，
+    # 才有资格决定这批要不要成为分析口径。
+    def _intake_status(e):
+        return {"not_found": 404, "already_committed": 409, "forbidden": 403}.get(e.code, 400)
+
+    @app.route("/api/import/files", methods=["POST"])
+    @app.route("/api/datasets/import", methods=["POST"])   # 旧路径：语义已改成"生成待确认批次"
+    def import_preview():
+        if not crawl.can_collect():
+            return _err("当前角色没有数据导入权限", 403, error_code="forbidden")
+        files = request.files.getlist("files") or request.files.getlist("file")
+        uploaded = [(f.filename, f.read()) for f in files if f and f.filename]
+        try:
+            return _ok(intake.create_files(uploaded))
+        except intake.IntakeError as e:
+            return _err(str(e), _intake_status(e), detail=e.detail, error_code=e.code)
+
+    @app.route("/api/import/<sid>/rows")
+    def import_rows(sid):
+        try:
+            return _ok(intake.records_view(sid, request.args.get("status") or "all",
+                                           _int_arg("offset", 0), _int_arg("limit", 50)))
+        except intake.IntakeError as e:
+            return _err(str(e), _intake_status(e), error_code=e.code)
+
+    @app.route("/api/import/<sid>/commit", methods=["POST"])
+    def import_commit(sid):
+        if not crawl.can_collect():
+            return _err("当前角色没有数据导入权限", 403, error_code="forbidden")
+        body = request.get_json(silent=True) or {}
+        try:
+            return _ok(intake.commit(sid, body.get("name"), body.get("target_dataset_id"),
+                                     body.get("select_mode"), body.get("refs")))
+        except intake.IntakeError as e:
+            return _err(str(e), _intake_status(e), error_code=e.code)
+
+    @app.route("/api/import/<sid>/discard", methods=["POST"])
+    def import_discard(sid):
+        try:
+            return _ok(intake.discard(sid))
+        except intake.IntakeError as e:
+            return _err(str(e), _intake_status(e), error_code=e.code)
 
     @app.route("/api/datasets/<dataset_id>/reanalyze", methods=["POST"])
     def reanalyze(dataset_id):
@@ -586,8 +938,12 @@ def create_app():
         preset = next((p for p in config.PRESET_DATASETS if p["dataset_id"] == dataset_id), None)
         if preset:
             paths = [os.path.join(config.BASE_DIR, f) for f in preset["files"]]
+            # 时间窗口必须跟着重建走：漏传就会把窗口外的旧评论重新灌回来，
+            # 而数据集名字还写着新的年份区间。
             meta, quality = etl.build_dataset(dataset_id, preset["name"], paths,
-                                              preset["source_label"], preset["note"], True)
+                                              preset["source_label"], preset["note"], True,
+                                              date_from=preset.get("date_from"),
+                                              date_to=preset.get("date_to"))
         else:
             folder = os.path.join(config.UPLOAD_DIR, dataset_id)
             paths = [os.path.join(folder, f) for f in sorted(os.listdir(folder))] \
@@ -599,6 +955,54 @@ def create_app():
         return _ok({"dataset_id": dataset_id, "raw_count": meta["raw_count"],
                     "valid_count": meta["valid_count"], "quality": quality,
                     "analyzed_at": meta["analyzed_at"]})
+
+    @app.route("/api/datasets/<dataset_id>/rename", methods=["POST"])
+    def rename_dataset(dataset_id):
+        """只改展示名，不动数据、不碰 data_version。
+
+        名字是给人看的标签（"11-10 采集的宿舍那批"），不该混进统计口径；
+        但它是唯一能让演示库里那一串时间戳变得可读的东西。
+        """
+        if not crawl.can_collect():
+            return _err("当前角色没有数据管理权限", 403, error_code="forbidden")
+        ds = db.get_dataset(dataset_id)
+        if not ds:
+            return _err("数据集不存在", 404, error_code="not_found")
+        body = request.get_json(silent=True) or {}
+        name = str(body.get("name") or "").strip()
+        if not name:
+            return _err("数据集名称不能为空", 400)
+        if len(name) > 60:
+            return _err("数据集名称最多 60 个字", 400)
+        if name == ds["name"]:
+            return _ok({"dataset_id": dataset_id, "name": name, "changed": False})
+        db.rename_dataset(dataset_id, name)
+        return _ok({"dataset_id": dataset_id, "name": name, "changed": True})
+
+    @app.route("/api/datasets/<dataset_id>", methods=["DELETE"])
+    def delete_dataset(dataset_id):
+        """删除数据集本身、它的评论与派生记录（报告 / AI 运行 / 研判快照）。
+
+        至少保留一个数据集：全站页面都按"当前数据集"取数，删空之后
+        每个页面都会变成 404，而用户很难从空页面判断是自己删多了。
+        """
+        if not crawl.can_collect():
+            return _err("当前角色没有数据管理权限", 403, error_code="forbidden")
+        try:
+            return _ok(intake.delete_dataset(dataset_id))
+        except intake.IntakeError as e:
+            return _err(str(e), _intake_status(e), error_code=e.code)
+
+    @app.route("/api/datasets/<dataset_id>/merge", methods=["POST"])
+    def merge_dataset(dataset_id):
+        """把 <dataset_id> 整个并入目标数据集，成功后源数据集被删除。"""
+        if not crawl.can_collect():
+            return _err("当前角色没有数据管理权限", 403, error_code="forbidden")
+        body = request.get_json(silent=True) or {}
+        try:
+            return _ok(intake.merge_datasets(dataset_id, body.get("target_dataset_id")))
+        except intake.IntakeError as e:
+            return _err(str(e), _intake_status(e), error_code=e.code)
 
     @app.route("/api/datasets/restore-demo", methods=["POST"])
     def restore_demo():
@@ -661,16 +1065,22 @@ def create_app():
         payload["session_id"] = vision.save_draft(payload)
         return _ok(payload)
 
-    @app.route("/api/vision/commit", methods=["POST"])
-    def vision_commit():
-        """把复核后的草稿写入数据集。
+    @app.route("/api/vision/preview", methods=["POST"])
+    @app.route("/api/vision/commit", methods=["POST"])   # 旧路径：语义已改成"生成待确认批次"
+    def vision_preview():
+        """复核后的截图记录 → 导入批次（清洗 → 逐条核对 → 确认入库）。
 
         只接受 content / create_time / platform 三个可编辑字段——
         置信度、引擎、是否推断时间一律以草稿为准。让前端能改置信度，
         这个字段就再也证明不了任何事情了。
+
+        这一步**不建数据集**：OCR 的结果同样要过清洗链路，
+        界面噪声、重复、短句会被剔掉，得让用户先看见剔了哪些再决定要不要这批。
         """
         if not config.CP_VISION:
             return _err("截图识别未启用（CP_VISION=0）", 400, error_code="vision_disabled")
+        if not crawl.can_collect():
+            return _err("当前角色没有数据导入权限", 403, error_code="forbidden")
         body = request.get_json(silent=True) or {}
         try:
             draft = vision.load_draft(body.get("session_id"))
@@ -710,51 +1120,26 @@ def create_app():
         if not rows:
             return _err("没有可导入的记录：全部内容不足 5 个字", 400, detail=dropped)
 
-        stamp = time.strftime("%Y%m%d_%H%M%S")
-        dataset_id = f"ds_shot_{stamp}_{uuid.uuid4().hex[:4]}"
-        target = os.path.join(config.UPLOAD_DIR, dataset_id)
-        os.makedirs(target, exist_ok=True)
-
-        def _drop():
-            shutil.rmtree(target, ignore_errors=True)
-
         source_rows = vision.to_source_rows(rows)
-        path = os.path.join(target, "screenshots.json")
+        platforms = {r["platform"] for r in source_rows}
+        note = (f"共 {len(source_rows)} 条由截图识别并经人工复核的评论，"
+                f"识别引擎：{vision._engine_label(draft.get('engine'))}；"
+                f"平台：{'、'.join(sorted(platforms))}。"
+                "截图未包含发布时间的记录按导入日期计入，需结合原始截图核对。")
         try:
-            with open(path, "w", encoding="utf-8") as f:
-                json.dump(source_rows, f, ensure_ascii=False, indent=2)
-            platforms = {r["platform"] for r in source_rows}
-            meta, quality = etl.build_dataset(
-                dataset_id, f"截图导入 · {time.strftime('%m-%d %H:%M')}", [path],
+            data = intake.create_records(
+                source_rows,
                 source_label="抖音 / 小红书评论截图（OCR 识别 + 人工复核）",
-                note=(f"共 {len(source_rows)} 条由截图识别并经人工复核的评论，"
-                      f"识别引擎：{vision._engine_label(draft.get('engine'))}；"
-                      f"平台：{'、'.join(sorted(platforms))}。"
-                      "截图未包含发布时间的记录按导入日期计入，需结合原始截图核对。"),
-                is_demo=False,
+                note=note,
+                name_hint=f"截图导入 · {time.strftime('%m-%d %H:%M')}",
             )
-        except Exception as e:
-            logger.exception("截图导入写库失败")
-            _drop()
-            return _err(f"截图导入失败：{e}", 500, error_code="etl_failed")
-
-        if not meta["valid_count"]:
-            db.delete_dataset(dataset_id)
-            _drop()
-            return _err("识别出的内容清洗后没有有效评论：多为界面噪声或未命中校园维度。",
-                        400, detail=quality.get("stages"), error_code="empty_dataset")
+        except intake.IntakeError as e:
+            return _err(str(e), _intake_status(e), detail=e.detail, error_code=e.code)
 
         vision.drop_draft(body.get("session_id"))
-        return _ok({
-            "dataset_id": dataset_id, "name": meta["name"],
-            "raw_count": meta["raw_count"], "valid_count": meta["valid_count"],
-            "effective_rate": quality["effective_rate"],
-            "time_span": [meta["time_start"], meta["time_end"]],
-            "platforms": meta["platforms"], "quality": quality,
-            "submitted": len(rows), "dropped": dropped,
-            "screenshot_count": quality.get("screenshot_count", 0),
-            "time_inferred": quality.get("time_inferred", 0),
-        })
+        data["submitted"] = len(rows)
+        data["dropped"] = dropped
+        return _ok(data)
 
     # ---------------- 驾驶舱 ----------------
     @app.route("/api/dashboard/summary")
@@ -766,15 +1151,40 @@ def create_app():
     def analytics_sentiment():
         return _ok(analytics.stats_sentiment(_filters_from_request()))
 
+    # AI 分析结果按 (租户, 数据集, 数据版本, 筛选口径) 缓存，切页面回来不再重算。
+    # refresh=1 是"我就要重算一份"：驾驶舱的「重新生成」按钮走这里。
+    def _refresh_arg():
+        return request.args.get("refresh") in ("1", "true", "yes")
+
     @app.route("/api/dashboard/insight")
     def dashboard_insight():
         f = _filters_from_request()
-        return _ok(reports.dashboard_insight(f))
+        return _ok(reports.dashboard_insight(f, refresh=_refresh_arg()))
 
     @app.route("/api/analytics/chart-insights")
     def chart_insights():
         f = _filters_from_request()
-        return _ok(reports.chart_insights(f))
+        return _ok(reports.chart_insights(f, refresh=_refresh_arg()))
+
+    @app.route("/api/analytics/page-insight")
+    def page_insight():
+        """洞察三个子页各一段 AI 分析：热度成因 / 痛点与建议 / 峰值与成因。"""
+        page = request.args.get("page", "")
+        if page not in ("topics", "sentiment", "timeline"):
+            return _err("page 取值必须是 topics / sentiment / timeline", 400, error_code="bad_param")
+        return _ok(reports.page_insight(_filters_from_request(), page, refresh=_refresh_arg()))
+
+    @app.route("/api/analytics/word-insight")
+    def analytics_word_insight():
+        """正 / 负两朵词云各自的解读：一侧在夸什么、另一侧在骂什么，两边能对照着看。"""
+        return _ok(reports.word_cloud_insight(_filters_from_request(), refresh=_refresh_arg()))
+
+    @app.route("/api/analytics/polarity-words")
+    def analytics_polarity_words():
+        """正 / 负面两朵词云：各自按各自的分母取高频词。"""
+        # 30 个词是画布能舒服容纳的上限：再多就只能靠缩小字号塞进去，
+        # 结果是大词不够突出、小词糊成一片，反而不如少给几个。
+        return _ok(analytics.polarity_words(_filters_from_request(), _int_arg("top_n", 30)))
 
     @app.route("/api/analytics/topics")
     def analytics_topics():
@@ -909,11 +1319,14 @@ def create_app():
         # 在 gen() 里调 request 会抛 "Working outside of request context"，
         # 而它会被 except 吞成一个 error 事件——看起来像"流式坏了"，其实是取错了位置
         client_key = _client_key()
+        # 同理，身份上下文也要在这里复制。teardown_request 会把租户 reset 掉，
+        # 等生成器开跑时已经拿不到当前用户，chat() 里按空租户查数据集必然失败。
+        stream_ctx = contextvars.copy_context()
 
         def gen():
             try:
                 for ev in agent.chat_stream(question, dataset_id, history=history,
-                                            client_key=client_key):
+                                            client_key=client_key, ctx=stream_ctx):
                     yield "data: " + json.dumps(ev, ensure_ascii=False) + "\n\n"
             except Exception as e:                      # 兜底：不让生成器异常变成空响应
                 yield "data: " + json.dumps(
@@ -999,6 +1412,124 @@ def create_app():
             return _err("报告不存在", 404, error_code="not_found")
         return _ok(r)
 
+    # ---------------- 学校部门与风险研判 ----------------
+    # 部门是配置数据（管理员维护），研判是分析结果（能看分析的人都能看）。
+    # 两个权限分开：分析员需要看"这事归谁"才能建单，但不该改部门职责。
+    @app.route("/api/departments")
+    def api_departments():
+        return _ok({
+            "departments": departments.list_all(request.args.get("all") == "1"),
+            "dimensions": config.DIMENSIONS,
+            "can_edit": departments.can_edit(),
+            "can_create": tickets.can_create(),
+            # 周带脚注要写「每工作日 N 小时」。N 从配置来，不写死在 JS 里：
+            # 作息一改，写死的那句就开始说谎，而这句正是页面上解释「时限怎么算」的那句。
+            "workday_hours": config.WORKDAY_HOURS,
+            "disclaimer": departments.DISCLAIMER,
+        })
+
+    @app.route("/api/departments", methods=["POST"])
+    def api_department_create():
+        return _ok(departments.create(request.get_json(silent=True) or {}))
+
+    @app.route("/api/departments/<dept_id>", methods=["PATCH", "PUT"])
+    def api_department_update(dept_id):
+        return _ok(departments.update(dept_id, request.get_json(silent=True) or {}))
+
+    @app.route("/api/departments/<dept_id>", methods=["DELETE"])
+    def api_department_archive(dept_id):
+        return _ok(departments.archive(dept_id))
+
+    @app.route("/api/departments/risk")
+    def api_department_risk():
+        """风险研判：主题 → 风险% → 归口部门 → 建议。只读，不建单。"""
+        ai = request.args.get("ai", "1") != "0"
+        return _ok(departments.assess(request.args.get("dataset_id"), use_ai=ai))
+
+    @app.route("/api/departments/create-ticket", methods=["POST"])
+    def api_department_create_ticket():
+        body = request.get_json(silent=True) or {}
+        return _ok(departments.create_ticket(body))
+
+    @app.route("/api/departments/risk-range", methods=["POST"])
+    def api_department_risk_range():
+        """按自选区间就地研判（不落库）。
+
+        部门账号用它跑自己那一摊：结果只含归口本部门的主题，不留全校快照。
+        学校侧仍走 /api/risk-runs/run（落库、可追溯、能按快照建单）——
+        两条路刻意不合并：一个要留档，一个不该留档。
+        """
+        body = request.get_json(silent=True) or {}
+        return _ok(monthly.preview_range(date_from=body.get("date_from"),
+                                         date_to=body.get("date_to"),
+                                         dataset_id=body.get("dataset_id"),
+                                         use_ai=body.get("ai", True) is not False))
+
+    # ---------------- 定期研判（按时间段读评论 → 人决定要不要建单）----------------
+    # 和上面的 /api/departments/risk 分开：那个是"此刻的研判"（实时、不落库），
+    # 这个是"某一段时间的研判记录"（落库、可追溯、可能已经被人建了单）。
+    # 合成一个接口就只能靠参数区分两种口径，前端每处调用都要记着传对。
+    @app.route("/api/risk-runs")
+    def api_risk_runs():
+        if not departments.can_view():
+            return _err("当前角色无权查看风险研判", 403, error_code="forbidden")
+        # 定期研判是**全校口径**的快照（一份记录里含所有部门的主题），
+        # 部门账号不读这份快照——但它要能按时间段看自己那一摊。
+        # 所以这里给 preview 标记：列表为空、可跑、但跑的是 /api/departments/risk-range
+        # （就地算、不落库）。前端据此换标题与按钮，不靠它做权限判断。
+        if tenancy.is_dept_role():
+            return _ok({"settings": monthly.settings_info(), "runs": [], "can_run": True,
+                        "can_create": False, "preview": True,
+                        "scoped": {"department_id": tenancy.department_id(),
+                                   "department_name": tenancy.current().get("department_name") or ""},
+                        "disclaimer": departments.DISCLAIMER})
+        ds = request.args.get("dataset_id") or None
+        try:
+            limit = int(request.args.get("limit", 12))
+        except (TypeError, ValueError):
+            limit = 12
+        return _ok({
+            "settings": monthly.settings_info(),
+            "runs": monthly.list_runs(limit=limit, dataset_id=ds),
+            "can_run": tickets.can_create(),
+            # 能跑不等于能建单：这两件事在这一版是同一个权限，但字段分开给，
+            # 前端就不用靠"能跑"去猜"能不能点建单"。
+            "can_create": tickets.can_create(),
+            "preview": False,
+            "disclaimer": departments.DISCLAIMER,
+        })
+
+
+    @app.route("/api/risk-runs/run", methods=["POST"])
+    def api_risk_run():
+        """立刻跑一次。给 date_from+date_to 就用这个区间；只给 period 就用该自然月；
+        都不给就是上个月。force=true 时同区间重跑并覆盖快照。总是只研判、不建单。"""
+        if tenancy.is_dept_role():
+            return _err("部门账号不能发起全校研判", 403, error_code="forbidden")
+        body = request.get_json(silent=True) or {}
+        return _ok(monthly.run(period=body.get("period"),
+                               date_from=body.get("date_from"),
+                               date_to=body.get("date_to"),
+                               dataset_id=body.get("dataset_id"),
+                               trigger="manual",
+                               force=bool(body.get("force")),
+                               use_ai=body.get("ai", True) is not False))
+
+    @app.route("/api/risk-runs/<run_id>")
+    def api_risk_run_detail(run_id):
+        if tenancy.is_dept_role():
+            return _err("部门账号不查看全校定期研判", 403, error_code="forbidden")
+        return _ok(monthly.get_run(run_id))
+
+    @app.route("/api/risk-runs/<run_id>/create-tickets", methods=["POST"])
+    def api_risk_run_tickets(run_id):
+        """只按请求里点名的主题建单（dimensions 必填），没有"全部建单"这种语义。"""
+        if tenancy.is_dept_role():
+            return _err("部门账号没有建单权限", 403, error_code="forbidden")
+        body = request.get_json(silent=True) or {}
+        return _ok(monthly.create_tickets(run_id, body.get("dimensions"),
+                                          note=body.get("note") or ""))
+
     # ---------------- 处置工单（M3）----------------
     # 开关关掉时这些路径一律 404，而不是返回空列表：
     # 空列表会让前端以为"还没建过单"，404 才说明"这个功能不存在"。
@@ -1013,6 +1544,9 @@ def create_app():
             return off
         tickets.ensure_can_view()
         role = tenancy.current().get("role")
+        scope = ({"department_id": tenancy.department_id(),
+                  "department_name": tenancy.current().get("department_name") or ""}
+                 if tenancy.is_dept_role() else None)
         return _ok({
             "statuses": [{"key": s, "label": tickets.STATUS_LABELS[s]} for s in tickets.ALL_STATUSES],
             "priorities": [{"key": p, "label": config.SLA_LABELS[p]} for p in config.TICKET_PRIORITIES],
@@ -1021,8 +1555,12 @@ def create_app():
             "can_create": tickets.can_create(),
             "can_manage": tickets.can_manage(),
             "role": role,
+            # 部门账号：列表、指标、角标都只算这一个部门（后端已过滤，这里只是给前端改文案）
+            "scope": scope,
             "sla": {"unit": "工作小时",
                     "work_hours": "周一至周五 09:00-12:00、14:00-18:00",
+                    # 前端把工作小时折算成工作天数时用它，别在前端写死 7
+                    "workday_hours": config.WORKDAY_HOURS,
                     "archive": config.SLA_ARCHIVE_HOURS,
                     "first_response": config.SLA_FIRST_HOURS,
                     "holidays": sorted(config.HOLIDAYS)},
@@ -1031,9 +1569,19 @@ def create_app():
 
     @app.route("/api/tickets/badge")
     def ticket_badge():
-        off = _tickets_on()
-        if off:
-            return off
+        # 角标和别的工单接口不一样：它被**所有页面**的顶栏无条件请求一次。
+        # 所以工单未启用时不能返回 404——那会让每个页面的控制台都亮一条红色失败请求，
+        # 前端虽然 catch 了，但网络面板看起来像页面出故障。
+        # 这里按前端约定的语义返回 200 + can_view=false，由前端把角标隐藏。
+        if not config.CP_TICKETS:
+            # 演示态：页面本身是只读列表（见 page_tickets），所以角标与闭环条
+            # 不是"没有工单"，而是"能看不能动"。给数字、标明 readonly，
+            # 前端据此不再请求注定 404 的 stats。
+            try:
+                return _ok(tickets.readonly_badge())
+            except Exception:
+                return _ok({"enabled": False, "can_view": False, "mine": 0,
+                            "pending": 0, "overdue": 0, "label": "", "overdue_label": ""})
         return _ok(tickets.dashboard_badge())
 
     @app.route("/api/tickets/stats")
@@ -1096,6 +1644,15 @@ def create_app():
             return off
         return _ok(tickets.get(ticket_id))
 
+    @app.route("/api/tickets/<ticket_id>", methods=["DELETE"])
+    def ticket_delete(ticket_id):
+        """删除工单（仅管理员）。审计事件保留，主体与证据关联一并清除。"""
+        off = _tickets_on()
+        if off:
+            return off
+        body = request.get_json(silent=True) or {}
+        return _ok(tickets.delete(ticket_id, body.get("reason")))
+
     @app.route("/api/tickets/<ticket_id>/transition", methods=["POST"])
     def ticket_transition(ticket_id):
         off = _tickets_on()
@@ -1147,7 +1704,8 @@ def create_app():
     def handle_404(e):
         if request.path.startswith("/api/"):
             return _err("接口不存在", 404, error_code="not_found")
-        return render_template("404.html", pages=visible_pages(), current=""), 404
+        return render_template("404.html", pages=visible_pages(), current="",
+                               dev=config.CP_DEV), 404
 
     @app.errorhandler(Exception)
     def handle_error(e):

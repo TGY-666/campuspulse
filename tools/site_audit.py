@@ -16,7 +16,11 @@ from playwright.sync_api import sync_playwright
 BASE = "http://127.0.0.1:8010"
 OUT = pathlib.Path("screenshots/audit")
 PAGES = [("/", "dashboard", "驾驶舱"), ("/insights", "insights", "洞察"),
-         ("/agent", "agent", "AI 工作台"), ("/data", "data", "数据管理"),
+         ("/insights/topics", "insights_topics", "主题热度"),
+         ("/insights/sentiment", "insights_sentiment", "情感"),
+         ("/insights/timeline", "insights_timeline", "时间趋势"),
+         ("/agent", "agent", "AI 舆情助手"), ("/data", "data", "数据管理"),
+         ("/data/collect", "data_collect", "数据采集"), ("/data/reports", "data_reports", "分析报告"),
          ("/evidence", "evidence", "证据检索")]
 
 # 这些 4xx 是浏览器自己发的，与功能无关

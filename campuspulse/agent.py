@@ -7,9 +7,10 @@
 
 三条底线：
   1. 数字只来自工具，图表由后端 charts.py 生成，模型不产出任何图表数值；
-  2. 模型不能执行任意 SQL/命令，只能调用 tools.py 里的 5 个白名单函数；
+  2. 模型不能执行任意 SQL/命令，只能调用 tools.py 里的 6 个白名单受控工具函数；
   3. DeepSeek 不可用时不假装是 AI：降级为规则路由，仍然真实查库，并明确标注引擎类型。
 """
+import contextvars
 import json
 import re
 import time
@@ -41,7 +42,10 @@ dataset_id: {dataset['dataset_id']}
 时间覆盖: {span}
 有效评论: {dataset.get('valid_count')} 条
 平台: {plats}
-业务维度: {dims}
+业务主题: {dims}
+
+【术语】
+{config.TERM_RULE}
 
 【硬性规则】
 1. 任何数字都必须来自工具返回结果。不确定就先调用工具，禁止凭印象或常识给出数字、日期、评论。
@@ -52,7 +56,7 @@ dataset_id: {dataset['dataset_id']}
 2c. 需要"学生原话 / 具体怎么说 / 细节"时用 retrieve_context（语义检索，整轮最多 1 次，top_k 取 6）；
    只是按明确关键词精确查找时才用 search_comments。两者不要同时为了同一目的调用。
 3. dataset_id 默认用当前数据集；只有用户明确要求换数据集时才改。
-4. 维度是多标签计数（一条评论可命中多个维度），解释占比时说明分母。
+4. 主题是多标签计数（一条评论可命中多个主题），解释占比时说明分母。
 5. 工具返回 empty=true 或 total=0 时，必须直说"当前筛选范围内没有可用数据，无法回答"，不要补造。
 6. 可以给运营建议，但不得断言"某事件已证实""某用户身份/诉求真实"，也不得宣称覆盖全网。
 7. 平台对比时若样本量差距大，要提示可比性有限。
@@ -84,6 +88,7 @@ ANSWER_SYSTEM_PROMPT = """你是 CampusPulse 的高校舆情分析助手。下�
    最多引用 3 处；只能引用片段清单里出现过的编号，绝不允许自己编造或改动编号。
    如果清单为空，就不要写任何方括号编号。
 9. 不要使用 ** 加粗、## 标题、` 代码、- 列表等 markdown 标记，前端会按纯文本渲染。
+10. """ + config.TERM_RULE + """
 """
 
 
@@ -343,7 +348,7 @@ def _carry_to_views(meta, current_dataset_id=None):
 
     if fl.get("dimension"):
         params.append(("dimension", ",".join(fl["dimension"])))
-        chips.append({"key": "dimension", "label": "维度",
+        chips.append({"key": "dimension", "label": "主题",
                       "value": "、".join(fl["dimension"])})
     if fl.get("sentiment"):
         zh = [_SENTIMENT_ZH.get(s, s) for s in fl["sentiment"]]
@@ -412,7 +417,7 @@ def _rag_query(question, tool_results):
     """检索语句 = 原问题 + 工具算出的高频主题词。
 
     只搜原问题会漏掉"口味太咸"这类统计里出现、但用户没提到的具体说法；
-    补上负面原因 top-2 与最热维度，召回精度实测更好。
+    补上负面原因 top-2 与最热主题，召回精度实测更好。
     """
     extra = []
     for r in tool_results:
@@ -440,7 +445,7 @@ def _default_limitations(response, tool_results):
         lims.append(f"本次统计基于 {meta.get('sample_size')} 条有效评论"
                     f"（筛选：{meta.get('filters_text') or '全部数据'}）")
     if any(r.get("tool") == "get_topic_stats" for r in tool_results):
-        lims.append("维度为多标签计数，一条评论可同时命中多个维度，故各维度之和大于样本数")
+        lims.append("主题为多标签计数，一条评论可同时命中多个主题，故各主题之和大于样本数")
     lims.append("结论仅代表当前采集样本，不代表全网实时声量")
     return lims[:3]
 
@@ -453,7 +458,7 @@ def _default_followups(tool_results, question=""):
             rank = data.get("ranking") or []
             if rank:
                 top = rank[0].get("dimension")
-                # 问题里已经问的就是这个维度，就别再推荐一遍
+                # 问题里已经问的就是这个主题，就别再推荐一遍
                 if top and top not in (question or ""):
                     out.append(f"「{top}」的负面主要集中在哪些具体原因？")
         if r.get("tool") == "compare_platforms":
@@ -513,14 +518,8 @@ def _compact_for_llm(result):
 
 
 # ============================ 回答校验 ============================
-_STEP_LABELS = {
-    "get_sentiment_stats": "查询情感统计",
-    "get_topic_stats": "查询维度与主题排行",
-    "get_time_trend": "计算时间趋势",
-    "compare_platforms": "比较两个平台",
-    "search_comments": "检索评论证据",
-    "retrieve_context": "混合检索原文片段",
-}
+# 步骤文案与页面上的工具卡标题共用 tools.TOOL_LABELS，避免同一件事两个名字
+_STEP_LABELS = dict(tools.TOOL_LABELS)
 
 
 def grounding_check(answer, tool_results):
@@ -560,7 +559,9 @@ def _parse_final(content):
 _INTENT_RULES = [
     ("compare", ["对比", "比较", "差异", "区别", "哪个平台", "两个平台", "双平台"]),
     ("trend", ["趋势", "变化", "什么时候", "何时", "上升", "下降", "波动", "走势", "峰值", "高峰"]),
-    ("topic", ["关注", "热点", "最多", "最常见", "主要问题", "维度", "排行", "哪些问题", "吐槽"]),
+    # "维度"留在同义词里：对外叫主题，但学生/老师提问时很可能还说"哪个维度最热"，
+    # 少一个词就等于把这类问法挡在规则路由之外
+    ("topic", ["关注", "热点", "最多", "最常见", "主要问题", "主题", "维度", "排行", "哪些问题", "吐槽"]),
     ("evidence", ["证据", "依据", "评论", "例子", "原文", "支持"]),
     ("sentiment", ["正面", "负面", "情感", "情绪", "好评", "差评", "口碑", "占比"]),
 ]
@@ -673,6 +674,26 @@ def _rule_answer(question, tool_results):
                         "结论仅代表当前采集样本，不代表全网声量"],
         "followups": ["这个问题在另一个数据集上是什么结果？", "能给出相关评论证据吗？"],
     }
+
+
+def _attach_rule_citations(answer, rag_items, limit=3):
+    """给确定性规则回答补上本轮 RAG 真实命中的证据锚点。
+
+    规则路由的统计结论由工具结果生成；当本轮同时完成了原文检索时，
+    将检索片段的真实 ``comment_ref`` 写回正文，使证据卡片、正文引用与
+    veracity 引用核验形成闭环。只取当前结果集中的编号，不生成或改写编号。
+    """
+    text = (answer or "").strip()
+    refs = []
+    for item in rag_items or []:
+        ref = item.get("comment_ref")
+        if ref and ref not in refs:
+            refs.append(ref)
+        if len(refs) >= limit:
+            break
+    if not text or not refs or re.search(r"\[\s*CMT-[0-9A-Za-z]+\s*\]", text):
+        return text
+    return text + " 原文依据见 " + "、".join(f"[{ref}]" for ref in refs) + "。"
 
 
 # ============================ 主流程 ============================
@@ -920,7 +941,7 @@ def chat(question, dataset_id=None, history=None, emit=None, client_key=None):
             rag_result = rag.retrieve(rq, dataset_id, filters=rf, top_k=6)
             rag_items = rag_result.get("items") or []
             if len(rag_items) < 3 and rf:
-                # 统计口径过窄（例如同时限定了维度+情感）时，放宽检索范围再来一次，
+                # 统计口径过窄（例如同时限定了主题+情感）时，放宽检索范围再来一次，
                 # 宁可引用范围更大的原文，也不要因为 0 条而让回答失去依据。
                 wide = rag.retrieve(rq, dataset_id, filters={}, top_k=6)
                 if len(wide.get("items") or []) > len(rag_items):
@@ -1009,6 +1030,12 @@ def chat(question, dataset_id=None, history=None, emit=None, client_key=None):
     else:
         response["answer_source"] = "ai" if engine == ENGINE_AI else "rule"
 
+    # 规则模式与 AI 生成模式共用同一套引用核验；规则回答没有模型负责写锚点，
+    # 因此在最终定稿前把本轮 RAG 命中的真实编号补回正文，确保“统计结论 →
+    # 原文证据 → 引用核验”在演示中形成可见闭环。
+    if engine == ENGINE_RULES:
+        response["answer"] = _attach_rule_citations(response.get("answer", ""), rag_items)
+
     # ---- M4 引用核验：撑不住的引用要么改写、要么移除，绝不静默放过 ----
     # 顺序很关键：必须在 grounding 之后、rag 字段组装之前。
     # 放在这之前，后续所有展示（含前端"已引用"标记）看到的都是最终定稿的正文。
@@ -1079,20 +1106,31 @@ def _safe_args(raw_args):
         return {"raw": str(raw_args)[:120]}
 
 
-def chat_stream(question, dataset_id=None, history=None, client_key=None):
+def chat_stream(question, dataset_id=None, history=None, client_key=None, ctx=None):
     """SSE 事件流：把 chat() 的真实执行过程逐条推出去。
 
     在独立线程里跑（SQLite 用线程本地连接，互不干扰），主线程只负责转发事件，
     因此渲染不会被数据库查询或模型等待阻塞。
+
+    ctx 是调用方在**请求上下文仍然有效时**复制出来的 contextvars 上下文。
+    必须由调用方传进来：本函数是生成器，函数体要等 Response 开始迭代才执行，
+    那时 Flask 已经跑完 teardown_request 并 reset 了身份，此处再 copy_context()
+    只能复制到"空身份"——租户为空串，db.get_dataset() 查不到任何数据集，
+    整条流式问答就会以"数据集不存在"失败。
     """
     import queue
     import threading
 
     q = queue.Queue()
 
+    # ContextVar 不跨线程继承，worker 里 current() 会退回匿名身份，
+    # 所以整个 chat() 都放进调用方给的上下文里跑。
+    ctx = ctx or contextvars.copy_context()
+
     def worker():
         try:
-            chat(question, dataset_id, history=history, emit=q.put, client_key=client_key)
+            ctx.run(lambda: chat(question, dataset_id, history=history,
+                                 emit=q.put, client_key=client_key))
         except Exception as e:
             q.put({"type": "error", "message": str(e)[:300]})
         finally:

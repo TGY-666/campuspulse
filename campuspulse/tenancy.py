@@ -37,11 +37,21 @@ PERMS = {
     "analyst": {"view_analysis", "import_data", "gen_report", "ticket_create"},
     "handler": {"view_ticket_evidence", "ticket_handle"},
     "viewer":  {"view_analysis"},
+    # 部门账号：只有"看本部门 + 办本部门"这一件事。
+    # 刻意不给 view_analysis——给了它，驾驶舱/洞察/数据页的入口与接口就都打开了，
+    # 而它只需要研判页那一块（研判页的准入由 departments.can_view 单独放行 dept_scope）。
+    # 也不给 ticket_create：开不开单是学校层面的判断，部门只负责办。
+    "dept":    {"dept_scope", "view_ticket_evidence", "ticket_handle"},
 }
 
 
 def has_perm(role, perm):
     return perm in PERMS.get(role or "", set())
+
+
+def is_dept_role(role=None):
+    """部门账号判定。单独写一个函数，是因为"范围"这件事要在多处用同一个口径。"""
+    return (role if role is not None else (current().get("role") or "")) == "dept"
 
 
 # ============================ 租户上下文 ============================
@@ -52,13 +62,15 @@ _ctx = ContextVar("cp_ctx", default=None)
 
 _OPEN_CTX = {"tenant_id": config.DEFAULT_TENANT_ID, "tenant_name": "默认学校",
              "user_id": "u_open", "username": "open", "display_name": "本机用户",
-             "role": "admin", "mode": "open", "must_change": 0}
+             "role": "admin", "mode": "open", "must_change": 0, "department_id": "",
+             "department_name": ""}
 
 # CP_AUTH=1 但当前请求未认证时的身份。**权限必须是空的**。
 # 这是本模块最重要的一处防御：如果这里给了 admin，任何一处漏掉登录校验的接口
 # 都会变成"未登录也能以管理员身份操作"，而且没有任何日志会提示这件事。
 _DENY_CTX = {"tenant_id": "", "tenant_name": "", "user_id": "", "username": "",
-             "display_name": "未登录", "role": "", "mode": "anon", "must_change": 0}
+             "display_name": "未登录", "role": "", "mode": "anon", "must_change": 0,
+             "department_id": "", "department_name": ""}
 
 
 def anonymous():
@@ -75,7 +87,8 @@ def system_context(tenant=None):
     """
     return {"tenant_id": tenant or config.DEFAULT_TENANT_ID, "tenant_name": "系统",
             "user_id": "u_system", "username": "system", "display_name": "系统任务",
-            "role": "admin", "mode": "system", "must_change": 0}
+            "role": "admin", "mode": "system", "must_change": 0,
+            "department_id": "", "department_name": ""}
 
 
 def current():
@@ -160,6 +173,10 @@ def issue_session(user, max_age=None):
         "uid": user["user_id"], "tid": user["tenant_id"],
         "un": user["username"], "dn": user.get("display_name") or user["username"],
         "role": user["role"], "mc": int(user.get("must_change") or 0),
+        # 部门账号的归口。进 session 而不是每次请求查库：范围判断发生在每个工单
+        # 接口里，多一次查询不贵，但"范围来自哪"必须只有一个来源——
+        # 散落成"有时读 session、有时读数据库"时，改绑定后会出现半新半旧的范围。
+        "dept": user.get("department_id") or "",
         "v": 1,
     }
     return _serializer().dumps(payload)
@@ -180,12 +197,31 @@ def read_session(token):
 
 
 def session_to_ctx(payload, tenant_name=""):
+    dept_id = str(payload.get("dept") or "")
+    # 部门名现查一次：绑定关系是库里的当前事实，session 里只存 id。
+    # 存名字快照的话，部门改名后顶栏会一直显示旧名字，而工单上已经是新名字——
+    # 两个地方对不上，排查时会先怀疑是不是进错了账号。
+    dept_name = ""
+    if dept_id:
+        try:
+            row = db.query_one(
+                "SELECT name FROM departments WHERE tenant_id = ? AND dept_id = ?",
+                (payload["tid"], dept_id))
+            dept_name = (row or {}).get("name") or ""
+        except Exception:
+            dept_name = ""
     return {
         "tenant_id": payload["tid"], "tenant_name": tenant_name or payload["tid"],
         "user_id": payload["uid"], "username": payload.get("un", ""),
         "display_name": payload.get("dn", ""), "role": payload.get("role", "viewer"),
         "mode": "auth", "must_change": int(payload.get("mc") or 0),
+        "department_id": dept_id, "department_name": dept_name,
     }
+
+
+def department_id():
+    """当前身份的归口部门 id：只有部门账号有值，其余角色一律空串。"""
+    return str(current().get("department_id") or "") if is_dept_role() else ""
 
 
 # ============================ 登录限流 ============================
@@ -307,19 +343,33 @@ def create_tenant(tenant_id_, name, short_name="", note=""):
 
 
 def create_user(tenant_id_, username, role="viewer", display_name="",
-                password=None, must_change=1):
+                password=None, must_change=1, department_id=""):
     if role not in config.ROLES:
         raise ValueError(f"未知角色：{role}")
+    # 部门账号没有绑定部门就等于"什么都看不到"，不如在创建时就拦下来，
+    # 免得到了演示现场才发现账号是空的、还以为是权限写错了。
+    if role == "dept" and not department_id:
+        raise ValueError("部门账号必须绑定部门（department_id）")
+    if role != "dept" and department_id:
+        raise ValueError("只有部门账号（dept）可以绑定部门")
     pwd = password or random_password()
     user_id = "u_" + secrets.token_hex(6)
     db.get_conn().execute(
         "INSERT INTO users (user_id, tenant_id, username, display_name, role, pwd_hash, "
-        "must_change, status, created_at) VALUES (?,?,?,?,?,?,?,?,?)",
+        "must_change, status, created_at, department_id) VALUES (?,?,?,?,?,?,?,?,?,?)",
         (user_id, tenant_id_, username, display_name or username, role,
          hash_password(pwd), int(must_change), "active",
-         datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+         datetime.now().strftime("%Y-%m-%d %H:%M:%S"), department_id or None))
     db.get_conn().commit()
     return {"user": get_user_by_id(user_id), "password": pwd}
+
+
+def set_department(user_id, department_id):
+    """改绑部门。**必须重新登录才生效**：范围存在已签发的 session 里。"""
+    conn = db.get_conn()
+    conn.execute("UPDATE users SET department_id = ? WHERE user_id = ?",
+                 (department_id or None, user_id))
+    conn.commit()
 
 
 def set_password(user_id, password, clear_must_change=True):
@@ -392,6 +442,8 @@ def main(argv=None):
     p_au.add_argument("--username", required=True)
     p_au.add_argument("--role", default="viewer", choices=config.ROLES)
     p_au.add_argument("--name", default="")
+    p_au.add_argument("--department", default="",
+                      help="部门账号绑定的部门 id 或部门名（role=dept 时必填）")
 
     p_rp = sub.add_parser("reset-password", help="重置密码")
     p_rp.add_argument("--tenant", default=config.DEFAULT_TENANT_ID)
@@ -403,13 +455,17 @@ def main(argv=None):
     if args.cmd == "status":
         for t in list_tenants():
             users = db.query_all(
-                "SELECT username, role, status, must_change FROM users WHERE tenant_id = ?",
-                (t["tenant_id"],))
+                "SELECT username, role, status, must_change, department_id FROM users "
+                "WHERE tenant_id = ?", (t["tenant_id"],))
             print(f"[{t['tenant_id']}] {t['name']}  用户 {len(users)} 个")
+            names = {r["dept_id"]: r["name"] for r in db.query_all(
+                "SELECT dept_id, name FROM departments WHERE tenant_id = ?",
+                (t["tenant_id"],))}
             for u in users:
                 flag = "  (待改密)" if u["must_change"] else ""
+                dept = names.get(u["department_id"] or "", u["department_id"] or "")
                 print(f"    - {u['username']:<12} {config.ROLE_LABELS.get(u['role'], u['role'])}"
-                      f" {u['status']}{flag}")
+                      f" {u['status']}{(' · 归口 ' + dept) if dept else ''}{flag}")
         return 0
 
     if args.cmd == "create-tenant":
@@ -421,7 +477,17 @@ def main(argv=None):
         return 0
 
     if args.cmd == "add-user":
-        r = create_user(args.tenant, args.username, role=args.role, display_name=args.name)
+        dept_id = args.department
+        if dept_id and not dept_id.startswith("dept_"):
+            row = db.query_one(
+                "SELECT dept_id FROM departments WHERE tenant_id = ? AND name = ?",
+                (args.tenant, dept_id))
+            if not row:
+                print(f"找不到部门「{dept_id}」")
+                return 1
+            dept_id = row["dept_id"]
+        r = create_user(args.tenant, args.username, role=args.role,
+                        display_name=args.name, department_id=dept_id)
         print(f"已创建用户：{args.username}（{args.role}）  初始密码：{r['password']}")
         return 0
 

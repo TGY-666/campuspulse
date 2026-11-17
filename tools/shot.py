@@ -17,10 +17,47 @@ PAGES = [
     ("/", "01_dashboard"),
     ("/agent", "02_agent"),
     ("/insights", "03_insights"),
+    ("/insights/topics", "03b_insights_topics"),
+    ("/insights/sentiment", "03c_insights_sentiment"),
+    ("/insights/timeline", "03d_insights_timeline"),
     ("/evidence", "04_evidence"),
     ("/data", "05_data"),
-    ("/tickets", "06_tickets"),
+    # 风险研判与处置中心：父项总览 + 子项工单，两页一起截才能看出层级关系
+    ("/departments", "06a_departments"),
+    ("/tickets", "06b_tickets"),
 ]
+
+
+def prime_lazy(page, rounds=3):
+    """整页截图前先把页面滚一遍。
+
+    图表是进入视口才初始化的（core.js 的 IntersectionObserver 惰性建图），
+    不滚动的话 full_page 截图里下半屏的图全是"暂无数据"空态。
+    滚到底再回顶部，让所有图都完成渲染，否则截图不可用。
+    """
+    page.evaluate("""async () => {
+        const sleep = ms => new Promise(r => setTimeout(r, ms));
+        const step = Math.max(240, Math.round(window.innerHeight * 0.75));
+        for (let y = 0; y < document.body.scrollHeight; y += step) {
+            window.scrollTo(0, y);
+            await sleep(240);
+        }
+        window.scrollTo(0, document.body.scrollHeight);
+        await sleep(500);
+        window.scrollTo(0, 0);
+        await sleep(400);
+    }""")
+
+
+def wait_charts(page, timeout=8000):
+    """等页面上的图表都建出 canvas（画布出现才说明真正渲染了）。"""
+    try:
+        page.wait_for_function(
+            "document.querySelectorAll('.chart canvas, .chart svg').length >= "
+            "document.querySelectorAll('.chart').length",
+            timeout=timeout)
+    except Exception:
+        pass  # 个别图（如无数据的空态）本来就不建 canvas，不强求
 
 
 def main():
@@ -54,6 +91,10 @@ def main():
             logs.clear()
             page.goto(BASE + path, wait_until="networkidle")
             page.wait_for_timeout(2600)
+            # 先滚一遍触发惰性建图，再回顶部截整页
+            prime_lazy(page)
+            wait_charts(page)
+            page.wait_for_timeout(600)
             file = os.path.join(OUT, name + ".png")
             page.screenshot(path=file, full_page=True)
             print(f"OK  {path} -> {file}")

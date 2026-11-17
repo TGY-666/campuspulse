@@ -1,6 +1,7 @@
 {% extends "base.html" %}
-{% block title %}AI 智能分析工作台{% endblock %}
-{% block page_title %}AI 智能分析工作台{% endblock %}
+{% block chain %}{% endblock %}
+{% block title %}AI 舆情助手{% endblock %}
+{% block page_title %}AI 舆情助手{% endblock %}
 {% block page_sub %}用自然语言提问，Agent 会调用受控分析工具查库计算，再给出图表与评论证据{% endblock %}
 
 {% block content %}
@@ -8,7 +9,7 @@
     <section class="card chat-panel">
         <div class="chat-head">
             <div>
-                <div class="card-title">对话</div>
+                <h2 class="card-title">对话</h2>
                 <div class="card-sub" id="sessionInfo">会话未开始</div>
             </div>
             <div class="card-tools">
@@ -17,8 +18,8 @@
         </div>
         <div class="chat-log" id="chatLog">
             <div class="msg bot">
-                你好，我是 CampusPulse 分析助手。你可以直接问数据问题，例如“负面评论集中在哪个维度”，
-                我会调用统计与检索工具后回答，并把用到的评论证据列在右侧。
+                你好，我是 CampusPulse 分析助手。你可以直接问数据问题，例如“负面评论集中在哪个主题”，
+                我会调用统计与检索工具后回答，并附上对应的评论证据。
             </div>
             <div class="msg sys">当前数据集：<span id="chatDataset">加载中…</span></div>
         </div>
@@ -29,13 +30,14 @@
         </div>
 
         <div class="composer">
-            <textarea id="qInput" rows="2" placeholder="例如：食堂餐饮方面最常见的负面问题是什么？给出相关评论依据。"></textarea>
+            <textarea id="qInput" rows="2" aria-label="向分析助手提问"
+                  placeholder="例如：食堂餐饮方面最常见的负面问题是什么？给出相关评论依据。"></textarea>
             <div class="composer-foot">
                 <button class="btn btn-sm voice-btn" id="btnVoice" type="button"
                         aria-pressed="false" title="语音输入">
                     <span class="voice-dot" aria-hidden="true"></span><span class="voice-label">语音</span>
                 </button>
-                <span class="composer-hint" id="composerHint">Enter 发送 · Shift+Enter 换行 · 最多 200 字</span>
+                <span class="composer-hint" id="composerHint">回车发送 · 最多 200 字</span>
                 <button class="btn btn-primary btn-sm" id="btnSend" style="margin-left:auto;">分析</button>
             </div>
         </div>
@@ -45,22 +47,40 @@
         <div class="card" id="resultEmpty">
             <div class="card-head">
                 <div>
-                    <div class="card-title">这里会显示 Agent 的完整分析过程</div>
-                    <div class="card-sub">工具调用 → 真实统计 → 动态图表 → 评论证据 → 结论与局限</div>
+                    <h2 class="card-title">问一句话，这里给出可核对的答案</h2>
+                    {# 第 21 轮：承诺要跟行为一致。聚合统计类回答（“正面多少条”）本身就没有
+                       原文锚点，写“每条结论都附原文”会让答案里的提示反过来打脸。 #}
+                    <div class="card-sub">在上面输入，或点左栏的推荐问题 ·
+                        数字附图表与分母；涉及具体评论时会带原文编号，可点回原始评论</div>
                 </div>
             </div>
-            <div class="grid g-3" id="toolCards" style="margin-bottom:12px;"></div>
-            <div class="note">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 4.5v5c0 4.5-3.8 7.9-9 9-5.2-1.1-9-4.5-9-9v-5L12 3z"/></svg>
-                <span>安全边界：模型只能调用下列 6 个白名单工具（5 个统计/证据工具 + 1 个原文档检索），
-                    不能执行任意 SQL 或系统命令；图表数值全部由后端计算，模型只负责撰写文字解释，
-                    回答里的每个引用编号都会被校验是否能回到原文。
-                    语音输入用浏览器内置识别，<strong>不录音、不上传评论数据</strong>，
-                    只有你口述的那句提问会被送去转写，识别结果先填进输入框、确认后才发送。</span>
+
+            {# 空态先给"能问什么、会得到什么"。原先这一屏最醒目的是六张工具卡，
+               卡片标题是 get_sentiment_stats 这类函数名——行政用户看不懂，
+               评委只会判断"这是个 API 演示"。工具清单收进下面的折叠区，
+               它是回答生成后用来证明"可审计"的材料，不是首屏的入口。 #}
+            <div class="ans-shape">
+                <div class="ans-shape-item"><b>结论一句话</b><span>先给判断：哪件事、多急、归谁</span></div>
+                <div class="ans-shape-item"><b>支撑数字</b><span>每个比例都带分母，与页面上的卡片同源</span></div>
+                <div class="ans-shape-item"><b>原文证据</b><span>带引用编号，能点回原始评论逐条核对</span></div>
+                <div class="ans-shape-item"><b>下一步</b><span>归口部门与响应时限，直接接上建单</span></div>
             </div>
+
+            <details class="proc">
+                <summary>分析过程用到的 6 个工具，以及安全边界</summary>
+                <div class="grid g-3 tool-grid" id="toolCards"></div>
+                <div class="note note-flat">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 4.5v5c0 4.5-3.8 7.9-9 9-5.2-1.1-9-4.5-9-9v-5L12 3z"/></svg>
+                    <span>模型只能调用上面 6 个白名单工具（5 个统计/证据工具 + 1 个原文档检索），
+                        不能执行任意 SQL 或系统命令；图表数值全部由后端计算，模型只负责撰写文字解释，
+                        回答里的每个引用编号都会被校验是否能回到原文。
+                        语音输入用浏览器内置识别，<strong>不录音、不上传评论数据</strong>，
+                        只有你口述的那句提问会被送去转写，识别结果先填进输入框、确认后才发送。</span>
+                </div>
+            </details>
         </div>
 
-        <div id="resultBody" style="display:none;"></div>
+        <div id="resultBody" class="is-hidden"></div>
     </section>
 </div>
 {% endblock %}
@@ -68,9 +88,10 @@
 {% block vendor %}
 <script src="{{ static_url('vendor/echarts.min.js') }}"></script>
 <script>
-    // 只有真正画图的页面才加载 ECharts；本地 vendor 缺失时回退 CDN
+    // 只有真正画图的页面才加载 ECharts；缺本地组件时提示安装
     if (typeof window.echarts === 'undefined') {
-        document.write('<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"><\/script>');
+        document.currentScript.insertAdjacentHTML('afterend',
+            '<p class="note note-muted" style="margin:12px 0;padding:10px;"><span>图表组件未加载，请确认本地静态资源完整</span></p>');
     }
 </script>
 {% endblock %}

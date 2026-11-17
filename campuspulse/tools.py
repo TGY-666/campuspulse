@@ -25,7 +25,7 @@ _PLATFORM = {
 }
 _DIMENSION = {
     "type": "array", "items": {"type": "string", "enum": config.DIMENSIONS},
-    "description": "校园业务维度筛选，可多选",
+    "description": "校园业务主题筛选，可多选",
 }
 _SENTIMENT = {
     "type": "array", "items": {"type": "string", "enum": ["positive", "neutral", "negative"]},
@@ -49,8 +49,10 @@ TOOL_SPECS = [
     },
     {
         "name": "get_topic_stats",
-        "description": "统计七大校园维度（宿舍住宿/食堂餐饮/招生报考/教学学业/校园环境/交通出行/校园活动）"
-                       "的评论量排行，以及负面原因和正面卖点排行。适用于“学生最关注什么”“最常见负面问题”。",
+        # 主题清单从 config 拼，不写死：工具描述是模型唯一的"目录"，
+        # 少列一个主题（比如新增的实习就业），模型就永远不会去问那个主题的事。
+        "description": f"统计{'/'.join(config.DIMENSIONS)}这 {len(config.DIMENSIONS)} 类校园主题的评论量排行，"
+                       "以及负面原因和正面卖点排行。适用于“学生最关注什么”“最常见负面问题”。",
         "parameters": {
             "type": "object",
             "properties": {
@@ -75,7 +77,7 @@ TOOL_SPECS = [
     },
     {
         "name": "compare_platforms",
-        "description": "在相同筛选口径下比较抖音与小红书的评论量、情感比例、平均点赞和维度分布。",
+        "description": "在相同筛选口径下比较抖音与小红书的评论量、情感比例、平均点赞和主题分布。",
         "parameters": {
             "type": "object",
             "properties": {
@@ -123,6 +125,18 @@ TOOL_SPECS = [
 
 TOOL_NAMES = [t["name"] for t in TOOL_SPECS]
 _TOOL_MAP = {t["name"]: t for t in TOOL_SPECS}
+
+# 工具的中文能力名。界面上用它当标题，英文名只作等宽副文本。
+# 这份名单早先只长在 agent.py 的 _STEP_LABELS 里（用于"分析过程"的步骤文案），
+# 而工具卡却把 get_sentiment_stats 当主标题——同一件事在两个地方两个名字。
+TOOL_LABELS = {
+    "get_sentiment_stats": "情感构成统计",
+    "get_topic_stats": "主题与负面原因",
+    "get_time_trend": "时间趋势计算",
+    "compare_platforms": "双平台对比",
+    "search_comments": "评论证据检索",
+    "retrieve_context": "原文片段检索",
+}
 
 
 class ToolError(Exception):
@@ -256,7 +270,7 @@ def _run_get_topic_stats(args, ctx):
     top_n = int(args.get("top_n") or config.DEFAULT_TOPIC_TOP_N)
     data = analytics.stats_topics(f, top_n)
     if data["empty"]:
-        return {"summary": f"在「{analytics.filters_text(f)}」范围内没有可用评论，无法生成维度排行。",
+        return {"summary": f"在「{analytics.filters_text(f)}」范围内没有可用评论，无法生成主题排行。",
                 "data": data, "metrics": [], "evidence": []}
     ranking = data["ranking"]
     top = ranking[0] if ranking else None
@@ -271,7 +285,7 @@ def _run_get_topic_stats(args, ctx):
     summary = "；".join(parts) + "。"
     metrics = []
     if top:
-        metrics.append({"name": f"最热维度：{top['dimension']}", "value": top["count"], "unit": "条"})
+        metrics.append({"name": f"最热主题：{top['dimension']}", "value": top["count"], "unit": "条"})
     metrics.append({"name": "负面评论", "value": data["negative_total"], "unit": "条"})
     return {"summary": summary, "data": data, "metrics": metrics, "evidence": []}
 
@@ -430,5 +444,6 @@ def execute(name, raw_args, ctx=None):
 
 def tool_catalog():
     """给前端展示"可用工具清单"，说明 AI 能做什么。"""
-    return [{"name": t["name"], "description": t["description"],
+    return [{"name": t["name"], "label": TOOL_LABELS.get(t["name"], t["name"]),
+             "description": t["description"],
              "params": list(t["parameters"].get("properties", {}).keys())} for t in TOOL_SPECS]
